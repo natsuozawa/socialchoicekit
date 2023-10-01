@@ -38,7 +38,9 @@ class BaseScoring:
   def _check_profile(self, profile) -> None:
     if isinstance(profile, np.ndarray):
       if np.ndim(profile) == 2:
-        return
+        if np.amin(profile) == 1 and np.amax(profile) == profile.shape[1]:
+          return
+        raise ValueError("Profile must contain exactly integers from 1 to M")
       raise ValueError("Profile must be a two-dimensional array")
     # TODO: turn this into a common utils method and accept other formats
     raise ValueError("Profile is not in a recognized data format")
@@ -113,8 +115,8 @@ class Plurality(BaseScoring):
     :return np.ndarray or int
     """
     self._check_profile(profile)
-    scores = self.score(profile)
-    return super().scf(scores)
+    score = self.score(profile)
+    return super().scf(score)
 
 class Borda(BaseScoring):
   """
@@ -181,8 +183,8 @@ class Borda(BaseScoring):
     :return np.ndarray or int
     """
     self._check_profile(profile)
-    scores = self.score(profile)
-    return super().scf(scores)
+    score = self.score(profile)
+    return super().scf(score)
 
 class Veto(BaseScoring):
   """
@@ -250,8 +252,8 @@ class Veto(BaseScoring):
     :return np.ndarray or int
     """
     self._check_profile(profile)
-    scores = self.score(profile)
-    return super().scf(scores)
+    score = self.score(profile)
+    return super().scf(score)
 
 class KApproval(BaseScoring):
   """
@@ -326,8 +328,8 @@ class KApproval(BaseScoring):
     :return np.ndarray or int
     """
     self._check_profile(profile)
-    scores = self.score(profile)
-    return super().scf(scores)
+    score = self.score(profile)
+    return super().scf(score)
 
 class Harmonic(BaseScoring):
   """
@@ -395,5 +397,5 @@ class Harmonic(BaseScoring):
     :return np.ndarray or int
     """
     self._check_profile(profile)
-    scores = self.score(profile)
-    return super().scf(scores)
+    score = self.score(profile)
+    return super().scf(score)
