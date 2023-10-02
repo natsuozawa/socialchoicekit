@@ -10,7 +10,7 @@ class BaseScoring:
   - "random": pick from a uniform distribution among the winners
   - "accept": return all winners in an array
 
-  :type zero_indexed_output: bool
+  :type zero_indexed: bool
   If True, the output of the social welfare function and social choice function will be zero-indexed. If False, the output will be one-indexed. One-indexed by default.
   """
   def __init__(
