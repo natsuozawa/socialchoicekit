@@ -13,3 +13,22 @@ rule = Plurality()
 profile = np.array([[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]])
 rule.scf(profile)
 ```
+
+# Compile documentation
+Sphinx with autodoc is used to compile documentation.
+
+(Run this command when a new module is added)
+```
+sphinx-apidoc -o docs/ socialchoicekit/
+```
+
+```
+cd docs
+make html
+```
+
+To locally view the compiled documentation, use
+```
+cd docs/_build/html
+python -m http.server
+```

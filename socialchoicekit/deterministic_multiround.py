@@ -2,17 +2,22 @@ import numpy as np
 
 from socialchoicekit.deterministic_scoring import Plurality
 
+"""
+Deterministic multiround rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016).
+"""
+
 class SingleTransferableVote:
   """
   Alternative Vote, Hare (Hare, 1859), Single Transferable Vote (STV), Instant Run-off Voting (IRV), and Ranked Choice Voting (RCV)—and proceeds as follows: at each stage, the alternative with lowest plurality score is dropped from all ballots, and at the first stage for which some alternative x sits atop a majority of the ballots, x is declared the winner.
 
-  Prameters
-  :type tie_breaker: str
-  Accepts the following
-  - "random": randomly select an alternative to drop
+  Parameters
+  ----------
 
-  :type zero_indexed: bool
-  If True, the output of the social welfare function and social choice function will be zero-indexed. If False, the output will be one-indexed. One-indexed by default.
+  tie_breaker : {"random"}
+    - "random": pick from a uniform distribution among the losers to drop
+
+  zero_indexed : bool
+    If True, the output of the social welfare function and social choice function will be zero-indexed. If False, the output will be one-indexed. One-indexed by default.
   """
   def __init__(
     self,
@@ -29,16 +34,19 @@ class SingleTransferableVote:
     """
     The social choice function for this voting rule. Returns a single winning alternative.
 
-    Complexity
-    O(MN)
+    Notes
+    -----
+    Complexity O(MN)
 
     Parameters
-    :type profile: np.ndarray
-
-    A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    ----------
+    profile: np.ndarray
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
 
     Returns
-    :return np.ndarray or int
+    -------
+    int
+      A single winning alternative.
     """
     self._check_profile(profile)
     current_profile = profile
@@ -70,7 +78,7 @@ class SingleTransferableVote:
     raise ValueError("Profile is not in a recognized data format")
 
   def _check_tie_breaker(self) -> None:
-    if self.tie_breaker in ["random", "accept"]:
+    if self.tie_breaker in ["random"]:
       return
     raise ValueError("Tie breaker is not recognized")
 
