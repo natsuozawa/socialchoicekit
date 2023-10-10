@@ -44,6 +44,22 @@ class BaseScoring:
     rank = np.argsort(-score)
     return np.array([rank + self.index_fixer, score[rank]])
 
+  def score(self, scores_by_voter: np.ndarray) -> np.ndarray:
+    """
+    Common logic for the computing the score.
+
+    Parameters
+    ----------
+    scores_by_voter: np.ndarray
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the score calculated from the voter's preference for alternative j.
+
+    Returns
+    -------
+    np.ndarray
+      A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
+    """
+    return np.sum(scores_by_voter, axis=0)
+
   def scf(self, score: np.ndarray) -> np.ndarray or int:
     """
     Common logic for computing the social choice function.
