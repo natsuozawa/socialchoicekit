@@ -37,7 +37,6 @@ class BaseScoring:
 
     Returns
     -------
-
     np.array
       A two dimensional (2, M) numpy array where the first row indicates the alternative number and the second row indicates the score.
     """
