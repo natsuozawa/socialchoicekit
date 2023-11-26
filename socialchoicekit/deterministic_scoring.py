@@ -31,7 +31,6 @@ class BaseScoring:
 
     Parameters
     ----------
-
     score : np.ndarray
       A two dimensional (N, M) numpy array where N is the number of alternatives and M is the number of voters. The element at (i, j) indicates the score arising from voter i's ordering of alternative j. Obtain this array by calling a score function in a subclass.
 
@@ -65,7 +64,6 @@ class BaseScoring:
 
     Parameters
     ----------
-
     score : np.ndarray
       A two dimensional (N, M) numpy array where N is the number of alternatives and M is the number of voters. The element at (i, j) indicates the score arising from voter i's ordering of alternative j. Obtain this array by calling a score function in a subclass.
 
@@ -100,7 +98,6 @@ class Plurality(BaseScoring):
 
   Parameters
   ----------
-
   tie_breaker : {"random", "accept"}
     - "random": pick from a uniform distribution among the winners
     - "accept": return all winners in an array
@@ -183,7 +180,6 @@ class Borda(BaseScoring):
 
   Parameters
   ----------
-
   tie_breaker : {"random", "accept"}
     - "random": pick from a uniform distribution among the winners
     - "accept": return all winners in an array
@@ -267,7 +263,6 @@ class Veto(BaseScoring):
 
   Parameters
   ----------
-
   tie_breaker : {"random", "accept"}
     - "random": pick from a uniform distribution among the winners
     - "accept": return all winners in an array
@@ -440,7 +435,6 @@ class Harmonic(BaseScoring):
 
   Parameters
   ----------
-
   tie_breaker : {"random", "accept"}
     - "random": pick from a uniform distribution among the winners
     - "accept": return all winners in an array
