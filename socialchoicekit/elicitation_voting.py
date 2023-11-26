@@ -66,7 +66,7 @@ class BaseElicitationVoting:
     # TODO: extract this commong logic (also appears in _check_profile to a separate function)
     if isinstance(valuation_profile, np.ndarray):
       if np.ndim(valuation_profile) == 2:
-        pass
+        return
       raise ValueError("Profile must be a two-dimensional array")
     # TODO: turn this into a common utils method and accept other formats
     raise ValueError("Profile is not in a recognized data format")
@@ -117,9 +117,11 @@ class LambdaPRV(BaseElicitationVoting):
     """
     self._check_valuation_profile(valuation_profile)
     vp = np.array(valuation_profile)
-    i_indices = np.argpartition(np.where(np.isnan(vp), 0, vp), -self.lambda_, axis=1)[:, :-self.lambda_].flatten()
-    j_indices = (np.arange(vp.shape[0]).reshape(-1, 1) * np.ones(vp.shape[1] - self.lambda_, dtype=int)).flatten()
-    vp[(j_indices, i_indices)] = np.nan
+    # Column indices for the values that are not in the top lambda
+    j_indices = np.argpartition(np.where(np.isnan(vp), 0, vp), -self.lambda_, axis=1)[:, :-self.lambda_].flatten()
+    # Row indices for the values that are not in the top lambda
+    i_indices = (np.arange(vp.shape[0]).reshape(-1, 1) * np.ones(vp.shape[1] - self.lambda_, dtype=int)).flatten()
+    vp[(i_indices, j_indices)] = np.nan
     return np.nansum(vp, axis=0)
 
   def scf(self, valuation_profile: np.ndarray):
@@ -187,7 +189,44 @@ class KARV(BaseElicitationVoting):
     """
     self._check_profile(profile)
     self._check_valuation_profile(valuation_profile)
-    return np.nansum(valuation_profile, axis=0)
+
+    n = profile.shape[0]
+    m = profile.shape[1]
+
+    # Element at (i, j) is agent i's j+1th most preferred alternative (0-indexed alternative number)
+    ranked_alternatives = np.argsort(profile, axis=1)
+    vp = np.array(valuation_profile)
+    # Element at i is agent i's favorite alternative
+    v_favorite = vp[np.arange(n), ranked_alternatives[:, 0]]
+
+    # We have this as an inner function because it currently needs to access the vp and ranked_alternatives arrays.
+    # TODO: When we have the mechanism to do interactive querying, we will move this.
+    # We've modified this binary search from the paper for our implementation.
+    def binary_search(i: int, alpha: int, beta: int, lambda_: int, v: float):
+      if beta - alpha <= 1:
+        return alpha
+      # This will never be more than m - 1, even if we start with beta = m.
+      mid = (alpha + beta) // 2
+      u = vp[i, ranked_alternatives[i, mid]]
+      if u >= v / lambda_:
+        return binary_search(i, mid, beta, lambda_, v)
+      else:
+        return binary_search(i, alpha, mid, lambda_, v)
+
+    # Element at (i, j) is the simulated welfare of alternative j for agent i
+    v_tilde = np.zeros((n, m))
+    v_tilde[np.arange(n), ranked_alternatives[:, 0]] = v_favorite
+    # Element at i is the least preferred alternative (0-indexed alternative number) in agent i's lambda-acceptable set
+    S_prev = np.zeros(n)
+    for l in range(1, self.k + 1):
+      lambda_l = m ** (l / (self.k + 1))
+      p_star = np.array([binary_search(i, 0, m, lambda_l, v_favorite[i]) for i in range(n)])
+      j_indices = np.concatenate([ranked_alternatives[i, np.arange(S_prev[i] + 1, p_star[i] + 1, dtype=int)] for i in range(n)])
+      i_indices = np.concatenate([np.ones(int(p_star[i] - S_prev[i]), dtype=int) * i for i in range(n)])
+      v_tilde[(i_indices, j_indices)] = v_favorite[i_indices] / lambda_l
+      S_prev = p_star
+
+    return np.sum(v_tilde, axis=0)
 
   def scf(self, profile: np.ndarray, valuation_profile: np.ndarray):
     """
