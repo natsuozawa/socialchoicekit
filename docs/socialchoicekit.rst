@@ -44,6 +44,14 @@ socialchoicekit.randomized\_scoring module
    :undoc-members:
    :show-inheritance:
 
+socialchoicekit.utils module
+----------------------------
+
+.. automodule:: socialchoicekit.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

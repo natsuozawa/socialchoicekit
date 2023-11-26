@@ -1,5 +1,6 @@
 import numpy as np
-from .deterministic_scoring import *
+
+from socialchoicekit.deterministic_scoring import *
 
 """
 Randomized scoring rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016).

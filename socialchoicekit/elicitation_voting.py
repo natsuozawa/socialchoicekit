@@ -1,5 +1,7 @@
 import numpy as np
 
+from socialchoicekit.utils import check_tie_breaker, check_profile, check_valuation_profile, break_tie
+
 class BaseElicitationVoting:
   """
   The abstract base elicitation voting rule. This class should not be instantiated directly.
@@ -8,8 +10,9 @@ class BaseElicitationVoting:
 
   Parameters
   ----------
-  tie_breaker : {"random", "accept"}
+  tie_breaker : {"random", "first", "accept"}
     - "random": pick from a uniform distribution among the winners
+    - "first": pick the alternative with the lowest index
     - "accept": return all winners in an array
 
   zero_indexed : bool
@@ -23,7 +26,7 @@ class BaseElicitationVoting:
   ) -> None:
     self.tie_breaker = tie_breaker
     self.index_fixer = 0 if zero_indexed else 1
-    self._check_tie_breaker()
+    check_tie_breaker(self.tie_breaker)
 
   def scf(self, score: np.ndarray) -> np.ndarray or int:
     """
@@ -40,9 +43,7 @@ class BaseElicitationVoting:
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     winners = np.argwhere(score == np.amax(score)).flatten() + self.index_fixer
-    if self.tie_breaker == "random":
-      return np.random.choice(winners)
-    return winners
+    break_tie(winners, self.tie_breaker)
 
   def interactive_score(self) -> np.ndarray:
     # TODO: implement
@@ -51,32 +52,6 @@ class BaseElicitationVoting:
   def interactive_scf(self) -> np.ndarray or int:
     # TODO: implement
     pass
-
-  def _check_profile(self, profile) -> None:
-    if isinstance(profile, np.ndarray):
-      if np.ndim(profile) == 2:
-        if np.amin(profile) == 1 and np.amax(profile) == profile.shape[1]:
-          return
-        raise ValueError("Profile must contain exactly integers from 1 to M")
-      raise ValueError("Profile must be a two-dimensional array")
-    # TODO: turn this into a common utils method and accept other formats
-    raise ValueError("Profile is not in a recognized data format")
-
-  def _check_valuation_profile(self, valuation_profile) -> None:
-    # TODO: extract this commong logic (also appears in _check_profile to a separate function)
-    if isinstance(valuation_profile, np.ndarray):
-      if np.ndim(valuation_profile) == 2:
-        return
-      raise ValueError("Profile must be a two-dimensional array")
-    # TODO: turn this into a common utils method and accept other formats
-    raise ValueError("Profile is not in a recognized data format")
-
-  def _check_tie_breaker(self) -> None:
-    # TOODO: move this out into a common utils method
-    if self.tie_breaker in ["random", "accept"]:
-      return
-    raise ValueError("Tie breaker is not recognized")
-
 
 class LambdaPRV(BaseElicitationVoting):
   """
@@ -87,8 +62,9 @@ class LambdaPRV(BaseElicitationVoting):
   lambda_: int
     The number of positions to query.
 
-  tie_breaker : {"random", "accept"}
+  tie_breaker : {"random", "first", "accept"}
     - "random": pick from a uniform distribution among the winners
+    - "first": pick the alternative with the lowest index
     - "accept": return all winners in an array
 
   zero_indexed : bool
@@ -136,11 +112,11 @@ class LambdaPRV(BaseElicitationVoting):
     np.ndarray or int
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
-    self._check_valuation_profile(valuation_profile)
     score = self.score(valuation_profile)
     return super().scf(score)
 
   def _check_valuation_profile(self, valuation_profile):
+    check_valuation_profile(valuation_profile)
     super()._check_valuation_profile(valuation_profile)
     num_not_nan = np.sum(np.where(np.isnan(valuation_profile), 0, 1), axis=0)
     if np.amin(num_not_nan) < self.lambda_:
@@ -155,8 +131,9 @@ class KARV(BaseElicitationVoting):
   k: int
     The number of positions to query.
 
-  tie_breaker : {"random", "accept"}
+  tie_breaker : {"random", "first", "accept"}
     - "random": pick from a uniform distribution among the winners
+    - "first": pick the alternative with the lowest index
     - "accept": return all winners in an array
 
   zero_indexed : bool
@@ -187,8 +164,8 @@ class KARV(BaseElicitationVoting):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    self._check_profile(profile)
-    self._check_valuation_profile(valuation_profile)
+    check_profile(profile)
+    check_valuation_profile(valuation_profile, is_complete=True)
 
     n = profile.shape[0]
     m = profile.shape[1]
@@ -243,7 +220,5 @@ class KARV(BaseElicitationVoting):
     np.ndarray or int
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
-    self._check_profile(profile)
-    self._check_valuation_profile(valuation_profile)
     score = self.score(profile, valuation_profile)
     return super().scf(score)

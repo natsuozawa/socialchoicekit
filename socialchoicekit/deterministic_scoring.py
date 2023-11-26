@@ -1,4 +1,7 @@
 import numpy as np
+
+from socialchoicekit.utils import check_tie_breaker, check_profile, break_tie
+
 """
 Deterministic scoring rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016)."""
 
@@ -9,8 +12,9 @@ class BaseScoring:
   Parameters
   ----------
 
-  tie_breaker : {"random", "accept"}
+  tie_breaker : {"random", "first", "accept"}
     - "random": pick from a uniform distribution among the winners
+    - "first": pick the alternative with the lowest index
     - "accept": return all winners in an array
 
   zero_indexed : bool
@@ -23,7 +27,7 @@ class BaseScoring:
   ) -> None:
     self.tie_breaker = tie_breaker
     self.index_fixer = 0 if zero_indexed else 1
-    self._check_tie_breaker()
+    check_tie_breaker(self.tie_breaker)
 
   def swf(self, score: np.ndarray) -> np.ndarray:
     """
@@ -73,24 +77,7 @@ class BaseScoring:
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     winners = np.argwhere(score == np.amax(score)).flatten() + self.index_fixer
-    if self.tie_breaker == "random":
-      return np.random.choice(winners)
-    return winners
-
-  def _check_profile(self, profile) -> None:
-    if isinstance(profile, np.ndarray):
-      if np.ndim(profile) == 2:
-        if np.amin(profile) == 1 and np.amax(profile) == profile.shape[1]:
-          return
-        raise ValueError("Profile must contain exactly integers from 1 to M")
-      raise ValueError("Profile must be a two-dimensional array")
-    # TODO: turn this into a common utils method and accept other formats
-    raise ValueError("Profile is not in a recognized data format")
-
-  def _check_tie_breaker(self) -> None:
-    if self.tie_breaker in ["random", "accept"]:
-      return
-    raise ValueError("Tie breaker is not recognized")
+    return break_tie(winners, self.tie_breaker)
 
 class Plurality(BaseScoring):
   """
@@ -98,8 +85,9 @@ class Plurality(BaseScoring):
 
   Parameters
   ----------
-  tie_breaker : {"random", "accept"}
+  tie_breaker : {"random", "first", "accept"}
     - "random": pick from a uniform distribution among the winners
+    - "first": pick the alternative with the lowest index
     - "accept": return all winners in an array
 
   zero_indexed : bool
@@ -126,7 +114,7 @@ class Plurality(BaseScoring):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    self._check_profile(profile)
+    check_profile(profile)
     scores_by_voter = np.where(profile == 1, 1, 0)
     return super().score(scores_by_voter)
 
@@ -148,7 +136,6 @@ class Plurality(BaseScoring):
     np.ndarray
       A (2, M) array of scores where the element at (0, j) indicates the alternative number for the jth alternative and (1, j) indictes the score for the jth alternative.
     """
-    self._check_profile(profile)
     score = self.score(profile)
     return super().swf(score)
 
@@ -170,7 +157,6 @@ class Plurality(BaseScoring):
     np.ndarray or int
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
-    self._check_profile(profile)
     score = self.score(profile)
     return super().scf(score)
 
@@ -180,8 +166,9 @@ class Borda(BaseScoring):
 
   Parameters
   ----------
-  tie_breaker : {"random", "accept"}
+  tie_breaker : {"random", "first", "accept"}
     - "random": pick from a uniform distribution among the winners
+    - "first": pick the alternative with the lowest index
     - "accept": return all winners in an array
 
   zero_indexed : bool
@@ -208,7 +195,7 @@ class Borda(BaseScoring):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    self._check_profile(profile)
+    check_profile(profile)
     scores_by_voter = (profile.shape[1] - profile)
     return super().score(scores_by_voter)
 
@@ -230,7 +217,6 @@ class Borda(BaseScoring):
     np.ndarray
       A (2, M) array of scores where the element at (0, j) indicates the alternative number for the jth alternative and (1, j) indictes the score for the jth alternative.
     """
-    self._check_profile(profile)
     score = self.score(profile)
     return super().swf(score)
 
@@ -252,7 +238,6 @@ class Borda(BaseScoring):
     np.ndarray or int
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
-    self._check_profile(profile)
     score = self.score(profile)
     return super().scf(score)
 
@@ -263,8 +248,9 @@ class Veto(BaseScoring):
 
   Parameters
   ----------
-  tie_breaker : {"random", "accept"}
+  tie_breaker : {"random", "first", "accept"}
     - "random": pick from a uniform distribution among the winners
+    - "first": pick the alternative with the lowest index
     - "accept": return all winners in an array
 
   zero_indexed : bool
@@ -291,7 +277,7 @@ class Veto(BaseScoring):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    self._check_profile(profile)
+    check_profile(profile)
     scores_by_voter = np.where(profile < profile.shape[1], 1, 0)
     return super().score(scores_by_voter)
 
@@ -313,7 +299,6 @@ class Veto(BaseScoring):
     np.ndarray
       A (2, M) array of scores where the element at (0, j) indicates the alternative number for the jth alternative and (1, j) indictes the score for the jth alternative.
     """
-    self._check_profile(profile)
     score = self.score(profile)
     return super().swf(score)
 
@@ -335,7 +320,6 @@ class Veto(BaseScoring):
     np.ndarray or int
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
-    self._check_profile(profile)
     score = self.score(profile)
     return super().scf(score)
 
@@ -349,8 +333,9 @@ class KApproval(BaseScoring):
   k : int
     A number greater than 0. If greater than or equal to M, the k-approval rule becomes trivial.
 
-  tie_breaker : {"random", "accept"}
+  tie_breaker : {"random", "first", "accept"}
     - "random": pick from a uniform distribution among the winners
+    - "first": pick the alternative with the lowest index
     - "accept": return all winners in an array
 
   zero_indexed : bool
@@ -380,7 +365,7 @@ class KApproval(BaseScoring):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    self._check_profile(profile)
+    check_profile(profile)
     scores_by_voter = np.where(profile <= self.k, 1, 0)
     return super().score(scores_by_voter)
 
@@ -402,7 +387,6 @@ class KApproval(BaseScoring):
     np.ndarray
       A (2, M) array of scores where the element at (0, j) indicates the alternative number for the jth alternative and (1, j) indictes the score for the jth alternative.
     """
-    self._check_profile(profile)
     score = self.score(profile)
     return super().swf(score)
 
@@ -424,7 +408,6 @@ class KApproval(BaseScoring):
     np.ndarray or int
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
-    self._check_profile(profile)
     score = self.score(profile)
     return super().scf(score)
 
@@ -435,8 +418,9 @@ class Harmonic(BaseScoring):
 
   Parameters
   ----------
-  tie_breaker : {"random", "accept"}
+  tie_breaker : {"random", "first", "accept"}
     - "random": pick from a uniform distribution among the winners
+    - "first": pick the alternative with the lowest index
     - "accept": return all winners in an array
 
   zero_indexed : bool
@@ -463,7 +447,7 @@ class Harmonic(BaseScoring):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    self._check_profile(profile)
+    check_profile(profile)
     scores_by_voter = 1 / profile
     return super().score(scores_by_voter)
 
@@ -485,7 +469,6 @@ class Harmonic(BaseScoring):
     np.ndarray
       A (2, M) array of scores where the element at (0, j) indicates the alternative number for the jth alternative and (1, j) indictes the score for the jth alternative.
     """
-    self._check_profile(profile)
     score = self.score(profile)
     return super().swf(score)
 
@@ -507,6 +490,5 @@ class Harmonic(BaseScoring):
     np.ndarray or int
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
-    self._check_profile(profile)
     score = self.score(profile)
     return super().scf(score)

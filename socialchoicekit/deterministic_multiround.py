@@ -1,6 +1,7 @@
 import numpy as np
 
 from socialchoicekit.deterministic_scoring import Plurality
+from socialchoicekit.utils import check_profile, check_tie_breaker, break_tie
 
 """
 Deterministic multiround rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016).
@@ -13,8 +14,10 @@ class SingleTransferableVote:
   Parameters
   ----------
 
-  tie_breaker : {"random"}
+  tie_breaker : {"random", "first"}
+    Tie breaker used to drop alternatives, not to select winning alternatives.
     - "random": pick from a uniform distribution among the losers to drop
+    - "first": pick the alternative with the lowest index
 
   zero_indexed : bool
     If True, the output of the social welfare function and social choice function will be zero-indexed. If False, the output will be one-indexed. One-indexed by default.
@@ -28,7 +31,7 @@ class SingleTransferableVote:
     self.index_fixer = 0 if zero_indexed else 1
     # TODO: customize this variable.
     self.voting_rule = Plurality(zero_indexed=zero_indexed)
-    self._check_tie_breaker()
+    check_tie_breaker(tie_breaker, include_accept=False)
 
   def scf(self, profile: np.ndarray) -> int:
     """
@@ -48,7 +51,7 @@ class SingleTransferableVote:
     int
       A single winning alternative.
     """
-    self._check_profile(profile)
+    check_profile(profile)
     current_profile = profile
     alternatives = np.arange(profile.shape[1]) + self.index_fixer
     while True:
@@ -57,28 +60,9 @@ class SingleTransferableVote:
         break
       # Access the first element here because np.where returns a tuple.
       candidate_alternatives_to_drop = np.where(score == np.amin(score))[0]
-      if self.tie_breaker == "random":
-        alternative_to_drop = np.random.choice(candidate_alternatives_to_drop)
-      else:
-        raise ValueError("Tie breaker is not recognized")
+      alternative_to_drop = break_tie(candidate_alternatives_to_drop, self.tie_breaker, include_accept=False)
       dropped_row = np.reshape(current_profile[:, alternative_to_drop], (profile.shape[0], 1))
       current_profile = np.delete(current_profile, alternative_to_drop, axis=1)
       current_profile = np.where(current_profile > dropped_row, current_profile - 1, current_profile)
       alternatives = np.delete(alternatives, alternative_to_drop)
     return alternatives[0]
-
-  def _check_profile(self, profile) -> None:
-    if isinstance(profile, np.ndarray):
-      if np.ndim(profile) == 2:
-        if np.amin(profile) == 1 and np.amax(profile) == profile.shape[1]:
-          return
-        raise ValueError("Profile must contain exactly integers from 1 to M")
-      raise ValueError("Profile must be a two-dimensional array")
-    # TODO: turn this into a common utils method and accept other formats
-    raise ValueError("Profile is not in a recognized data format")
-
-  def _check_tie_breaker(self) -> None:
-    if self.tie_breaker in ["random"]:
-      return
-    raise ValueError("Tie breaker is not recognized")
-
