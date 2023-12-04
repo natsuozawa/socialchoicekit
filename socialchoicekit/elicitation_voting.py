@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 
 from socialchoicekit.utils import check_tie_breaker, check_profile, check_valuation_profile, break_tie
 
@@ -28,7 +29,7 @@ class BaseElicitationVoting:
     self.index_fixer = 0 if zero_indexed else 1
     check_tie_breaker(self.tie_breaker)
 
-  def scf(self, score: np.ndarray) -> np.ndarray or int:
+  def scf(self, score: np.ndarray) -> Union[np.ndarray, int]:
     """
     Common logic for the social choice function.
 
@@ -39,19 +40,19 @@ class BaseElicitationVoting:
 
     Returns
     -------
-    np.ndarray or int
+    Union[np.ndarray, int]
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     winners = np.argwhere(score == np.amax(score)).flatten() + self.index_fixer
-    break_tie(winners, self.tie_breaker)
+    return break_tie(winners, self.tie_breaker)
 
   def interactive_score(self) -> np.ndarray:
     # TODO: implement
-    pass
+    return np.array([])
 
-  def interactive_scf(self) -> np.ndarray or int:
+  def interactive_scf(self) -> Union[np.ndarray, int]:
     # TODO: implement
-    pass
+    return np.array([])
 
 class LambdaPRV(BaseElicitationVoting):
   """
@@ -109,7 +110,7 @@ class LambdaPRV(BaseElicitationVoting):
 
     Returns
     -------
-    np.ndarray or int
+    Union[np.ndarray, int]
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     score = self.score(valuation_profile)
@@ -117,7 +118,6 @@ class LambdaPRV(BaseElicitationVoting):
 
   def _check_valuation_profile(self, valuation_profile):
     check_valuation_profile(valuation_profile)
-    super()._check_valuation_profile(valuation_profile)
     num_not_nan = np.sum(np.where(np.isnan(valuation_profile), 0, 1), axis=0)
     if np.amin(num_not_nan) < self.lambda_:
       raise ValueError("Profile doesn't contain enough cardinal information to compute the score.")
@@ -217,7 +217,7 @@ class KARV(BaseElicitationVoting):
 
     Returns
     -------
-    np.ndarray or int
+    Union[np.ndarray, int]
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     score = self.score(profile, valuation_profile)

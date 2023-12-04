@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 
 from socialchoicekit.utils import check_tie_breaker, check_profile, break_tie
 
@@ -62,7 +63,7 @@ class BaseScoring:
     """
     return np.sum(scores_by_voter, axis=0)
 
-  def scf(self, score: np.ndarray) -> np.ndarray or int:
+  def scf(self, score: np.ndarray) -> Union[np.ndarray, int]:
     """
     Common logic for computing the social choice function.
 
@@ -73,7 +74,7 @@ class BaseScoring:
 
     Returns
     -------
-    np.ndarray or int
+    Union[np.ndarray, int]
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     winners = np.argwhere(score == np.amax(score)).flatten() + self.index_fixer
@@ -139,7 +140,7 @@ class Plurality(BaseScoring):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> np.ndarray or int:
+  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -154,7 +155,7 @@ class Plurality(BaseScoring):
 
     Returns
     -------
-    np.ndarray or int
+    Union[np.ndarray, int]
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     score = self.score(profile)
@@ -220,7 +221,7 @@ class Borda(BaseScoring):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> np.ndarray or int:
+  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -235,7 +236,7 @@ class Borda(BaseScoring):
 
     Returns
     -------
-    np.ndarray or int
+    Union[np.ndarray, int]
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     score = self.score(profile)
@@ -302,7 +303,7 @@ class Veto(BaseScoring):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> np.ndarray or int:
+  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -317,7 +318,7 @@ class Veto(BaseScoring):
 
     Returns
     -------
-    np.ndarray or int
+    Union[np.ndarray, int]
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     score = self.score(profile)
@@ -390,7 +391,7 @@ class KApproval(BaseScoring):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> np.ndarray or int:
+  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -405,7 +406,7 @@ class KApproval(BaseScoring):
 
     Returns
     -------
-    np.ndarray or int
+    Union[np.ndarray, int]
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     score = self.score(profile)
@@ -472,7 +473,7 @@ class Harmonic(BaseScoring):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> np.ndarray or int:
+  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -487,7 +488,7 @@ class Harmonic(BaseScoring):
 
     Returns
     -------
-    np.ndarray or int
+    Union[np.ndarray, int]
       A numpy array of the winning alternative(s) or a single winning alternative.
     """
     score = self.score(profile)

@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Dict, List, Union
 
 def check_profile(profile: np.ndarray) -> None:
   """
@@ -50,6 +51,91 @@ def check_valuation_profile(
     raise ValueError("Profile must be a two-dimensional array")
   raise ValueError("Profile is not in a recognized data format")
 
+def check_square_matrix(matrix: np.ndarray) -> None:
+  """
+  Checks that the matrix is a numpy array that represents a square matrix.
+
+  Parameters
+  ----------
+  matrix: np.ndarray
+    This is the matrix to check. An (M, M) array.
+
+  Raises
+  ------
+  ValueError
+    If the matrix is not a numpy array
+    If the matrix is not two-dimensional.
+    If the matrix is not square.
+  """
+  if isinstance(matrix, np.ndarray):
+    if np.ndim(matrix) == 2:
+      if matrix.shape[0] == matrix.shape[1]:
+        return
+      raise ValueError("Matrix must be square")
+    raise ValueError("Matrix must be a two-dimensional array")
+  raise ValueError("Matrix is not in a recognized data format")
+
+def check_graph(G: Dict[int, List[int]]) -> None:
+  """
+  Checks that a dictionary represents a graph.
+
+  Parameters
+  ----------
+  G : Dict[int, List[int]]
+    A dictionary of the form {i: [j, k, ...]} where i is the index of a vertex and [j, k, ...] are the indices of the vertices that i is connected to.
+    The graph may be directed or undirected.
+
+  Raises
+  ------
+  ValueError
+    If the graph is not a dictionary.
+    If the graph is not two-dimensional.
+    If the graph contains NaN values.
+    If the graph contains values other than integers.
+  """
+  if isinstance(G, dict):
+    if all(isinstance(i, int) for i in G.keys()):
+      if all(isinstance(i, list) for i in G.values()):
+        for l in G.values():
+          if all([i in G.keys() for i in l]):
+            return
+          raise ValueError("Vertices can only be linked to other vertices")
+      raise ValueError("Graph must contain lists as values")
+    raise ValueError("Graph must contain integers as keys")
+  raise ValueError("Graph is not in a recognized data format")
+
+def check_bipartite_graph(G: Dict[int, List[int]], X: list, Y: list) -> None:
+  """
+  Checks that a dictionary represents a bipartite graph.
+
+  Parameters
+  ----------
+  G : Dict[int, List[int]]
+    A dictionary of the form {i: [j, k, ...]} where i is the index of a vertex and [j, k, ...] are the indices of the vertices that i is connected to.
+    The graph may be directed or undirected. If it is directed, then the edges are assumed to be directed from X to Y.
+  X: list
+    The list of the left vertices (in the first partition) in the bipartite graph G.
+  Y: list
+    The list of the right vertices (in the second partition) in the bipartite graph G.
+
+  Raises
+  ------
+  ValueError
+    If the graph is not bipartite.
+  """
+  check_graph(G)
+  if X + Y == list(G.keys()):
+    for e in X:
+      if e in Y:
+        raise ValueError("Graph is not bipartite")
+      if all([y in Y for y in G[e]]):
+        return
+      raise ValueError("Graph is not bipartite")
+    for e in Y:
+      if all([x in X for x in G[e]]):
+        return
+      raise ValueError("Graph is not bipartite")
+  raise ValueError("Supplied X and/or Y are not consistent with the keys of the dictionary")
 
 def check_tie_breaker(
   tie_breaker: str,
@@ -84,7 +170,7 @@ def break_tie(
   alternatives: np.ndarray,
   tie_breaker: str = "random",
   include_accept: bool = True
-) -> int:
+) -> Union[np.ndarray, int]:
   """
   Breaks a tie among winning alternatives according to the tie breaker.
 
