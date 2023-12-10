@@ -124,7 +124,7 @@ def check_bipartite_graph(G: Dict[int, List[int]], X: list, Y: list) -> None:
     If the graph is not bipartite.
   """
   check_graph(G)
-  if X + Y == list(G.keys()):
+  if set(X + Y) == set(G.keys()):
     for e in X:
       if e in Y:
         raise ValueError("Graph is not bipartite")

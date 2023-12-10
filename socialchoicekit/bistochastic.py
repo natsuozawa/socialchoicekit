@@ -23,11 +23,11 @@ def birkhoff_von_neumann(X: np.ndarray) -> List[Tuple[float, np.ndarray]]:
 
   result = []
   while True:
-    if X == np.zeros(X.shape):
+    if np.all(X == np.zeros(X.shape)):
       break
     G_X = positivity_graph(X)
     # Positivty graphs always have an 2n vertices.
-    perfect_matching = maximum_cardinality_matching_bipartite(G_X, list(range(n)), list(range(n + 1, n * 2)))
+    perfect_matching = maximum_cardinality_matching_bipartite(G_X, list(range(n)), list(range(n, n * 2)))
     P = np.zeros(X.shape)
     z = np.inf
     for (i, j) in perfect_matching:
