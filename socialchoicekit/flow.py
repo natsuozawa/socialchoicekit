@@ -84,6 +84,8 @@ def dfs_path(G: Dict[int, List[Tuple[int, int]]], current: int, sink: int, visit
     If there is no path from the current vertex to the sink vertex.
   """
   if current == sink:
+    # Undo visit so other path searches could visit
+    visited[current] = 0
     return ([current], sys.maxsize)
   candidates = G[current]
   best_path = None
@@ -101,6 +103,7 @@ def dfs_path(G: Dict[int, List[Tuple[int, int]]], current: int, sink: int, visit
           best_path = [current] + path
           best_capacity = min(capacity, c)
   if best_path is not None:
+    visited[current] = 0
     return (best_path, best_capacity)
   return None
 

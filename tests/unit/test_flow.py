@@ -24,8 +24,8 @@ class TestFlow():
     assert network[1] == [(3, 1), (5, 1)]
     assert network[3] == [(-2, 1)]
 
-  def test_ford_fulkerson_basic_integral(self, flow_network_integral_basic):
-    network, s, t = flow_network_integral_basic
+  def test_ford_fulkerson_integral_1(self, flow_network_integral_1):
+    network, s, t = flow_network_integral_1
     flow = ford_fulkerson(network, s, t)
     assert isinstance(flow, dict)
     for (u, v) in flow.keys():
@@ -36,3 +36,9 @@ class TestFlow():
     assert flow[(1, 2)] == 0
     assert flow[(1, 3)] == 1
     assert flow[(2, 3)] == 1
+
+  def test_ford_fulkerson_integral_2(self, flow_network_integral_2):
+    network, s, t = flow_network_integral_2
+    flow = ford_fulkerson(network, s, t)
+    assert flow[(0, 1)] + flow[(0, 2)] == 13
+

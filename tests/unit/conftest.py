@@ -109,7 +109,7 @@ def bipartite_graph_directed():
   }
 
 @pytest.fixture
-def flow_network_integral_basic():
+def flow_network_integral_1():
   """
   A basic general (non bipartite) flow network with integral capacities.
   """
@@ -119,3 +119,15 @@ def flow_network_integral_basic():
     2: [(3, 1)],
     3: []
   }, 0, 3)
+
+# Borrowed from Aizu Online Judge test cases
+@pytest.fixture
+def flow_network_integral_2():
+  return ({
+    0: [(1, 1), (2, 12)],
+    1: [(3, 2)],
+    2: [(1, 6), (3, 5), (4, 7)],
+    3: [(4, 10), (5, 3)],
+    4: [(5, 12)],
+    5: []
+  }, 0, 5)
