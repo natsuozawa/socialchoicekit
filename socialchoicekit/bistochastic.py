@@ -23,7 +23,8 @@ def birkhoff_von_neumann(X: np.ndarray) -> List[Tuple[float, np.ndarray]]:
 
   result = []
   while True:
-    if np.all(X == np.zeros(X.shape)):
+    # Compare with some threshold to avoid floating point errors
+    if np.all(np.abs(X) < 1e-9):
       break
     G_X = positivity_graph(X)
     # Positivty graphs always have an 2n vertices.

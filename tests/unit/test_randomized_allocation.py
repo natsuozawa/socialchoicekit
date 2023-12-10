@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from socialchoicekit.randomized_allocation import RandomSerialDictatorship
+from socialchoicekit.randomized_allocation import RandomSerialDictatorship, ProbabilisticSerial, SimultaneousEating
 
 class TestRandomizedAllocation:
   @pytest.fixture
@@ -31,3 +31,22 @@ class TestRandomizedAllocation:
     rsd = RandomSerialDictatorship()
     allocation = rsd.scf(basic_preference_list_2)
     assert np.all(allocation[0:3] == np.array([1, 2, 4])) and np.isnan(allocation[3])
+
+  @pytest.fixture
+  def basic_preference_list_3(self):
+    return np.array([
+      [1, 2, 3, 4],
+      [1, 2, 3, np.nan],
+      [3, np.nan, 2, 1],
+      [2, 1, 3, np.nan]
+    ])
+
+  def test_probabilistic_serial_3(self, basic_preference_list_3):
+    ps = ProbabilisticSerial()
+    bistochastic = ps.bistochastic(basic_preference_list_3)
+    assert np.all(bistochastic == np.array([
+      [1/2, 1/6, 1/3, 0],
+      [1/2, 1/6, 1/3, 0],
+      [0, 0, 0, 1],
+      [0, 2/3, 1/3, 0]
+    ]))
