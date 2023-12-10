@@ -53,6 +53,7 @@ def positivity_graph(X: np.ndarray) -> Dict[int, List[int]]:
   Dict[int, List[int]]
     A dictionary of the form {i: [j, k, ...]} where i is the index of a vertex and [j, k, ...] are the indices of the vertices that i is connected to.
     Here, vertices 1 to n represent the rows of A and vertices n + 1 to 2n represent the columns of A. (where n is the number of rows/columns of the square matrix A)
+    The returned graph is an undirectional bipartite graph. There are edges from rows to columns and columns to rows.
   """
   n = X.shape[0]
   G_X = dict()
