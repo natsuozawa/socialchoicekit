@@ -1,5 +1,6 @@
 import sys, copy
 from typing import Dict, List, Tuple, Union
+import numpy as np
 
 from socialchoicekit.utils import check_bipartite_graph
 
@@ -172,7 +173,7 @@ def maximum_cardinality_matching_bipartite(G: Dict[int, List[int]], X: list, Y: 
 
   matchings = []
   for x in X:
-    matched_y = max([flow[(x, y)] for y in Y])
+    matched_y = G[x][np.argmax([flow[(x, y)] for y in G[x]])]
     if (flow[x, matched_y] == 1):
       matchings.append((x, matched_y))
   return matchings
