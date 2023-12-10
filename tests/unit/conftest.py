@@ -84,3 +84,26 @@ def bistochastic_matrix_2():
     [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]
   ])
 
+@pytest.fixture
+def bipartite_graph_undirected():
+  return {
+    0: [3, 4, 5, 6],
+    1: [3, 5],
+    2: [4, 6],
+    3: [0, 1],
+    4: [0, 2],
+    5: [0, 1],
+    6: [0, 2]
+  }
+
+@pytest.fixture
+def bipartite_graph_directed():
+  return {
+    0: [3, 4, 5, 6],
+    1: [3, 5],
+    2: [4, 6],
+    3: [],
+    4: [],
+    5: [],
+    6: []
+  }

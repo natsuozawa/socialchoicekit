@@ -12,7 +12,7 @@ def ford_fulkerson(G: Dict[int, List[Tuple[int, int]]], s: int, t: int) -> Dict[
   Parameters
   ----------
   G : Dict[int, List[Tuple[int, int]]]
-    A directed graph of the form {i: [(j, c), (k, c), ...]} where i is the index of a vertex and [(j, c), (k, c), ...] are the indices of the vertices that i is connected to along with the capacity of the edge.
+    A flow network of the form {i: [(j, c), (k, c), ...]} where i is the index of a vertex and [(j, c), (k, c), ...] are the indices of the vertices that i is connected to along with the capacity of the edge.
     The value of the capacities cannot exceed sys.maxsize.
   s : int
     The index of the source vertex.
@@ -54,7 +54,7 @@ def dfs_path(G: Dict[int, List[Tuple[int, int]]], current: int, sink: int, visit
   Parameters
   ----------
   G : Dict[int, List[Tuple[int, int]]]
-    A directed graph of the form {i: [(j, c), (k, c), ...]} where i is the index of a vertex and [(j, c), (k, c), ...] are the indices of the vertices that i is connected to along with the capacity of the edge.
+    A flow network of the form {i: [(j, c), (k, c), ...]} where i is the index of a vertex and [(j, c), (k, c), ...] are the indices of the vertices that i is connected to along with the capacity of the edge.
   The value of the capacities cannot exceed sys.maxsize.
   current : int
     The index of the current vertex.
@@ -104,9 +104,8 @@ def convert_bipartite_graph_to_flow_network(G: Dict[int, List[int]], X: list, Y:
   Parameters
   ----------
   G : Dict[int, List[int]]
-    A dictionary of the form {i: [j, k, ...]} where i is the index of a vertex and [j, k, ...] are the indices of the vertices that i is connected to.
-    This graph may be directed or undirected. If it is directed, then the edges are assumed to be directed from X to Y.
-    This graph must be bipartite.
+    A bipartite graph of the form {i: [j, k, ...]} where i is the index of a vertex and [j, k, ...] are the indices of the vertices that i is connected to.
+    The graph may be undirected (as in for every edges from x to y there is an edge from y to x) or directed. If it is directed, then the edges are assumed to be directed from X to Y.
   X : list
     The list of the left vertices (in the first partition) in the bipartite graph G.
   Y : list
@@ -123,6 +122,7 @@ def convert_bipartite_graph_to_flow_network(G: Dict[int, List[int]], X: list, Y:
   for v in X:
     network[v] = [(y, 1) for y in G.get(v, [])]
   network[-1] = [(x, 1) for x in X]
+  network[-2] = []
 
   # Remove all edges that originate from Y, as we assume edges are directed from X to Y.
   # Add edges from Y to sink.
