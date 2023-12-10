@@ -3,7 +3,7 @@ import numpy as np
 
 from socialchoicekit.deterministic_scoring import *
 
-class TestDeterministicScoring():
+class TestDeterministicScoring:
   def test_plurality_a(self, profile_a):
     voting_rule = Plurality(tie_breaker="first")
     assert voting_rule.scf(profile_a) == 3

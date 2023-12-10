@@ -3,7 +3,7 @@ import numpy as np
 
 from socialchoicekit.flow import *
 
-class TestFlow():
+class TestFlow:
   def test_convert_bipartite_graph_to_flow_network_undirected(self, bipartite_graph_undirected):
     network = convert_bipartite_graph_to_flow_network(bipartite_graph_undirected, list(range(0, 3)), list(range(3, 7)))
     assert isinstance(network, dict)

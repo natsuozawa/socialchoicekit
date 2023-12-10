@@ -3,7 +3,7 @@ import numpy as np
 
 from socialchoicekit.bistochastic import *
 
-class TestBistochastic():
+class TestBistochastic:
   def test_positivity_graph_without_negative_values(self, bistochastic_matrix_1):
     G = positivity_graph(bistochastic_matrix_1)
     assert isinstance(G, dict)
