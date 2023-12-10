@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from socialchoicekit.flow import convert_bipartite_graph_to_flow_network
+from socialchoicekit.flow import convert_bipartite_graph_to_flow_network, ford_fulkerson
 
 class TestFlow():
   def test_convert_bipartite_graph_to_flow_network_undirected(self, bipartite_graph_undirected):
@@ -23,3 +23,16 @@ class TestFlow():
     assert network[0] == [(3, 1), (4, 1), (5, 1), (6, 1)]
     assert network[1] == [(3, 1), (5, 1)]
     assert network[3] == [(-2, 1)]
+
+  def test_ford_fulkerson_basic_integral(self, flow_network_integral_basic):
+    network, s, t = flow_network_integral_basic
+    flow = ford_fulkerson(network, s, t)
+    assert isinstance(flow, dict)
+    for (u, v) in flow.keys():
+      # Here, due to the nature of the basic flow network as only having binary capacities, the capacity can be assumed to be always 1.
+      assert (v, 1) in network[u]
+    assert flow[(0, 1)] == 1
+    assert flow[(0, 2)] == 1
+    assert flow[(1, 2)] == 0
+    assert flow[(1, 3)] == 1
+    assert flow[(2, 3)] == 1

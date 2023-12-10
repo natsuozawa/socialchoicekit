@@ -1,4 +1,4 @@
-import sys
+import sys, copy
 from typing import Dict, List, Tuple, Union
 
 from socialchoicekit.utils import check_bipartite_graph
@@ -21,31 +21,44 @@ def ford_fulkerson(G: Dict[int, List[Tuple[int, int]]], s: int, t: int) -> Dict[
 
   Returns
   -------
-  Dict[Tuple[int, int]], int]
+  Dict[Tuple[int, int], int]
     The flow network with the maximum flow. The flow network is of the form {(i, j): f} where f is the flow from vertex i to vertex j.
+    This flow network includes paths in the original graph where the flow is zero.
   """
-  flow = dict()
-  for i in G.keys():
-    for j in G[i]:
-      flow[(i, j)] = 0
-
   # Residual graph
-  G_f = G.copy()
+  G_f = copy.deepcopy(G)
+  flow = dict()
+
+  for i in G.keys():
+    for j, _ in G[i]:
+      flow[(i, j)] = 0
+      flow[(j, i)] = 0
+      if all([v != i for (v, _) in G_f[j]]):
+        # Add the reverse edge if it does not exist in the residual graph.
+        G_f[j] += [(i, 0)]
 
   while True:
     path_from_sink_to_source = dfs_path(G_f, s, t, {i: 0 for i in G_f.keys()})
     if path_from_sink_to_source is None:
-      return flow
+      # Only return the flow in the original graph
+      flow_final = dict()
+      for i in G.keys():
+        for j, _ in G[i]:
+          flow_final[(i, j)] = flow[(i, j)]
+      return flow_final
 
-    path, capacity = path_from_sink_to_source
+    path, c_f_p = path_from_sink_to_source
     for i in range(len(path) - 1):
       u = path[i]
       v = path[i + 1]
-      flow[(u, v)] += capacity
-      flow[(v, u)] -= capacity
+      flow[(u, v)] += c_f_p
+      flow[(v, u)] -= c_f_p
+      # Here, the flow network is only updated for the original network.
+      # The residual network in addition gets a flow from v to u with capacity addition of -c_f_p.
       # Update c_f, the capacities of the residual graph. c_f = c - f
-      G_f[u] = [(w, c_f - capacity) if w == v else (w, c_f) for (w, c_f) in G_f[u]]
-      G_f[v] = [(w, c_f + capacity) if w == u else (w, c_f) for (w, c_f) in G_f[v]]
+      # In effect, this changes by +- c_f_p
+      G_f[u] = [(w, c_f - c_f_p) if w == v else (w, c_f) for (w, c_f) in G_f[u]]
+      G_f[v] = [(w, c_f + c_f_p) if w == u else (w, c_f) for (w, c_f) in G_f[v]]
 
 def dfs_path(G: Dict[int, List[Tuple[int, int]]], current: int, sink: int, visited: Dict[int, int]) -> Union[Tuple[List[int], int], None]:
   """
@@ -74,7 +87,7 @@ def dfs_path(G: Dict[int, List[Tuple[int, int]]], current: int, sink: int, visit
     return ([current], sys.maxsize)
   candidates = G[current]
   best_path = None
-  best_capacity = sys.maxsize
+  best_capacity = 0
   for (v, c) in candidates:
     if visited[v] != 0:
       continue
@@ -86,7 +99,7 @@ def dfs_path(G: Dict[int, List[Tuple[int, int]]], current: int, sink: int, visit
         # As a heuristic, return the path with the best capacity.
         if min(capacity, c) > best_capacity:
           best_path = [current] + path
-          best_capacity = capacity
+          best_capacity = min(capacity, c)
   if best_path is not None:
     return (best_path, best_capacity)
   return None
