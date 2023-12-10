@@ -1,14 +1,17 @@
 from socialchoicekit.deterministic_scoring import Plurality
 import numpy as np
+from typing import cast
 import pytest
 
 class TestBasicVoting:
   def test_tie_breaker(self, profile_tie):
     voting_rule_without_tie_breaker = Plurality(tie_breaker="accept")
-    winners = voting_rule_without_tie_breaker.scf(profile_tie)
+    # We safely assume that scf does not return int when tie_breaker is set to "accept"
+    winners: np.ndarray = cast(np.ndarray, voting_rule_without_tie_breaker.scf(profile_tie))
     assert set(winners) == set(profile_tie[0])
     voting_rule_random = Plurality(tie_breaker="random")
     winner = voting_rule_random.scf(profile_tie)
+    new_winner = winner
     assert winner in winners
     for _ in range(int(1e8)):
       # Check to see that there is a different winner selected at least once
