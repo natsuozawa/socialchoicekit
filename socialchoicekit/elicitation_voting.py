@@ -82,6 +82,8 @@ class LambdaPRV(BaseElicitationVoting):
 
   def score(self, valuation_profile: np.ndarray):
     """
+    The scoring function for this voting rule. Returns a list of alternatives with their scores.
+
     Parameters
     ----------
     valuation_profile: np.ndarray
@@ -103,6 +105,8 @@ class LambdaPRV(BaseElicitationVoting):
 
   def scf(self, valuation_profile: np.ndarray):
     """
+    The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
+
     Parameters
     ----------
     valuation_profile: np.ndarray
@@ -151,6 +155,8 @@ class KARV(BaseElicitationVoting):
 
   def score(self, profile: np.ndarray, valuation_profile: np.ndarray):
     """
+    The scoring function for this voting rule. Returns a list of alternatives with their scores.
+
     Parameters
     ----------
     profile: np.ndarray or None
@@ -207,6 +213,8 @@ class KARV(BaseElicitationVoting):
 
   def scf(self, profile: np.ndarray, valuation_profile: np.ndarray):
     """
+    The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
+
     Parameters
     ----------
     profile: np.ndarray or None
