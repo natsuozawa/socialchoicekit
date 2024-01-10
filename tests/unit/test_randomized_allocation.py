@@ -17,7 +17,6 @@ class TestRandomizedAllocation:
     allocation = rsd.scf(basic_profile_1)
     assert np.all(allocation == np.array([1, 2, 4]))
 
-
   @pytest.fixture
   def basic_profile_2(self):
     return np.array([
