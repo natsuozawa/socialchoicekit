@@ -69,7 +69,7 @@ def dfs_path(G: Dict[int, List[Tuple[int, int]]], current: int, sink: int, visit
   ----------
   G : Dict[int, List[Tuple[int, int]]]
     A flow network of the form {i: [(j, c), (k, c), ...]} where i is the index of a vertex and [(j, c), (k, c), ...] are the indices of the vertices that i is connected to along with the capacity of the edge.
-  The value of the capacities cannot exceed sys.maxsize.
+    The value of the capacities cannot exceed sys.maxsize.
   current : int
     The index of the current vertex.
   sink : int
