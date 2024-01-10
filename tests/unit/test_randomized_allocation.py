@@ -9,7 +9,7 @@ class TestRandomizedAllocation:
     return np.array([
       [1, 2, 3, 4],
       [2, 1, np.nan, np.nan],
-      [3, np.nan, 2, 1]
+      [3, np.nan, 2, 1],
     ])
 
   def test_random_serial_dictatorship_basic_1(self, basic_profile_1):
@@ -23,7 +23,7 @@ class TestRandomizedAllocation:
       [1, 2, 3, 4],
       [2, 1, np.nan, np.nan],
       [3, np.nan, 2, 1],
-      [np.nan, np.nan, np.nan, np.nan]
+      [np.nan, np.nan, np.nan, np.nan],
     ])
 
   def test_random_serial_dictatorship_basic_2(self, basic_profile_2):
@@ -37,7 +37,7 @@ class TestRandomizedAllocation:
       [1, 2, 3, 4],
       [1, 2, 3, np.nan],
       [3, np.nan, 2, 1],
-      [2, 1, 3, np.nan]
+      [2, 1, 3, np.nan],
     ])
 
   def test_probabilistic_serial_3(self, basic_profile_3):
@@ -47,7 +47,7 @@ class TestRandomizedAllocation:
       [1/2, 1/6, 1/3, 0],
       [1/2, 1/6, 1/3, 0],
       [0, 0, 0, 1],
-      [0, 2/3, 1/3, 0]
+      [0, 2/3, 1/3, 0],
     ]))
 
   @pytest.fixture
@@ -61,5 +61,5 @@ class TestRandomizedAllocation:
       [1/2, 0, 1/2, 0],
       [1/2, 0, 1/2, 0],
       [0, 0, 0, 1],
-      [0, 1, 0, 0]
+      [0, 1, 0, 0],
     ]))
