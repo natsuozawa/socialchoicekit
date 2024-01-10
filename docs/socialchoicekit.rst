@@ -4,6 +4,22 @@ socialchoicekit package
 Submodules
 ----------
 
+socialchoicekit.bistochastic module
+-----------------------------------
+
+.. automodule:: socialchoicekit.bistochastic
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+socialchoicekit.deterministic\_allocation module
+------------------------------------------------
+
+.. automodule:: socialchoicekit.deterministic_allocation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 socialchoicekit.deterministic\_multiround module
 ------------------------------------------------
 
@@ -32,6 +48,22 @@ socialchoicekit.elicitation\_voting module
 ------------------------------------------
 
 .. automodule:: socialchoicekit.elicitation_voting
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+socialchoicekit.flow module
+---------------------------
+
+.. automodule:: socialchoicekit.flow
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+socialchoicekit.randomized\_allocation module
+---------------------------------------------
+
+.. automodule:: socialchoicekit.randomized_allocation
    :members:
    :undoc-members:
    :show-inheritance:
