@@ -31,6 +31,7 @@ rfc3986==2.0.0
 rich==13.7.0
 scipy==1.10.1
 snowballstemmer==2.2.0
+socialchoice-kit==0.0.1
 Sphinx==7.1.2
 sphinxcontrib-applehelp==1.0.4
 sphinxcontrib-devhelp==1.0.2
