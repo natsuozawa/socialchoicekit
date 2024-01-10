@@ -8,6 +8,8 @@ class MaximumWeightMatching:
   """
   The maximum weight matching algorithm, which solves a special case of the minimum cost flow problem, finds an optimal matching between agents and items given the full cardinal utilities of the agents.
 
+  Uses the scipy implementation of LAPJVsp algorithm.
+
   Parameters
   ----------
   zero_indexed : bool
