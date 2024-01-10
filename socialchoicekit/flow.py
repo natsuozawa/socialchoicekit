@@ -173,7 +173,7 @@ def maximum_cardinality_matching_bipartite(G: Dict[int, List[int]], X: list, Y: 
 
   matchings = []
   for x in X:
-    matched_y = G[x][np.argmax([flow[(x, y)] for y in G[x]])]
+    matched_y = G[x][np.argmax(np.array([flow[(x, y)] for y in G[x]]))]
     if (flow[x, matched_y] == 1):
       matchings.append((x, matched_y))
   return matchings
