@@ -128,7 +128,7 @@ class LambdaPRV(BaseElicitationVoting):
 
 class KARV(BaseElicitationVoting):
   """
-  k-Acceptable Range Voting (Amanatidis et al. 2021) is a generalization of Lambda-Prefix Range Voting that queries every agent at the first k positions.
+  k-Acceptable Range Voting (Amanatidis et al. 2021) is a generalization of Lambda-Prefix Range Voting that partitions alternatives into k + 1 sets for every agent to create a simulated value function using binary search.
 
   Parameters
   ----------

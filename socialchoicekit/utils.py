@@ -1,7 +1,10 @@
 import numpy as np
 from typing import Dict, List, Union
 
-def check_profile(profile: np.ndarray) -> None:
+def check_profile(
+  profile: np.ndarray,
+  is_complete: bool = True,
+) -> None:
   """
   Checks that the profile is a numpy array with the correct dimensions.
 
@@ -9,6 +12,9 @@ def check_profile(profile: np.ndarray) -> None:
   ----------
   profile: np.ndarray
     This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+
+  is_complete: bool
+    If True, the profile does not have any NaN values. If False, the profile has NaN values. True by default.
 
   Raises
   ------
@@ -20,9 +26,9 @@ def check_profile(profile: np.ndarray) -> None:
   """
   if isinstance(profile, np.ndarray):
     if np.ndim(profile) == 2:
-      if np.isnan(np.sum(profile)):
+      if is_complete and np.isnan(np.sum(profile)):
         raise ValueError("Profile cannot contain NaN values")
-      if np.amin(profile) == 1 and np.amax(profile) == profile.shape[1]:
+      if np.nanmin(profile) == 1 and np.nanmax(profile) == profile.shape[1]:
         return
       raise ValueError("Profile must contain exactly integers from 1 to M")
     raise ValueError("Profile must be a two-dimensional array")
@@ -41,7 +47,7 @@ def check_valuation_profile(
       This is the (partial) cardinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the utility value (voter's cardinal preference) for alternative j. If the value is unknown, the element would be NaN.
 
     is_complete: bool
-      If True, the valuation profile does not have any NaN values. If False, the valuation profile has NaN values.
+      If True, the valuation profile does not have any NaN values. If False, the valuation profile has NaN values. False by default.
   """
   if isinstance(valuation_profile, np.ndarray):
     if np.ndim(valuation_profile) == 2:

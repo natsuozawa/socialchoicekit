@@ -16,14 +16,14 @@ class MaximumWeightMatching:
     If True, the output of the social welfare function and social choice function will be zero-indexed. If False, the output will be one-indexed. One-indexed by default.
   """
   def __init__(
-      self,
-      zero_indexed: bool = False
+    self,
+    zero_indexed: bool = False
   ) -> None:
     self.index_fixer = 0 if zero_indexed else 1
 
   def scf(
-      self,
-      valuation_profile: np.ndarray
+    self,
+    valuation_profile: np.ndarray
   ) -> np.ndarray:
     """
     The (provisional) social choice function, which takes in a valuation profile and returns an allocation.

@@ -1,7 +1,7 @@
 import numpy as np
 
 from socialchoicekit.bistochastic import birkhoff_von_neumann
-from socialchoicekit.utils import check_square_matrix
+from socialchoicekit.utils import check_profile, check_square_matrix
 
 class RandomSerialDictatorship:
   """
@@ -25,13 +25,14 @@ class RandomSerialDictatorship:
     Parameters
     ----------
     profile: np.ndarray
-      A M-array, where M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
+      A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
 
     Returns
     -------
     np.ndarray
       A numpy array containing the allocated item for each agent or np.nan if the agent is unallocated.
     """
+    check_profile(profile, is_complete=False)
     pref = np.array(profile)
     allocation = np.full(profile.shape[0], np.nan)
 
