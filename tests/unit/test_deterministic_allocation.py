@@ -16,7 +16,7 @@ class TestDeterministicAllocation:
   def test_maximum_weight_matching_basic_1(self, basic_valuation_profile_1):
     mwm = MaximumWeightMatching()
     allocation = mwm.scf(basic_valuation_profile_1)
-    assert np.all(allocation == np.array([0, 1, 2, 3]))
+    assert np.all(allocation == np.array([1, 2, 3, 4]))
 
   @pytest.fixture
   def basic_valuation_profile_2(self):
@@ -31,7 +31,7 @@ class TestDeterministicAllocation:
     mwm = MaximumWeightMatching()
     allocation = mwm.scf(basic_valuation_profile_2)
     # Check that an allocation is returned.
-    assert np.all(np.sort(allocation) == np.array([0, 1, 2, 3]))
+    assert np.all(np.sort(allocation) == np.array([1, 2, 3, 4]))
 
   @pytest.fixture
   def basic_valuation_profile_3(self):
@@ -46,7 +46,7 @@ class TestDeterministicAllocation:
   def test_maximum_weight_matching_basic_3(self, basic_valuation_profile_3):
     mwm = MaximumWeightMatching()
     allocation = mwm.scf(basic_valuation_profile_3)
-    assert np.all(allocation == np.array([2, 3, 0, 4, 1]))
+    assert np.all(allocation == np.array([3, 4, 1, 5, 2]))
 
   @pytest.fixture
   def invalid_valuation_profile_1(self):

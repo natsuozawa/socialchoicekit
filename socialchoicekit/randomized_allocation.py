@@ -42,7 +42,7 @@ class RandomSerialDictatorship:
       if np.all(np.isnan(pref[agent])):
         continue
       item = np.nanargmin(pref[agent])
-      allocation[agent] = item + self.index_fixer
+      allocation[agent] = int(item) + self.index_fixer
       pref[:, item] = np.nan
 
     return allocation
@@ -162,7 +162,7 @@ class SimultaneousEating:
     bistochastic = self.bistochastic(profile, speeds)
     decomposition = birkhoff_von_neumann(bistochastic)
     permutation_probabilities = [p for p, _ in decomposition]
-    chosen_permutation = decomposition[np.random.choice(1, len(permutation_probabilities), p=permutation_probabilities)][1]
+    chosen_permutation = decomposition[np.random.choice(1, len(permutation_probabilities), p=np.array(permutation_probabilities))][1]
     return np.argmax(chosen_permutation, axis=1) + self.index_fixer
 
 class ProbabilisticSerial:

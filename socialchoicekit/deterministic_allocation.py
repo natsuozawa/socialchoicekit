@@ -43,4 +43,4 @@ class MaximumWeightMatching:
 
     biadjacency_matrix = csr_matrix(np.where(np.isnan(valuation_profile), 0, valuation_profile))
     _, col_ind = min_weight_full_bipartite_matching(biadjacency_matrix, maximize=True)
-    return col_ind
+    return col_ind + self.index_fixer
