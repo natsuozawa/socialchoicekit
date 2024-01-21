@@ -153,7 +153,11 @@ class KARV(BaseElicitationVoting):
     super().__init__(tie_breaker, zero_indexed)
     self.k = k
 
-  def score(self, profile: np.ndarray, valuation_profile: np.ndarray):
+  def score(
+    self,
+    profile: np.ndarray,
+    valuation_profile: np.ndarray
+  ) -> np.ndarray:
     """
     The scoring function for this voting rule. Returns a list of alternatives with their scores.
 
@@ -171,7 +175,7 @@ class KARV(BaseElicitationVoting):
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
     check_profile(profile)
-    check_valuation_profile(valuation_profile, is_complete=True)
+    check_valuation_profile(valuation_profile, is_complete=False)
 
     n = profile.shape[0]
     m = profile.shape[1]

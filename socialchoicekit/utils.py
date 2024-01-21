@@ -28,8 +28,9 @@ def check_profile(
     if np.ndim(profile) == 2:
       if is_complete and np.isnan(np.sum(profile)):
         raise ValueError("Profile cannot contain NaN values")
-      if np.nanmin(profile) == 1 and np.nanmax(profile) == profile.shape[1]:
-        return
+      if np.nanmin(profile) == 1:
+        if not is_complete or np.nanmax(profile) == profile.shape[1]:
+          return
       raise ValueError("Profile must contain exactly integers from 1 to M")
     raise ValueError("Profile must be a two-dimensional array")
   raise ValueError("Profile is not in a recognized data format")
