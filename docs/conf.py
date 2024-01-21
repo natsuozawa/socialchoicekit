@@ -11,7 +11,7 @@ sys.path.insert(0, pathlib.Path(__file__).parents[1].resolve().as_posix())
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'socialchoice-kit'
-copyright = '2023, Natsu Ozawa'
+copyright = '2023-2024 Natsu Ozawa'
 author = 'Natsu Ozawa'
 
 # -- General configuration ---------------------------------------------------
