@@ -44,6 +44,22 @@ socialchoicekit.deterministic\_tournament module
    :undoc-members:
    :show-inheritance:
 
+socialchoicekit.elicitation\_allocation module
+----------------------------------------------
+
+.. automodule:: socialchoicekit.elicitation_allocation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+socialchoicekit.elicitation\_utils module
+-----------------------------------------
+
+.. automodule:: socialchoicekit.elicitation_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 socialchoicekit.elicitation\_voting module
 ------------------------------------------
 
@@ -56,6 +72,14 @@ socialchoicekit.flow module
 ---------------------------
 
 .. automodule:: socialchoicekit.flow
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+socialchoicekit.preflib\_utils module
+-------------------------------------
+
+.. automodule:: socialchoicekit.preflib_utils
    :members:
    :undoc-members:
    :show-inheritance:
