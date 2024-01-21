@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from socialchoicekit.elicitation_allocation import LambdaTSF
+from socialchoicekit.elicitation_utils import ValuationProfileElicitor
 
 class TestElicitationAllocation:
   @pytest.fixture
@@ -22,9 +23,10 @@ class TestElicitationAllocation:
       [0.1, 0.1, 0.4, 0.4],
     ])
 
-  def test_maximum_weight_matching_basic_1(self, basic_profile_1, basic_valuation_profile_1):
+  def test_lambda_tsf_basic_1(self, basic_profile_1, basic_valuation_profile_1):
     ltsf = LambdaTSF(lambda_=2)
-    allocation = ltsf.scf(basic_profile_1, basic_valuation_profile_1)
+    vpe = ValuationProfileElicitor(basic_valuation_profile_1)
+    allocation = ltsf.scf(basic_profile_1, vpe)
     assert np.all(allocation == np.array([1, 2, 3, 4]))
 
   @pytest.fixture
@@ -47,9 +49,10 @@ class TestElicitationAllocation:
       [0.4, 0.1, 0.4, 0.1, np.nan],
     ])
 
-  def test_maximum_weight_matching_basic_3(self, basic_profile_3, basic_valuation_profile_3):
+  def test_lambda_tsf_basic_3(self, basic_profile_3, basic_valuation_profile_3):
     ltsf = LambdaTSF(lambda_=3)
-    allocation = ltsf.scf(basic_profile_3, basic_valuation_profile_3)
+    vpe = ValuationProfileElicitor(basic_valuation_profile_3)
+    allocation = ltsf.scf(basic_profile_3, vpe)
     assert np.all(allocation == np.array([3, 4, 1, 5, 2]))
 
   @pytest.fixture
@@ -65,7 +68,8 @@ class TestElicitationAllocation:
       [np.nan, 1],
     ])
 
-  def test_maximum_weight_matching_invalid_1(self,invalid_profile_1,  invalid_valuation_profile_1):
+  def test_lambda_tsf_invalid_1(self,invalid_profile_1,  invalid_valuation_profile_1):
     ltsf = LambdaTSF(lambda_=1)
+    vpe = ValuationProfileElicitor(invalid_valuation_profile_1)
     with pytest.raises(ValueError):
-      ltsf.scf(invalid_profile_1, invalid_valuation_profile_1)
+      ltsf.scf(invalid_profile_1, vpe)
