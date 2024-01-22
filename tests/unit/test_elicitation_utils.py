@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from socialchoicekit.elicitation_utils import ValuationProfileElicitor, LambdaElicitor
+from socialchoicekit.elicitation_utils import ValuationProfileElicitor, SynchronousStdInElicitor, LambdaElicitor
 
 class TestElicitationUtils:
   @pytest.fixture
@@ -24,6 +24,17 @@ class TestElicitationUtils:
     assert vpe_2.elicitation_count == 3
     vpe_2.elicit(0, 0)
     assert vpe_2.elicitation_count == 4
+
+  def test_synchronous_stdin_elicitor(self, agh_course_selection_instance, monkeypatch, capfd):
+    ssie = SynchronousStdInElicitor(preflib_instance=agh_course_selection_instance)
+    monkeypatch.setattr("builtins.input", lambda: 1)
+    assert ssie.elicit(0, 0) == 1
+    assert ssie.elicit(0, 1) == 1
+    assert ssie.elicit(0, 0) == 1
+    assert ssie.elicitation_count == 2
+    out, _ = capfd.readouterr()
+    assert out == "Agent 1, what is your preference for alternative Course 1?\nAgent 1, what is your preference for alternative Course 2?\n"
+
 
   def test_lambda_elicitor(self, basic_profile_1):
     vpe = ValuationProfileElicitor(basic_profile_1)

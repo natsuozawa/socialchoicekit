@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
 
+from preflibtools.instances import OrdinalInstance
+
 @pytest.fixture
 def profile_a():
   return np.array([
@@ -131,3 +133,9 @@ def flow_network_integral_2():
     4: [(5, 12)],
     5: []
   }, 0, 5)
+
+@pytest.fixture
+def agh_course_selection_instance():
+  instance = OrdinalInstance()
+  instance.parse_url("https://www.preflib.org/static/data/agh/00009-00000001.soc")
+  return instance
