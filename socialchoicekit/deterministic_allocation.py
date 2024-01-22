@@ -53,6 +53,8 @@ def root_n_serial_dictatorship(
 
   The algorithm assigns at most root n agents to each item based on a serial dictatorship algorithm. The algorithm is deterministic - hence, the order of the agents matters.
 
+  Note that the return values are 0-indexed.
+
   Parameters
   ----------
   profile: np.ndarray

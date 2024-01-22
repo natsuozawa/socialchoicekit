@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from socialchoicekit.deterministic_allocation import MaximumWeightMatching
+from socialchoicekit.deterministic_allocation import MaximumWeightMatching, root_n_serial_dictatorship
 
 class TestDeterministicAllocation:
   @pytest.fixture
@@ -59,3 +59,17 @@ class TestDeterministicAllocation:
     mwm = MaximumWeightMatching()
     with pytest.raises(ValueError):
       mwm.scf(invalid_valuation_profile_1)
+
+  @pytest.fixture
+  def basic_profile_1(self):
+    return np.array([
+      [1, 2, 4, 3],
+      [3, 4, 2, 1],
+      [3, 4, 2, 1],
+      [4, 3, 1, 2],
+    ])
+
+  def test_root_n_serial_dictatorship_basic_1(self, basic_profile_1):
+    sufficiently_representative_assignment = root_n_serial_dictatorship(basic_profile_1)
+    # Adjusted for 0-indexed response
+    assert np.all(sufficiently_representative_assignment + 1 == np.array([1, 4, 4, 3]))
