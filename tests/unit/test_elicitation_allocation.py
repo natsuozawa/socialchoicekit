@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from socialchoicekit.elicitation_allocation import LambdaTSF
+from socialchoicekit.elicitation_allocation import LambdaTSF, MatchTwoQueries
 from socialchoicekit.elicitation_utils import ValuationProfileElicitor
 
 class TestElicitationAllocation:
@@ -73,3 +73,9 @@ class TestElicitationAllocation:
     vpe = ValuationProfileElicitor(invalid_valuation_profile_1)
     with pytest.raises(ValueError):
       ltsf.scf(invalid_profile_1, vpe)
+
+  def test_match_two_queries_basic_1(self, basic_profile_1, basic_valuation_profile_1):
+    mtq = MatchTwoQueries()
+    vpe = ValuationProfileElicitor(basic_valuation_profile_1)
+    allocation = mtq.scf(basic_profile_1, vpe)
+    assert np.all(allocation == np.array([1, 2, 3, 4]))

@@ -83,4 +83,4 @@ def root_n_serial_dictatorship(
     if allocation[agent] == np.nan:
       # This is possible if profile has a lot of NaNs.
       raise ValueError("No allocation found")
-  return allocation
+  return allocation.astype(int)
