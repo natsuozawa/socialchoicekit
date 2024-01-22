@@ -1,7 +1,7 @@
 import numpy as np
 from preflibtools.instances import OrdinalInstance
 
-from typing import Union
+from typing import Union, Callable
 
 from socialchoicekit.utils import check_valuation_profile
 
@@ -11,14 +11,20 @@ class Elicitor:
 
   Parameters
   ----------
+  memoize: bool
+    IF True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
   zero_indexed : bool
     If True, the input of the elicit function will be zero-indexed. If False, the input will be one-indexed. One-indexed by default.
   """
   def __init__(
     self,
+    memoize: bool = True,
     zero_indexed: bool = False,
   ) -> None:
     self.elicitation_count = 0
+    self.memoize = memoize
+    if memoize:
+      self.memoized_values = {}
     self.index_fixer = 0 if zero_indexed else 1
 
   def elicit(
@@ -43,8 +49,15 @@ class Elicitor:
     """
     agent += self.index_fixer
     alternative += self.index_fixer
+    if self.memoize:
+      memoized_value = self.memoized_values.get((agent, alternative))
+      if memoized_value is not None:
+        return memoized_value
     self.elicitation_count += 1
-    return self._elicit_impl(agent, alternative)
+    elicited_value = self._elicit_impl(agent, alternative)
+    if self.memoize:
+      self.memoized_values[(agent, alternative)] = elicited_value
+    return elicited_value
 
   def elicit_multiple(
       self,
@@ -95,14 +108,18 @@ class ValuationProfileElicitor(Elicitor):
   ----------
   valuation_profile: np.ndarray
     This is the cardinal profile. A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's preference for alternative j. If the agent finds an alternative unacceptable, the element would be np.nan.
+
+  memoize: bool
+    IF True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
   """
   def __init__(
     self,
     valuation_profile: np.ndarray,
+    memoize: bool = True,
   ) -> None:
     check_valuation_profile(valuation_profile, is_complete=False)
     self.valuation_profile = valuation_profile
-    super().__init__(zero_indexed=True)
+    super().__init__(memoize=memoize, zero_indexed=True)
 
   def _elicit_impl(
     self,
@@ -120,14 +137,18 @@ class SynchronousStdInElicitor(Elicitor):
   ----------
   zero_indexed : bool
     If True, the input of the elicit function will be zero-indexed. If False, the input will be one-indexed. One-indexed by default.
+
+  memoize: bool
+    IF True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
   """
   def __init__(
     self,
     preflib_instance: Union[OrdinalInstance, None] = None,
+    memoize: bool = True,
     zero_indexed: bool = False,
   ) -> None:
     self.preflib_instance = preflib_instance
-    super().__init__(zero_indexed=zero_indexed)
+    super().__init__(memoize=memoize, zero_indexed=zero_indexed)
 
   def _elicit_impl(
     self,
@@ -149,16 +170,19 @@ class LambdaElicitor(Elicitor):
   ----------
   elicitation_function: Callable[[int, int], float]
     A function that takes in the agent's index and the alternative's index and returns the agent's preference for the alternative.
+  memoize: bool
+    IF True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
   zero_indexed : bool
     If True, the input of the elicit function will be zero-indexed. If False, the input will be one-indexed. Zero-indexed by default.
   """
   def __init__(
     self,
-    elicitation_function,
+    elicitation_function: Callable[[int, int], float],
+    memoize: bool = True,
     zero_indexed: bool = True,
   ) -> None:
     self.elicitation_function = elicitation_function
-    super().__init__(zero_indexed=zero_indexed)
+    super().__init__(memoize=memoize, zero_indexed=zero_indexed)
 
   def _elicit_impl(
     self,
