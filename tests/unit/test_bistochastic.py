@@ -4,6 +4,24 @@ import numpy as np
 from socialchoicekit.bistochastic import *
 
 class TestBistochastic:
+  @pytest.fixture
+  def bistochastic_matrix_1(self):
+    return 0.4 * np.array([
+      [0, 0, 1, 0], [1, 0, 0, 0], [0, 0, 0, 1], [0, 1, 0, 0]
+    ]) + 0.6 * np.array([
+      [0, 1, 0, 0], [0, 0, 0, 1], [1, 0, 0, 0], [0, 0, 1, 0]
+    ])
+
+  @pytest.fixture
+  def bistochastic_matrix_2(self):
+    return 0.5 * np.array([
+      [0, 0, 1, 0], [1, 0, 0, 0], [0, 0, 0, 1], [0, 1, 0, 0]
+    ]) + 0.6 * np.array([
+      [0, 1, 0, 0], [0, 0, 0, 1], [1, 0, 0, 0], [0, 0, 1, 0]
+    ]) - 0.1 * np.array([
+      [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]
+    ])
+
   def test_positivity_graph_without_negative_values(self, bistochastic_matrix_1):
     G = positivity_graph(bistochastic_matrix_1)
     assert isinstance(G, dict)

@@ -4,6 +4,49 @@ from typing import cast
 import pytest
 
 class TestBasicVoting:
+  @pytest.fixture
+  def profile_single(self):
+    return np.array([[1]])
+
+  @pytest.fixture
+  def profile_empty(self):
+    return np.array([[]])
+
+  @pytest.fixture
+  def profile_1d(self):
+    return np.array([1, 2, 3, 4, 5])
+
+  @pytest.fixture
+  def profile_3d(self):
+    return np.array([
+      [[1, 2, 3], [2, 3, 1], [3, 1, 2]],
+      [[1, 3, 2], [3, 1, 2], [3, 1, 2]],
+      [[2, 1, 3], [2, 1, 3], [2, 3, 1]],
+    ])
+
+  @pytest.fixture
+  def profile_repeat(self):
+    return np.array([
+      [1, 2, 4, 3, 8, 5, 3, 7],
+      [4, 5, 1, 2, 4, 6, 8, 3],
+      [3, 7, 1, 2, 4, 6, 8, 5],
+    ])
+
+  @pytest.fixture
+  def profile_negative(self, profile_a):
+    return profile_a - 2
+
+  @pytest.fixture
+  def profile_invalid_alternative(self, profile_a):
+    return profile_a + 1
+
+  @pytest.fixture
+  def profile_tie(self):
+    return np.array([
+      [1, 2],
+      [2, 1],
+    ])
+
   def test_tie_breaker(self, profile_tie):
     voting_rule_without_tie_breaker = Plurality(tie_breaker="accept")
     # We safely assume that scf does not return int when tie_breaker is set to "accept"

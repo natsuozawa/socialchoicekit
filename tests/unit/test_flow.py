@@ -4,6 +4,55 @@ import numpy as np
 from socialchoicekit.flow import *
 
 class TestFlow:
+
+  @pytest.fixture
+  def bipartite_graph_undirected(self):
+    return {
+      0: [3, 4, 5, 6],
+      1: [3, 5],
+      2: [4, 6],
+      3: [0, 1],
+      4: [0, 2],
+      5: [0, 1],
+      6: [0, 2]
+    }
+
+  @pytest.fixture
+  def bipartite_graph_directed(self):
+    return {
+      0: [3, 4, 5, 6],
+      1: [3, 5],
+      2: [4, 6],
+      3: [],
+      4: [],
+      5: [],
+      6: []
+    }
+
+  @pytest.fixture
+  def flow_network_integral_1(self):
+    """
+    A basic general (non bipartite) flow network with integral capacities.
+    """
+    return ({
+      0: [(1, 1), (2, 1)],
+      1: [(2, 1), (3, 1)],
+      2: [(3, 1)],
+      3: []
+    }, 0, 3)
+
+  # Borrowed from Aizu Online Judge test cases
+  @pytest.fixture
+  def flow_network_integral_2(self):
+    return ({
+      0: [(1, 1), (2, 12)],
+      1: [(3, 2)],
+      2: [(1, 6), (3, 5), (4, 7)],
+      3: [(4, 10), (5, 3)],
+      4: [(5, 12)],
+      5: []
+    }, 0, 5)
+
   def test_convert_bipartite_graph_to_flow_network_undirected(self, bipartite_graph_undirected):
     network = convert_bipartite_graph_to_flow_network(bipartite_graph_undirected, list(range(0, 3)), list(range(3, 7)))
     assert isinstance(network, dict)
