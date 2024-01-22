@@ -44,3 +44,41 @@ class MaximumWeightMatching:
     biadjacency_matrix = csr_matrix(np.where(np.isnan(valuation_profile), 0, valuation_profile))
     _, col_ind = min_weight_full_bipartite_matching(biadjacency_matrix, maximize=True)
     return col_ind + self.index_fixer
+
+def root_n_serial_dictatorship(
+  profile: np.ndarray
+) -> np.ndarray:
+  """
+  Root n serial dictatorship is a subroutine used in the Match-TwoQueries routine (Amanatidis et al. 2022) for elicitation allocation. This does not compute an approriate allocation. Instead, it generates a 'sufficiently representative assignment'.
+
+  The algorithm assigns at most root n agents to each item based on a serial dictatorship algorithm. The algorithm is deterministic - hence, the order of the agents matters.
+
+  Parameters
+  ----------
+  profile: np.ndarray
+    A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the agent's preference for item j. If the agent finds an item unacceptable, the element would be np.nan.
+
+  Returns
+  -------
+  np.ndarray
+    A numpy array containing the allocated item for each agent or np.nan if the agent is unallocated.
+  """
+  n = profile.shape[0]
+  m = profile.shape[1]
+
+  ranked_alternatives = np.argsort(profile, axis=1)
+  # Element j is the number of times item j was allocated so far.
+  allocation_count = np.zeros(m)
+  # Element i is the item that agent i is allocated to.
+  allocation = np.full(n, np.nan)
+
+  for agent in range(n):
+    for alternative in ranked_alternatives[agent]:
+      if allocation_count[alternative] < np.sqrt(n):
+        allocation_count[alternative] += 1
+        allocation[agent] = alternative
+        break
+    if allocation[agent] == np.nan:
+      # This is possible if profile has a lot of NaNs.
+      raise ValueError("No allocation found")
+  return allocation
