@@ -1,0 +1,117 @@
+import numpy as np
+
+from typing import List, Tuple
+import heapq
+
+from socialchoicekit.utils import check_profile
+
+class ResidentOrientedGaleShapley:
+  """
+  Resident-oriented Gale Shapley algorithm (RGS) is a deferred acceptance algorithm that finds a stable matching in the two sided matching setting. It is resident optimal.
+
+  Parameters
+  ----------
+  zero_indexed : bool
+    If True, the output of the social choice function will be zero-indexed. If False, the output will be one-indexed. One-indexed by default.
+  """
+  def __init__(
+    self,
+    zero_indexed: bool = False,
+  ):
+    self.index_fixer = 0 if zero_indexed else 1
+
+  def scf(
+    self,
+    resident_profile: np.ndarray,
+    hospital_profile: np.ndarray,
+    c: np.ndarray,
+  ) -> List[Tuple[int, int]]:
+    """
+    resident_profile : np.ndarray
+      A (N, M) array, where N is the number of residents and M is the number of hospitals. The element at (i, j) indicates the resident's preference for hospital j, where 1 is the most preferred hospital. If the resident finds a hospital unacceptable, the element would be np.nan.
+
+    hospital_profile : np.ndarray
+      A (M, N) array, where M is the number of hospitals and N is the number of residents. The element at (i, j) indicates the hospital's preference for resident j, where 1 is the most preferred resident. If the hospital finds a resident unacceptable, the element would be np.nan.
+
+    c: np.ndarray
+      A M-array containing the capacities of the hospitals.
+
+    Returns
+    -------
+    List[Tuple[int, int]]
+      A list containing assignments (resident, hospital) for each assignment.
+    """
+    check_profile(resident_profile, is_complete=False)
+    check_profile(hospital_profile, is_complete=False)
+
+    n = resident_profile.shape[0]
+    m = resident_profile.shape[1]
+
+    if n != hospital_profile.shape[1] or m != hospital_profile.shape[0]:
+      raise ValueError("The resident profile and hospital profile dimensions do not match.")
+
+    # Decrease by one because we will be using 0-indexing to access the ranked versions of these profiles.
+    resident_profile = resident_profile - 1
+    hospital_profile = hospital_profile - 1
+
+    # Key: resident, value = the last hospital the resident applied to
+    resident_applications = {}
+    # Key: hospital, value = priority queue of residents the hospital is matched to,
+    # where each resident is expressed as the ranked position for that hospital.
+    hospital_waiting_lists = {i: [] for i in range(m)}
+
+    # NaN will be put last.
+    ranked_resident_profile = np.argsort(resident_profile, axis=1)
+    ranked_hospital_profile = np.argsort(hospital_profile, axis=1)
+
+    # Initially, everyone applies.
+    next_current_applicants = np.ones(n, dtype=int)
+
+    while True:
+      if np.all(next_current_applicants != 1):
+        break
+
+      # Copy because we don't want the modification to take effect until the next iteration of the loop.
+      current_applicants = np.array(next_current_applicants)
+
+      # resident, next_hospital, dropped_resident are 0-indexed positions originally supplied in the input.
+      # last_applied_hospital_rank is a 0-indexed position in the ranked resident profile.
+      for resident in range(n):
+        if current_applicants[resident] == 0 or current_applicants[resident] == 2:
+          # Resident already has a match or rejection is confirmed.
+          continue
+
+        last_applied_hospital_rank = resident_applications.get(resident, -1)
+        next_hospital = ranked_resident_profile[resident, last_applied_hospital_rank + 1]
+        if np.isnan(resident_profile[resident, next_hospital]):
+          # Candidate has applied to all hospitables they find acceptable. (Yet have not gotten accepted into any)
+          next_current_applicants[resident] = 2
+          continue
+
+        resident_applications[resident] = last_applied_hospital_rank + 1
+
+        if np.isnan(hospital_profile[next_hospital, resident]):
+          # Candidate is unacceptable to the hospital. Auto-rejected.
+          continue
+
+        hospital_waiting_list = hospital_waiting_lists.get(next_hospital, [])
+        # Negate resident rank because heapq is a min heap.
+        heapq.heappush(hospital_waiting_list, int(hospital_profile[next_hospital, resident] * -1))
+        next_current_applicants[resident] = 0
+
+        if len(hospital_waiting_list) <= c[next_hospital]:
+          # Hospital has not reached capacity yet.
+          continue
+
+        # Hospital has reached capacity.
+        # Revert back from negated resident rank
+        dropped_resident = ranked_hospital_profile[next_hospital, heapq.heappop(hospital_waiting_list) * -1]
+        next_current_applicants[dropped_resident] = 1
+
+    ans = []
+    for hospital in range(m):
+      for resident_rank in hospital_waiting_lists.get(hospital, []):
+        # Revert back from negated resident rank
+        ans.append((int(ranked_hospital_profile[hospital, resident_rank * -1]) + self.index_fixer, hospital + self.index_fixer))
+    return ans
+
