@@ -20,6 +20,14 @@ socialchoicekit.deterministic\_allocation module
    :undoc-members:
    :show-inheritance:
 
+socialchoicekit.deterministic\_matching module
+----------------------------------------------
+
+.. automodule:: socialchoicekit.deterministic_matching
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 socialchoicekit.deterministic\_multiround module
 ------------------------------------------------
 
