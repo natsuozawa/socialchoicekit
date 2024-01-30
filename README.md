@@ -71,3 +71,11 @@ python -m http.server
 ```
 python setup.py sdist bdist_wheel
 ```
+
+If there is an error: invalid command 'bdist_wheel', type:
+
+```
+pip install wheel
+```
+
+and try again.
