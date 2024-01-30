@@ -84,7 +84,8 @@ class UniformValuationProfileGenerator(BaseValuationProfileGenerator):
     """
     check_profile(profile, is_complete=False)
 
-    np.random.seed(self.seed)
+    if self.seed is not None:
+      np.random.seed(self.seed)
 
     n = profile.shape[0]
     m = profile.shape[1]
@@ -148,7 +149,8 @@ class NormalValuationProfileGenerator(BaseValuationProfileGenerator):
     """
     check_profile(profile, is_complete=False)
 
-    np.random.seed(self.seed)
+    if self.seed is not None:
+      np.random.seed(self.seed)
 
     n = profile.shape[0]
     m = profile.shape[1]
