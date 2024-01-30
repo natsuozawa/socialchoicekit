@@ -43,3 +43,21 @@ class TestDeterministicScoring:
   def test_harmonic_b(self, profile_b):
     voting_rule = Harmonic(tie_breaker="first")
     assert voting_rule.scf(profile_b) == 7
+
+  @pytest.fixture
+  def cardinal_profile_1(self):
+    return np.array([
+      [0.9, 0, 0.05, 0.04, 0.01],
+      [0.1, 0.05, 0.15, 0.4, 0.3],
+      [0.7, np.nan, 0.01, 0.2, 0.09]
+    ])
+
+  @pytest.fixture
+  def social_welfare_1(self):
+    unnormalized_social_welfare = np.array([1.7, 0.05, 0.21, 0.64, 0.4])
+    return unnormalized_social_welfare / np.sum(unnormalized_social_welfare)
+
+  def test_social_welfare_1(self, cardinal_profile_1, social_welfare_1):
+    sw = SocialWelfare()
+    score = sw.score(cardinal_profile_1)
+    assert np.allclose(score, social_welfare_1)

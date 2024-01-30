@@ -494,3 +494,45 @@ class Harmonic(BaseScoring):
     """
     score = self.score(profile)
     return super().scf(score)
+
+class SocialWelfare(BaseScoring):
+  """
+  Computes the social welfare for alternatives based on an inputted valuation profile.
+
+  Parameters
+  ----------
+  tie_breaker : {"random", "first", "accept"}
+    - "random": pick from a uniform distribution among the winners
+    - "first": pick the alternative with the lowest index
+    - "accept": return all winners in an array
+
+  zero_indexed : bool
+    If True, the output of the social welfare function and social choice function will be zero-indexed. If False, the output will be one-indexed. One-indexed by default.
+  """
+  def __init__(
+    self,
+    tie_breaker: str = "random",
+    zero_indexed: bool = False,
+  ):
+    self.tie_breaker = tie_breaker
+    self.zero_indexed = zero_indexed
+
+  def score(
+    self,
+    valuation_profile: np.ndarray,
+  ) -> np.ndarray:
+    """
+    Computes the normalized social welfare for each alternative based on an inputted valuation profile.
+    Note that the valuation profile has to be a cardinal profile, not an ordinal profile.
+
+    Parameters
+    ----------
+    valuation_profile: np.ndarray
+      A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's cardinal utility for alternative j. If the agent finds an item or alternative unacceptable, the element would be np.nan.
+
+    Returns
+    -------
+    np.ndarray
+      A (M,) array, where M is the number of alternatives. The element at (i,) indicates the social welfare of alternative i.
+    """
+    return np.nansum(valuation_profile, axis=0) / np.nansum(valuation_profile)
