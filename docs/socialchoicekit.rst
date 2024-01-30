@@ -12,6 +12,14 @@ socialchoicekit.bistochastic module
    :undoc-members:
    :show-inheritance:
 
+socialchoicekit.data\_generation module
+---------------------------------------
+
+.. automodule:: socialchoicekit.data_generation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 socialchoicekit.deterministic\_allocation module
 ------------------------------------------------
 
