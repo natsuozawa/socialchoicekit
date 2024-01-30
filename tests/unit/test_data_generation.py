@@ -35,10 +35,12 @@ class TestDataGeneration:
 
   def test_uniform_valuation_profile_generator_invalid_range(self, ordinal_profile_1):
     with pytest.raises(ValueError):
-      uvpg = UniformValuationProfileGenerator(high=-1, low=1)
+      UniformValuationProfileGenerator(high=-1, low=1)
 
   def test_normal_valuation_profile_generator(self, ordinal_profile_1):
-    nvpg = NormalValuationProfileGenerator(mean=0.5, variance=1)
+    # Use a small variance so we can reliably compute the ordinal profile
+    # (We cannot do this when multiple values are clipped to zero)
+    nvpg = NormalValuationProfileGenerator(mean=0.5, variance=0.01)
     valuation_profile = nvpg.generate(ordinal_profile_1)
     check_valuation_profile(valuation_profile, is_complete=False)
     assert np.allclose(np.ones(ordinal_profile_1.shape[0]), np.nansum(valuation_profile, axis=1))
