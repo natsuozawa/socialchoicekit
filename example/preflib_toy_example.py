@@ -47,7 +47,7 @@ plurality = Plurality()
 plurality_winner = plurality.scf(profile)
 print(plurality.score(profile))
 print("Plurality winner: ", plurality_winner)
-print("Distortion: ", social_welfare[plurality_winner - 1] / optimal_welfare)
+print("Distortion: ", optimal_welfare / social_welfare[plurality_winner - 1])
 
 # 3) Elicitation (query)-based voting
 print("----- 3) Elicitation-based voting -----")
@@ -57,5 +57,5 @@ stdin_elicitor = SynchronousStdInElicitor(memoize=True)
 karv_winner = karv.scf(profile, valuation_profile_elicitor)
 # karv_winner = karv.scf(profile, stdin_elicitor)
 print("KARV winner: ", karv_winner)
-print("Distortion: ", social_welfare[karv_winner - 1] / optimal_welfare)
+print("Distortion: ", optimal_welfare / social_welfare[karv_winner - 1])
 
