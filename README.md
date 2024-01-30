@@ -65,3 +65,9 @@ To locally view the compiled documentation, use
 cd docs/_build/html
 python -m http.server
 ```
+
+## Build
+
+```
+python setup.py sdist bdist_wheel
+```

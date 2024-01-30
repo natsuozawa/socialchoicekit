@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='socialchoice-kit',
-    version='0.0.1',
+    version='0.0.2',
     description='socialchoice-kit aims to be a comprehensive implementation of the most important rules in computational social choice theory.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
