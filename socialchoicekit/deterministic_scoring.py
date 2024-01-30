@@ -4,7 +4,8 @@ from typing import Union
 from socialchoicekit.utils import check_tie_breaker, check_profile, break_tie
 
 """
-Deterministic scoring rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016)."""
+Deterministic scoring rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016).
+"""
 
 class BaseScoring:
   """
