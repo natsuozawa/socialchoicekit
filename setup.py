@@ -1,14 +1,14 @@
 from setuptools import setup
 
 setup(
-    name='socialchoice-kit',
+    name='socialchoicekit',
     version='0.0.2',
-    description='socialchoice-kit aims to be a comprehensive implementation of the most important rules in computational social choice theory.',
+    description='socialchoicekit aims to be a comprehensive implementation of the most important rules in computational social choice theory.',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     author='Natsu Ozawa',
     author_email='natsuozawa@outlook.com',
-    url='https://github.com/natsuozawa/socialchoice-kit',
+    url='https://github.com/natsuozawa/socialchoicekit',
     # TODO: set license
     # license='xxx',
     classifiers=[

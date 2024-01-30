@@ -10,7 +10,7 @@ sys.path.insert(0, pathlib.Path(__file__).parents[1].resolve().as_posix())
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'socialchoice-kit'
+project = 'socialchoicekit'
 copyright = '2023-2024 Natsu Ozawa'
 author = 'Natsu Ozawa'
 
