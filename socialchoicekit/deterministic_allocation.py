@@ -68,14 +68,14 @@ def root_n_serial_dictatorship(
   n = profile.shape[0]
   m = profile.shape[1]
 
-  ranked_alternatives = np.argsort(profile, axis=1)
+  ranked_profile = np.argsort(profile, axis=1)
   # Element j is the number of times item j was allocated so far.
   allocation_count = np.zeros(m)
   # Element i is the item that agent i is allocated to.
   allocation = np.full(n, np.nan)
 
   for agent in range(n):
-    for alternative in ranked_alternatives[agent]:
+    for alternative in ranked_profile[agent]:
       if allocation_count[alternative] < np.sqrt(n):
         allocation_count[alternative] += 1
         allocation[agent] = alternative

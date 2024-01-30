@@ -192,18 +192,18 @@ class KARV(BaseElicitationVoting):
     m = profile.shape[1]
 
     # Element at (i, j) is agent i's j+1th most preferred alternative (0-indexed alternative number)
-    ranked_alternatives = np.argsort(profile, axis=1)
+    ranked_profile = np.argsort(profile, axis=1)
     # Element at i is agent i's favorite alternative
-    v_favorite = elicitor.elicit_multiple(np.arange(n), ranked_alternatives[:, 0])
+    v_favorite = elicitor.elicit_multiple(np.arange(n), ranked_profile[:, 0])
 
-    # We have this as an inner function because it currently needs to access the ranked_alternatives array.
+    # We have this as an inner function because it currently needs to access the ranked_profile array.
     # We've modified this binary search from the paper for our implementation.
     def binary_search(i: int, alpha: int, beta: int, lambda_: int, v: float):
       if beta - alpha <= 1:
         return alpha
       # This will never be more than m - 1, even if we start with beta = m.
       mid = (alpha + beta) // 2
-      u = elicitor.elicit(i, ranked_alternatives[i, mid])
+      u = elicitor.elicit(i, ranked_profile[i, mid])
       if u >= v / lambda_:
         return binary_search(i, mid, beta, lambda_, v)
       else:
@@ -211,13 +211,13 @@ class KARV(BaseElicitationVoting):
 
     # Element at (i, j) is the simulated welfare of alternative j for agent i
     v_tilde = np.zeros((n, m))
-    v_tilde[np.arange(n), ranked_alternatives[:, 0]] = v_favorite
+    v_tilde[np.arange(n), ranked_profile[:, 0]] = v_favorite
     # Element at i is the least preferred alternative (0-indexed alternative number) in agent i's lambda-acceptable set
     S_prev = np.zeros(n)
     for l in range(1, self.k + 1):
       lambda_l = m ** (l / (self.k + 1))
       p_star = np.array([binary_search(i, 0, m, lambda_l, v_favorite[i]) for i in range(n)])
-      j_indices = np.concatenate([ranked_alternatives[i, np.arange(S_prev[i] + 1, p_star[i] + 1, dtype=int)] for i in range(n)])
+      j_indices = np.concatenate([ranked_profile[i, np.arange(S_prev[i] + 1, p_star[i] + 1, dtype=int)] for i in range(n)])
       i_indices = np.concatenate([np.ones(int(p_star[i] - S_prev[i]), dtype=int) * i for i in range(n)])
       v_tilde[(i_indices, j_indices)] = v_favorite[i_indices] / lambda_l
       S_prev = p_star

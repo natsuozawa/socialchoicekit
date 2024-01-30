@@ -56,18 +56,18 @@ class LambdaTSF:
     m = profile.shape[1]
 
     # Element at (i, j) is agent i's j+1th most preferred alternative (0-indexed alternative number)
-    ranked_alternatives = np.argsort(profile, axis=1)
+    ranked_profile = np.argsort(profile, axis=1)
     # Element at i is agent i's favorite alternative
-    v_favorite = elicitor.elicit_multiple(np.arange(n), ranked_alternatives[:, 0])
+    v_favorite = elicitor.elicit_multiple(np.arange(n), ranked_profile[:, 0])
 
-    # We have this as an inner function because it currently needs to access the ranked_alternatives array.
+    # We have this as an inner function because it currently needs to access the ranked_profile array.
     # We've modified this binary search from the paper for our implementation.
     def binary_search(i: int, left: int, right: int, alpha: int, v: float):
       if right - left <= 1:
         return left
       # This will never be more than m - 1, even if we start with beta = m.
       mid = (right + left) // 2
-      u = elicitor.elicit(i, ranked_alternatives[i, mid])
+      u = elicitor.elicit(i, ranked_profile[i, mid])
       if u >= v / alpha:
         return binary_search(i, mid, right, alpha, v)
       else:
@@ -76,14 +76,14 @@ class LambdaTSF:
     # Element at (i, j) is the simulated welfare of alternative j for agent i
     epsilon = 1e-5
     v_tilde = profile * 0 + epsilon
-    v_tilde[np.arange(n), ranked_alternatives[:, 0]] = v_favorite
+    v_tilde[np.arange(n), ranked_profile[:, 0]] = v_favorite
     # Element at i is the least preferred alternative (0-indexed alternative number) in agent i's lambda-acceptable set
     # Add a very small threshold to distinguish between unacceptable alterantives and alternatives that did not fit in any acceptable set.
     Q_prev = np.zeros(n)
     for l in range(1, self.lambda_ + 1):
       alpha_l = m ** (l / (self.lambda_ + 1))
       p_star = np.array([binary_search(i, 0, m, alpha_l, v_favorite[i]) for i in range(n)])
-      j_indices = np.concatenate([ranked_alternatives[i, np.arange(Q_prev[i] + 1, p_star[i] + 1, dtype=int)] for i in range(n)])
+      j_indices = np.concatenate([ranked_profile[i, np.arange(Q_prev[i] + 1, p_star[i] + 1, dtype=int)] for i in range(n)])
       i_indices = np.concatenate([np.ones(int(p_star[i] - Q_prev[i]), dtype=int) * i for i in range(n)])
       v_tilde[(i_indices, j_indices)] = v_favorite[i_indices] / alpha_l
       Q_prev = p_star
@@ -131,13 +131,13 @@ class MatchTwoQueries:
 
     n = profile.shape[0]
 
-    ranked_alternatives = np.argsort(profile, axis=1)
+    ranked_profile = np.argsort(profile, axis=1)
 
     epsilon = 1e-5
     v_tilde = profile * 0 + epsilon
 
     # Elicit the agent's favorite item.
-    v_tilde[np.arange(n), ranked_alternatives[:, 0]] = elicitor.elicit_multiple(np.arange(n), ranked_alternatives[:, 0])
+    v_tilde[np.arange(n), ranked_profile[:, 0]] = elicitor.elicit_multiple(np.arange(n), ranked_profile[:, 0])
 
     # Generate a sufficiently representative assignment.
     A = root_n_serial_dictatorship(profile)
