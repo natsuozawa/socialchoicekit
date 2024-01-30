@@ -1,4 +1,4 @@
-# socialchoicekit (provisional name)
+# socialchoicekit
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/b284a5ad-ff4f-4acd-98f8-7ee0c5ed08fb/deploy-status)](https://app.netlify.com/sites/socialchoicekit/deploys)
 
