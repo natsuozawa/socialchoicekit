@@ -92,7 +92,7 @@ class UniformValuationProfileGenerator(BaseValuationProfileGenerator):
     ranked_profile = np.argsort(profile, axis=1)
 
     # Preserve np.nan
-    ans = profile * 0
+    ans = profile * 0.0
 
     for agent in range(n):
       num_not_nan = np.count_nonzero(~np.isnan(profile[agent]))
@@ -156,7 +156,7 @@ class NormalValuationProfileGenerator(BaseValuationProfileGenerator):
     ranked_profile = np.argsort(profile, axis=1)
 
     # Preserve np.nan
-    ans = profile * 0
+    ans = profile * 0.0
 
     for agent in range(n):
       num_not_nan = np.count_nonzero(~np.isnan(profile[agent]))
