@@ -15,6 +15,8 @@ from preflibtools.instances import OrdinalInstance
 from socialchoicekit.preflib_utils import preflib_soc_to_profile
 from socialchoicekit.data_generation import UniformValuationProfileGenerator
 from socialchoicekit.deterministic_scoring import Plurality, Borda, SocialWelfare
+from socialchoicekit.elicitation_voting import KARV
+from socialchoicekit.elicitation_utils import ValuationProfileElicitor, SynchronousStdInElicitor
 
 url = 'https://www.preflib.org/static/data/agh/00009-00000001.soc'
 
@@ -53,4 +55,14 @@ print(borda.score(profile))
 borda_winner = borda.scf(profile)
 print("Borda winner: ", borda_winner)
 print("Distortion: ", social_welfare[borda_winner - 1] / optimal_welfare)
+
+# 3) Elicitation (query)-based voting
+print("----- 3) Elicitation-based voting -----")
+karv = KARV(k=3)
+valuation_profile_elicitor = ValuationProfileElicitor(valuation_profile=valuation_profile, memoize=True)
+stdin_elicitor = SynchronousStdInElicitor(memoize=True)
+karv_winner = karv.scf(profile, valuation_profile_elicitor)
+# karv_winner = karv.scf(profile, stdin_elicitor)
+print("KARV winner: ", karv_winner)
+print("Distortion: ", social_welfare[karv_winner - 1] / optimal_welfare)
 
