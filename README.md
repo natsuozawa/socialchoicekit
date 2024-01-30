@@ -6,6 +6,8 @@ socialchoicekit aims to be a comprehensive implementation of the most important 
 
 This library supports Python 3.8 and above.
 
+Documentation can be found [here](https://socialchoicekit.natsuozawa.com/)
+
 # Concepts
 
 ## Social Choice Theory
