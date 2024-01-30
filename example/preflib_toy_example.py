@@ -1,0 +1,56 @@
+"""
+From PrefLib:
+
+This dataset contains the results of surveying students at AGU University of Science and Technology about their course preferences. Each student provided a rank ordering over all the courses with no missing elements. There are 9 courses to choose from in 2003 and 7 in 2004.
+
+The data on this page has been donated by Piotr Faliszewski.
+
+Selected studies: P. Skowron, P. Faliszewski and A. Slinko. Achieving Fully Proportional Representation is Easy in Practice. Proceedings of AAMAS, 2013. | V. Hashemi and U. Endriss. Measuring Diversity of Preferences in a Group. Proceedings of ECAI, 2014.
+"""
+
+import numpy as np
+
+from preflibtools.instances import OrdinalInstance
+
+from socialchoicekit.preflib_utils import preflib_soc_to_profile
+from socialchoicekit.data_generation import UniformValuationProfileGenerator
+from socialchoicekit.deterministic_scoring import Plurality, Borda, SocialWelfare
+
+url = 'https://www.preflib.org/static/data/agh/00009-00000001.soc'
+
+# 1.1) Import data
+print("----- 1.1) Import data -----")
+instance = OrdinalInstance()
+instance.parse_url(url)
+profile = preflib_soc_to_profile(instance.flatten_strict())
+print(profile)
+
+# 1.2) Generate (hypothetical) cardinal profile
+print("----- 1.2) Generate hypothetical cardinal profile -----")
+valuation_profile = UniformValuationProfileGenerator(high=1, low=0, seed=1).generate(profile)
+print(valuation_profile)
+
+# 1.3) Compute optimal utility using cardinal information
+print("----- 1.3) Compute optimal utility using cardinal information -----")
+social_welfare = SocialWelfare().score(valuation_profile)
+print(social_welfare)
+print("Optimal alternative: ", np.argmax(social_welfare))
+optimal_welfare = np.amax(social_welfare)
+print("Optimal welfare: ", optimal_welfare)
+
+# 2.1) Test baseline: Plurality (pick favorite)
+print("----- 2.1) Test baseline: Plurality -----")
+plurality = Plurality()
+plurality_winner = plurality.scf(profile)
+print(plurality.score(profile))
+print("Plurality winner: ", plurality_winner)
+print("Distortion: ", social_welfare[plurality_winner - 1] / optimal_welfare)
+
+# 2.2) Test baseline: Borda (ranked choice)
+print("----- 2.2) Test baseline: Borda -----")
+borda = Borda()
+print(borda.score(profile))
+borda_winner = borda.scf(profile)
+print("Borda winner: ", borda_winner)
+print("Distortion: ", social_welfare[borda_winner - 1] / optimal_welfare)
+
