@@ -41,21 +41,13 @@ print("Optimal alternative: ", optimal_alternative + 1)
 optimal_welfare = np.amax(social_welfare)
 print("Optimal welfare: ", optimal_welfare)
 
-# 2.1) Test baseline: Plurality (pick favorite)
-print("----- 2.1) Test baseline: Plurality -----")
+# 2) Test baseline: Plurality (pick favorite)
+print("----- 2) Test baseline: Plurality -----")
 plurality = Plurality()
 plurality_winner = plurality.scf(profile)
 print(plurality.score(profile))
 print("Plurality winner: ", plurality_winner)
 print("Distortion: ", social_welfare[plurality_winner - 1] / optimal_welfare)
-
-# 2.2) Test baseline: Borda (ranked choice)
-print("----- 2.2) Test baseline: Borda -----")
-borda = Borda()
-print(borda.score(profile))
-borda_winner = borda.scf(profile)
-print("Borda winner: ", borda_winner)
-print("Distortion: ", social_welfare[borda_winner - 1] / optimal_welfare)
 
 # 3) Elicitation (query)-based voting
 print("----- 3) Elicitation-based voting -----")
