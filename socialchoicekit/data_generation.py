@@ -2,7 +2,7 @@ import numpy as np
 
 from typing import Union
 
-from socialchoicekit.utils import check_valuation_profile, check_profile
+from socialchoicekit.profile_utils import Profile, StrictProfile, ValuationProfile
 
 class BaseValuationProfileGenerator:
   """
@@ -23,19 +23,19 @@ class BaseValuationProfileGenerator:
 
   def generate(
     self,
-    profile: np.ndarray,
-  ) -> np.ndarray:
+    profile: Profile,
+  ) -> ValuationProfile:
     """
     Generates a cardinal profile based on the inputted ordinal profile.
 
     Parameters
     -------
-    profile: np.ndarray
+    profile: StrictProfile
       A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's ordinal utility for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative. If the agent finds an item or alternative unacceptable, the element would be np.nan.
 
     Returns
     -------
-    np.ndarray
+    ValuationProfile
       A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's cardinal utility for alternative j. If the agent finds an item or alternative unacceptable, the element would be np.nan.
     """
     raise NotImplementedError
@@ -69,23 +69,21 @@ class UniformValuationProfileGenerator(BaseValuationProfileGenerator):
 
   def generate(
     self,
-    profile: np.ndarray,
-  ) -> np.ndarray:
+    profile: StrictProfile,
+  ) -> ValuationProfile:
     """
     Generates a cardinal profile based on the inputted ordinal profile.
 
     Parameters
     ----------
-    profile: np.ndarray
+    profile: StrictProfile
       A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's ordinal utility for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative. If the agent finds an item or alternative unacceptable, the element would be np.nan.
 
     Returns
     -------
-    np.ndarray
+    ValuationProfile
       A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's cardinal utility for alternative j. If the agent finds an item or alternative unacceptable, the element would be np.nan.
     """
-    check_profile(profile, is_complete=False)
-
     if self.seed is not None:
       np.random.seed(self.seed)
 
@@ -107,7 +105,7 @@ class UniformValuationProfileGenerator(BaseValuationProfileGenerator):
         if np.isnan(profile[agent, item]):
           break
         ans[agent, item] = utilities[item_rank]
-    return ans
+    return ValuationProfile.of(ans)
 
 class NormalValuationProfileGenerator(BaseValuationProfileGenerator):
   """
@@ -136,23 +134,21 @@ class NormalValuationProfileGenerator(BaseValuationProfileGenerator):
 
   def generate(
     self,
-    profile: np.ndarray,
-  ):
+    profile: StrictProfile,
+  ) -> ValuationProfile:
     """
     Generates a cardinal profile based on the inputted ordinal profile.
 
     Parameters
     ----------
-    profile: np.ndarray
+    profile: StrictProfile
       A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's ordinal utility for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative. If the agent finds an item or alternative unacceptable, the element would be np.nan.
 
     Returns
     -------
-    np.ndarray
+    ValuationProfile
       A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's cardinal utility for alternative j. If the agent finds an item or alternative unacceptable, the element would be np.nan.
     """
-    check_profile(profile, is_complete=False)
-
     if self.seed is not None:
       np.random.seed(self.seed)
 
@@ -176,34 +172,32 @@ class NormalValuationProfileGenerator(BaseValuationProfileGenerator):
         if np.isnan(profile[agent, item]):
           break
         ans[agent, item] = utilities[item_rank]
-    return ans
+    return ValuationProfile.of(ans)
 
-def compute_ordinal_profile(cardinal_utility: np.ndarray) -> np.ndarray:
+def compute_ordinal_profile(cardinal_profile: ValuationProfile) -> StrictProfile:
   """
   Computes the ordinal utility from the inputted cardinal utility. The input cardinal utility does not need to be normalized or complete.
 
   Parameters
   ----------
-  cardinal_utility: np.ndarray
+  cardinal_profile: ValuationProfile
     A (N, M) array, where N is the number of agents and M is the number of items or alternatives. The element at (i, j) indicates the agent's cardinal utility for alternative j. If the agent finds an item or alternative unacceptable, the element would be np.nan.
 
   Returns
   -------
-  np.ndarray
+  StrictProfile
     A (N, M) array, where N is the number of agents and M is the number of items or alternatives. The element at (i, j) indicates the agent's ordinal utility for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative. If the agent finds an item or alternative unacceptable, the element would be np.nan.
   """
-  check_valuation_profile(cardinal_utility, is_complete=False)
-
-  n = cardinal_utility.shape[0]
-  m = cardinal_utility.shape[1]
+  n = cardinal_profile.shape[0]
+  m = cardinal_profile.shape[1]
 
   # Sort by descending with np.nan at end
-  ranked_profile = np.argsort(cardinal_utility * -1, axis=1)
+  ranked_profile = np.argsort(cardinal_profile * -1, axis=1)
 
   # Preserve np.nan
-  ans = cardinal_utility * 0
+  ans = cardinal_profile * 0
   for agent in range(n):
     for item_rank in range(m):
       # Preserve np.nan with +=
       ans[agent, ranked_profile[agent, item_rank]] += item_rank + 1
-  return ans
+  return StrictProfile.of(ans)

@@ -4,6 +4,7 @@ from typing import List, Tuple
 import heapq
 
 from socialchoicekit.utils import check_profile
+from socialchoicekit.profile_utils import StrictProfile
 
 class GaleShapley:
   """
@@ -27,8 +28,8 @@ class GaleShapley:
 
   def scf(
     self,
-    resident_profile: np.ndarray,
-    hospital_profile: np.ndarray,
+    resident_profile: StrictProfile,
+    hospital_profile: StrictProfile,
     c: np.ndarray,
   ) -> List[Tuple[int, int]]:
     """
@@ -36,10 +37,10 @@ class GaleShapley:
 
     Parameters
     ----------
-    resident_profile : np.ndarray
+    resident_profile StrictProfile
       A (N, M) array, where N is the number of residents and M is the number of hospitals. The element at (i, j) indicates the resident's preference for hospital j, where 1 is the most preferred hospital. If the resident finds a hospital unacceptable, the element would be np.nan.
 
-    hospital_profile : np.ndarray
+    hospital_profile: StrictProfile
       A (M, N) array, where M is the number of hospitals and N is the number of residents. The element at (i, j) indicates the hospital's preference for resident j, where 1 is the most preferred resident. If the hospital finds a resident unacceptable, the element would be np.nan.
 
     c: np.ndarray
@@ -50,9 +51,6 @@ class GaleShapley:
     List[Tuple[int, int]]
       A list containing assignments (resident, hospital) for each assignment.
     """
-    check_profile(resident_profile, is_complete=False)
-    check_profile(hospital_profile, is_complete=False)
-
     n = resident_profile.shape[0]
     m = resident_profile.shape[1]
 
@@ -60,12 +58,12 @@ class GaleShapley:
       raise ValueError("The resident profile and hospital profile dimensions do not match.")
 
     # Decrease by one because we will be using 0-indexing to access the ranked versions of these profiles.
-    resident_profile = resident_profile - 1
-    hospital_profile = hospital_profile - 1
+    rprofile = resident_profile - 1
+    hprofile = hospital_profile - 1
 
     # NaN will be put last.
-    ranked_resident_profile = np.argsort(resident_profile, axis=1)
-    ranked_hospital_profile = np.argsort(hospital_profile, axis=1)
+    ranked_rprofile = np.argsort(rprofile, axis=1)
+    ranked_hprofile = np.argsort(hprofile, axis=1)
 
     if self.resident_oriented:
       # Key: resident, value = the last hospital the resident applied to
@@ -94,21 +92,21 @@ class GaleShapley:
             continue
 
           last_applied_hospital_rank = resident_applications.get(resident, -1)
-          next_hospital = ranked_resident_profile[resident, last_applied_hospital_rank + 1]
-          if np.isnan(resident_profile[resident, next_hospital]):
+          next_hospital = ranked_rprofile[resident, last_applied_hospital_rank + 1]
+          if np.isnan(rprofile[resident, next_hospital]):
             # Candidate has applied to all hospitables they find acceptable. (Yet have not gotten accepted into any)
             next_current_applicants[resident] = 2
             continue
 
           resident_applications[resident] = last_applied_hospital_rank + 1
 
-          if np.isnan(hospital_profile[next_hospital, resident]):
+          if np.isnan(hprofile[next_hospital, resident]):
             # Candidate is unacceptable to the hospital. Auto-rejected.
             continue
 
           hospital_waiting_list = hospital_waiting_lists.get(next_hospital, [])
           # Negate resident rank because heapq is a min heap.
-          heapq.heappush(hospital_waiting_list, int(hospital_profile[next_hospital, resident] * -1))
+          heapq.heappush(hospital_waiting_list, int(hprofile[next_hospital, resident] * -1))
           next_current_applicants[resident] = 0
 
           if len(hospital_waiting_list) <= c[next_hospital]:
@@ -117,14 +115,14 @@ class GaleShapley:
 
           # Hospital has reached capacity.
           # Revert back from negated resident rank
-          dropped_resident = ranked_hospital_profile[next_hospital, heapq.heappop(hospital_waiting_list) * -1]
+          dropped_resident = ranked_hprofile[next_hospital, heapq.heappop(hospital_waiting_list) * -1]
           next_current_applicants[dropped_resident] = 1
 
       ans = []
       for hospital in range(m):
         for resident_rank in hospital_waiting_lists.get(hospital, []):
           # Revert back from negated resident rank
-          ans.append((int(ranked_hospital_profile[hospital, resident_rank * -1]) + self.index_fixer, hospital + self.index_fixer))
+          ans.append((int(ranked_hprofile[hospital, resident_rank * -1]) + self.index_fixer, hospital + self.index_fixer))
       return ans
 
     else:
@@ -150,20 +148,20 @@ class GaleShapley:
             continue
 
           last_applied_resident_rank = hospital_offers.get(hospital, -1)
-          next_resident = ranked_hospital_profile[hospital, last_applied_resident_rank + 1]
-          if np.isnan(hospital_profile[hospital, next_resident]):
+          next_resident = ranked_hprofile[hospital, last_applied_resident_rank + 1]
+          if np.isnan(hprofile[hospital, next_resident]):
             # Hospital has offered to all residents they find acceptable. (Yet are undersubscribed)
             current_offerers[hospital] = 2
 
           hospital_offers[hospital] = last_applied_resident_rank + 1
 
-          if np.isnan(resident_profile[next_resident, hospital]):
+          if np.isnan(rprofile[next_resident, hospital]):
             # Hospital is unacceptable to the resident. Auto-rejected.
             continue
 
           # Negate resident rank because heapq is a min heap.
           current_accepted_hospital = resident_waiting_lists[next_resident]
-          if current_accepted_hospital == -1 or resident_profile[next_resident, hospital] < resident_profile[next_resident, current_accepted_hospital]:
+          if current_accepted_hospital == -1 or rprofile[next_resident, hospital] < rprofile[next_resident, current_accepted_hospital]:
             # Resident has not received any offers yet or the hospital is more preferred than the resident's current offer.
             hospital_accepted_offers[hospital] += 1
             hospital_accepted_offers[current_accepted_hospital] -= 1
@@ -176,6 +174,3 @@ class GaleShapley:
           continue
         ans.append((resident + self.index_fixer, hospital + self.index_fixer))
       return ans
-
-
-

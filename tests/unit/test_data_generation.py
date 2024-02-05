@@ -3,30 +3,32 @@ import numpy as np
 import pytest
 
 from socialchoicekit.data_generation import *
+from socialchoicekit.utils import check_profile, check_valuation_profile
+from socialchoicekit.profile_utils import StrictCompleteProfile, StrictIncompleteProfile, IncompleteValuationProfile
 
 class TestDataGeneration:
   @pytest.fixture
   def ordinal_profile_1(self):
-    return np.array([
+    return StrictIncompleteProfile.of(np.array([
       [1, 5, 2, 3, 4],
       [4, 5, 3, 1, 2],
       [1, np.nan, 4, 2, 3]
-    ])
+    ]))
 
   @pytest.fixture
   def cardinal_profile_1(self):
-    return np.array([
+    return IncompleteValuationProfile.of(np.array([
       [0.9, 0, 0.05, 0.04, 0.01],
       [0.1, 0.05, 0.15, 0.4, 0.3],
       [0.7, np.nan, 0.01, 0.2, 0.09]
-    ])
+    ]))
 
   @pytest.fixture
   def ordinal_profile_2(self):
-    return np.array([
+    return StrictCompleteProfile.of(np.array([
       [1, 4, 2, 3],
       [1, 3, 4, 2],
-    ])
+    ]))
 
   def test_compute_ordinal_profile(self, cardinal_profile_1, ordinal_profile_1):
     ordinal_profile = compute_ordinal_profile(cardinal_profile_1)

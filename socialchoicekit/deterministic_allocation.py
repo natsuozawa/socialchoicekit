@@ -2,7 +2,8 @@ import numpy as np
 from scipy.sparse.csgraph import min_weight_full_bipartite_matching
 from scipy.sparse import csr_matrix
 
-from socialchoicekit.utils import check_square_matrix, check_valuation_profile
+from socialchoicekit.utils import check_square_matrix
+from socialchoicekit.profile_utils import ValuationProfile, Profile
 
 class MaximumWeightMatching:
   """
@@ -23,14 +24,14 @@ class MaximumWeightMatching:
 
   def scf(
     self,
-    valuation_profile: np.ndarray
+    valuation_profile: ValuationProfile,
   ) -> np.ndarray:
     """
     The (provisional) social choice function, which takes in a valuation profile and returns an allocation.
 
     Parameters
     ----------
-    valuation_profile: np.ndarray
+    valuation_profile: ValuationProfile
       This is the (complete) cardinal profile. A (N, N) array, where N is the number of agents and also the number of items. The element at (i, j) indicates the utility value (agent's cardinal preference) for item j. If agent i finds item j unacceptable, the element would be np.nan
 
     Returns
@@ -38,7 +39,6 @@ class MaximumWeightMatching:
     allocation: np.ndarray
       This is the allocation. A (N,) array, where N is the number of items. Agent i is assigned to element i.
     """
-    check_valuation_profile(valuation_profile, is_complete=False)
     check_square_matrix(valuation_profile)
 
     biadjacency_matrix = csr_matrix(np.where(np.isnan(valuation_profile), 0, valuation_profile))
@@ -46,7 +46,7 @@ class MaximumWeightMatching:
     return col_ind + self.index_fixer
 
 def root_n_serial_dictatorship(
-  profile: np.ndarray
+  profile: Profile
 ) -> np.ndarray:
   """
   Root n serial dictatorship is a subroutine used in the Match-TwoQueries routine (Amanatidis et al. 2022) for elicitation allocation. This does not compute an approriate allocation. Instead, it generates a 'sufficiently representative assignment'.
@@ -57,7 +57,7 @@ def root_n_serial_dictatorship(
 
   Parameters
   ----------
-  profile: np.ndarray
+  profile: Profile
     A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the agent's preference for item j. If the agent finds an item unacceptable, the element would be np.nan.
 
   Returns
