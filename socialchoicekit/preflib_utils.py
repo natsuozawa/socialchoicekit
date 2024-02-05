@@ -24,12 +24,16 @@ def preflib_soc_to_profile(instance: OrdinalInstance) -> np.ndarray:
     raise ValueError("The inputted instance is not a SoC (Strictly Orders - Complete List) instance.")
 
   flattened_order = instance.flatten_strict()
+  m = instance.num_alternatives
   arr = []
   for order, multiplicity in flattened_order:
     # Order: strict complete order of the alternatives
     # Multiplicity: the number of agents that had this ordinal preference
+    o = np.array(order) - 1
+    preference = np.zeros(m, dtype=int)
+    preference[o] = np.arange(1, m + 1)
     for _ in range(multiplicity):
-      arr.append(order)
+      arr.append(preference)
   return np.array(arr)
 
 def preflib_soi_to_profile(instance: OrdinalInstance) -> np.ndarray:
@@ -57,11 +61,13 @@ def preflib_soi_to_profile(instance: OrdinalInstance) -> np.ndarray:
 
   arr = []
   for order, multiplicity in flattened_order:
+    o = np.array(order) - 1
+    preference = np.full(instance.num_alternatives, np.nan)
+    preference[o] = np.arange(1, len(o) + 1)
     # Order: strict incomplete order of the alternatives
     # Multiplicity: the number of agents that had this ordinal preference
-    order += tuple([np.nan] * (instance.num_alternatives - len(order)))
     for _ in range(multiplicity):
-      arr.append(order)
+      arr.append(preference)
   return np.array(arr)
 
 def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random") -> np.ndarray:
@@ -105,8 +111,11 @@ def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
       elif tie_breaker == "first":
         tied_items = list(np.sort(tied_items))
       flattened_order += tied_items
+    preference = np.zeros(instance.num_alternatives, dtype=int)
+    o = np.array(flattened_order) - 1
+    preference[o] = np.arange(1, len(flattened_order) + 1)
     for _ in range(multiplicity):
-      arr.append(flattened_order)
+      arr.append(preference)
   return np.array(arr)
 
 def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random") -> np.ndarray:
@@ -148,10 +157,11 @@ def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
       if tie_breaker == "first":
         tied_items = list(np.sort(tied_items))
       flattened_order += tied_items
-
-    flattened_order += [np.nan] * (instance.num_alternatives - len(flattened_order))
+    preference = np.full(instance.num_alternatives, np.nan)
+    o = np.array(flattened_order) - 1
+    preference[o] = np.arange(1, len(flattened_order) + 1)
     for _ in range(multiplicity):
-      arr.append(flattened_order)
+      arr.append(preference)
   return np.array(arr)
 
 def preflib_categorical_to_profile(instance: CategoricalInstance, tie_breaker: str = "random") -> np.ndarray:
@@ -188,7 +198,9 @@ def preflib_categorical_to_profile(instance: CategoricalInstance, tie_breaker: s
       if tie_breaker == "first":
         tied_items = list(np.sort(tied_items))
       flattened_order += tied_items
-    flattened_order += [np.nan] * (instance.num_alternatives - len(flattened_order))
+    preference = np.full(instance.num_alternatives, np.nan)
+    o = np.array(flattened_order) - 1
+    preference[o] = np.arange(1, len(flattened_order) + 1)
     for _ in range(instance.multiplicity[p]):
-      arr.append(flattened_order)
+      arr.append(preference)
   return np.array(arr)
