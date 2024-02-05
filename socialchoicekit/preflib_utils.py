@@ -55,15 +55,13 @@ def preflib_soi_to_profile(instance: OrdinalInstance) -> np.ndarray:
   print("Ignore the warning(s) below:")
   flattened_order = instance.flatten_strict()
 
-  m = instance.num_alternatives
-
   arr = []
   for order, multiplicity in flattened_order:
     # Order: strict incomplete order of the alternatives
     # Multiplicity: the number of agents that had this ordinal preference
-    o = order + tuple([np.nan] * (m - len(order)))
+    order += tuple([np.nan] * (instance.num_alternatives - len(order)))
     for _ in range(multiplicity):
-      arr.append(o)
+      arr.append(order)
   return np.array(arr)
 
 def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random") -> np.ndarray:
@@ -102,10 +100,54 @@ def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
     flattened_order = []
     for tied_items in order:
       if tie_breaker == "random":
-        np.random.shuffle(tied_items)
+        np.random.shuffle(list(tied_items))
       elif tie_breaker == "first":
         tied_items = np.sort(tied_items)
       flattened_order += list(tied_items)
+    for _ in range(multiplicity):
+      arr.append(flattened_order)
+  return np.array(arr)
+
+def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random") -> np.ndarray:
+  """
+  Convert a Preflib ToI (Orders with Ties - Incomplete List) to the profile (Numpy matrix) format.
+  Note that this procedure is tie-breaking. Information about ties are not preserved in the converted profile.
+  Tie-breaking is done by random, but a tie_breaker may be supplied as an argument.
+
+  For details on Preflib ToI, see https://www.preflib.org/format
+
+  Parameters
+  ----------
+  toi: OrdinalInstance
+    The Preflib ToI to convert. This is included in the preflibtools.instances module. The data_type for this must be toi.
+
+  tie_breaker : {"random", "first", "accept"}
+    - "random": shuffle the tied items into a random order
+    - "first": sort the tied items in ascending order
+    - "accept": keep the order of the tied items as is
+
+  Returns
+  -------
+  np.ndarray
+    The profile (Numpy matrix) format of the Preflib ToI.
+  """
+  if instance.data_type != "toi":
+    raise ValueError("The inputted instance is not a ToI (Orders with Ties - Incomplete List) instance.")
+
+  vote_map = instance.vote_map()
+  arr = []
+  for order, multiplicity in vote_map.items():
+    # Order: incomplete unflattened order of the alternatives
+    # Multiplicity: the number of agents that had this ordinal preference
+    flattened_order = []
+    for tied_items in order:
+      if tie_breaker == "random":
+        np.random.shuffle(list(tied_items))
+      if tie_breaker == "first":
+        tied_items = np.sort(tied_items)
+      flattened_order += list(tied_items)
+
+    flattened_order += [np.nan] * (instance.num_alternatives - len(flattened_order))
     for _ in range(multiplicity):
       arr.append(flattened_order)
   return np.array(arr)
