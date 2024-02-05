@@ -6,7 +6,7 @@ from socialchoicekit.utils import check_tie_breaker
 
 def preflib_soc_to_profile(instance: OrdinalInstance) -> np.ndarray:
   """
-  Convert a Preflib SoC (Strictly Orders - Complete List) to the profile (Numpy matrix) format.
+  Convert a Preflib SoC (Strict Orders - Complete List) to the profile (Numpy matrix) format.
 
   For details on Preflib SoC, see https://www.preflib.org/format
 
@@ -38,7 +38,7 @@ def preflib_soc_to_profile(instance: OrdinalInstance) -> np.ndarray:
 
 def preflib_soi_to_profile(instance: OrdinalInstance) -> np.ndarray:
   """
-  Convert a Preflib SoI (Strictly Orders - Incomplete List) to the profile (Numpy matrix) format.
+  Convert a Preflib SoI (Strict Orders - Incomplete List) to the profile (Numpy matrix) format.
 
   For details on Preflib SoC, see https://www.preflib.org/format
 
@@ -63,7 +63,7 @@ def preflib_soi_to_profile(instance: OrdinalInstance) -> np.ndarray:
   for order, multiplicity in flattened_order:
     indices = np.array(order) - 1
     preference = np.full(instance.num_alternatives, np.nan)
-    preference[indices] = np.arange(1, len(o) + 1)
+    preference[indices] = np.arange(1, len(indices) + 1)
     # Order: strict incomplete order of the alternatives
     # Multiplicity: the number of agents that had this ordinal preference
     for _ in range(multiplicity):
