@@ -24,7 +24,7 @@ url = 'https://www.preflib.org/static/data/agh/00009-00000001.soc'
 print("----- 1.1) Import data -----")
 instance = OrdinalInstance()
 instance.parse_url(url)
-profile = preflib_soc_to_profile(instance.flatten_strict())
+profile = preflib_soc_to_profile(instance)
 print(profile)
 
 # 1.2) Generate (hypothetical) cardinal profile

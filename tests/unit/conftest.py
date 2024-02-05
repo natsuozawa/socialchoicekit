@@ -24,9 +24,14 @@ def profile_b():
     [4, 3, 2, 1, 5, 6, 7, 8],
   ])
 
-
 @pytest.fixture
 def agh_course_selection_instance():
   instance = OrdinalInstance()
   instance.parse_url("https://www.preflib.org/static/data/agh/00009-00000001.soc")
+  return instance
+
+@pytest.fixture
+def apa_election_instance():
+  instance = OrdinalInstance()
+  instance.parse_url("https://www.preflib.org/static/data/apa/00028-00000001.soi")
   return instance
