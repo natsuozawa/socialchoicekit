@@ -13,6 +13,7 @@ class GaleShapley:
   ----------
   resident_oriented : bool
     If True, the social choice function will be resident-oriented. If False, the social choice function will be hospital-oriented. Resident-oriented by default.
+
   zero_indexed : bool
     If True, the output of the social choice function will be zero-indexed. If False, the output will be one-indexed. One-indexed by default.
   """
