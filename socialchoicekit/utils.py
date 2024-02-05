@@ -4,6 +4,7 @@ from typing import Dict, List, Union
 def check_profile(
   profile: np.ndarray,
   is_complete: bool = True,
+  is_strict: bool = True,
 ) -> None:
   """
   Checks that the profile is a numpy array with the correct dimensions.
@@ -15,6 +16,9 @@ def check_profile(
 
   is_complete: bool
     If True, the profile does not have any NaN values. If False, the profile has NaN values. True by default.
+
+  is_strict: bool
+    If True, the profile does not allow ties. If False, the profile allows ties. True by default.
 
   Raises
   ------
@@ -29,7 +33,7 @@ def check_profile(
       if is_complete and np.isnan(np.sum(profile)):
         raise ValueError("Profile cannot contain NaN values")
       if np.nanmin(profile) == 1:
-        if not is_complete or np.nanmax(profile) == profile.shape[1]:
+        if not is_complete or not is_strict or np.nanmax(profile) == profile.shape[1]:
           return
       raise ValueError("Profile must contain exactly integers from 1 to M")
     raise ValueError("Profile must be a two-dimensional array")

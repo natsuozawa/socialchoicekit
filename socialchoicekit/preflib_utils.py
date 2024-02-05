@@ -29,9 +29,9 @@ def preflib_soc_to_profile(instance: OrdinalInstance) -> np.ndarray:
   for order, multiplicity in flattened_order:
     # Order: strict complete order of the alternatives
     # Multiplicity: the number of agents that had this ordinal preference
-    o = np.array(order) - 1
+    indices = np.array(order) - 1
     preference = np.zeros(m, dtype=int)
-    preference[o] = np.arange(1, m + 1)
+    preference[indices] = np.arange(1, m + 1)
     for _ in range(multiplicity):
       arr.append(preference)
   return np.array(arr)
@@ -61,9 +61,9 @@ def preflib_soi_to_profile(instance: OrdinalInstance) -> np.ndarray:
 
   arr = []
   for order, multiplicity in flattened_order:
-    o = np.array(order) - 1
+    indices = np.array(order) - 1
     preference = np.full(instance.num_alternatives, np.nan)
-    preference[o] = np.arange(1, len(o) + 1)
+    preference[indices] = np.arange(1, len(o) + 1)
     # Order: strict incomplete order of the alternatives
     # Multiplicity: the number of agents that had this ordinal preference
     for _ in range(multiplicity):
@@ -73,8 +73,6 @@ def preflib_soi_to_profile(instance: OrdinalInstance) -> np.ndarray:
 def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random") -> np.ndarray:
   """
   Convert a Preflib ToC (Orders with Ties - Complete List) to the profile (Numpy matrix) format.
-  Note that this procedure is tie-breaking. Information about ties are not preserved in the converted profile.
-  Tie-breaking is done by random, but a tie_breaker may be supplied as an argument.
 
   For details on Preflib ToC, see https://www.preflib.org/format
 
@@ -86,7 +84,7 @@ def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
   tie_breaker : {"random", "first", "accept"}
     - "random": shuffle the tied items into a random order
     - "first": sort the tied items in ascending order
-    - "accept": keep the order of the tied items as is
+    - "accept": do not break ties
 
   Returns
   -------
@@ -103,17 +101,19 @@ def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
   for order, multiplicity in vote_map.items():
     # Order: complete unflattened order of the alternatives
     # Multiplicity: the number of agents that had this ordinal preference
-    flattened_order = []
-    for tied_items in order:
-      tied_items = list(tied_items)
-      if tie_breaker == "random":
-        np.random.shuffle(tied_items)
-      elif tie_breaker == "first":
-        tied_items = list(np.sort(tied_items))
-      flattened_order += tied_items
     preference = np.zeros(instance.num_alternatives, dtype=int)
-    o = np.array(flattened_order) - 1
-    preference[o] = np.arange(1, len(flattened_order) + 1)
+    current_rank = 1
+    for tied_items in order:
+      tied_items = np.array(tied_items) - 1
+      if tie_breaker == "accept":
+        preference[tied_items] = current_rank
+      else:
+        if tie_breaker == "random":
+          np.random.shuffle(tied_items)
+        elif tie_breaker == "first":
+          tied_items = np.sort(tied_items)
+        preference[tied_items] = np.arange(current_rank, len(tied_items) + current_rank)
+      current_rank += len(tied_items)
     for _ in range(multiplicity):
       arr.append(preference)
   return np.array(arr)
@@ -121,8 +121,6 @@ def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
 def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random") -> np.ndarray:
   """
   Convert a Preflib ToI (Orders with Ties - Incomplete List) to the profile (Numpy matrix) format.
-  Note that this procedure is tie-breaking. Information about ties are not preserved in the converted profile.
-  Tie-breaking is done by random, but a tie_breaker may be supplied as an argument.
 
   For details on Preflib ToI, see https://www.preflib.org/format
 
@@ -134,7 +132,7 @@ def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
   tie_breaker : {"random", "first", "accept"}
     - "random": shuffle the tied items into a random order
     - "first": sort the tied items in ascending order
-    - "accept": keep the order of the tied items as is
+    - "accept": do not break ties
 
   Returns
   -------
@@ -149,17 +147,19 @@ def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
   for order, multiplicity in vote_map.items():
     # Order: incomplete unflattened order of the alternatives
     # Multiplicity: the number of agents that had this ordinal preference
-    flattened_order = []
-    for tied_items in order:
-      tied_items = list(tied_items)
-      if tie_breaker == "random":
-        np.random.shuffle(tied_items)
-      if tie_breaker == "first":
-        tied_items = list(np.sort(tied_items))
-      flattened_order += tied_items
     preference = np.full(instance.num_alternatives, np.nan)
-    o = np.array(flattened_order) - 1
-    preference[o] = np.arange(1, len(flattened_order) + 1)
+    current_rank = 1
+    for tied_items in order:
+      tied_items = np.array(tied_items) - 1
+      if tie_breaker == "accept":
+        preference[tied_items] = current_rank
+      else:
+        if tie_breaker == "random":
+          np.random.shuffle(tied_items)
+        elif tie_breaker == "first":
+          tied_items = np.sort(tied_items)
+        preference[tied_items] = np.arange(current_rank, len(tied_items) + current_rank)
+      current_rank += len(tied_items)
     for _ in range(multiplicity):
       arr.append(preference)
   return np.array(arr)
@@ -167,8 +167,6 @@ def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
 def preflib_categorical_to_profile(instance: CategoricalInstance, tie_breaker: str = "random") -> np.ndarray:
   """
   Convert a Preflib categorical instance to the profile (Numpy matrix) format.
-  Note that this procedure is tie-breaking. Information about ties are not preserved in the converted profile.
-  Tie-breaking is done by random, but a tie_breaker may be supplied as an argument.
 
   For details on Preflib categorical, see https://www.preflib.org/format
 
@@ -180,7 +178,7 @@ def preflib_categorical_to_profile(instance: CategoricalInstance, tie_breaker: s
   tie_breaker : {"random", "first", "accept"}
     - "random": shuffle the tied items into a random order
     - "first": sort the tied items in ascending order
-    - "accept": keep the order of the tied items as is
+    - "accept": do not break ties
 
   Returns
   -------
@@ -190,17 +188,22 @@ def preflib_categorical_to_profile(instance: CategoricalInstance, tie_breaker: s
   # This is essentially equal to a toi.
   arr = []
   for p in instance.preferences:
-    flattened_order = []
-    for tied_items in p:
-      tied_items = list(tied_items)
-      if tie_breaker == "random":
-        np.random.shuffle(tied_items)
-      if tie_breaker == "first":
-        tied_items = list(np.sort(tied_items))
-      flattened_order += tied_items
     preference = np.full(instance.num_alternatives, np.nan)
-    o = np.array(flattened_order) - 1
-    preference[o] = np.arange(1, len(flattened_order) + 1)
+    current_rank = 1
+    for tied_items in p:
+      # This condition is necessary to avoid indexing errors.
+      if len(tied_items) == 0:
+        continue
+      tied_items = np.array(tied_items) - 1
+      if tie_breaker == "accept":
+        preference[tied_items] = current_rank
+      else:
+        if tie_breaker == "random":
+          np.random.shuffle(tied_items)
+        elif tie_breaker == "first":
+          tied_items = np.sort(tied_items)
+        preference[tied_items] = np.arange(current_rank, len(tied_items) + current_rank)
+      current_rank += len(tied_items)
     for _ in range(instance.multiplicity[p]):
       arr.append(preference)
   return np.array(arr)
