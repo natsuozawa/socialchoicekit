@@ -31,6 +31,10 @@ class GaleShapley:
     c: np.ndarray,
   ) -> List[Tuple[int, int]]:
     """
+    The (provisional) social choice function for this voting rule. Returns one item allocated for each agent.
+
+    Parameters
+    ----------
     resident_profile : np.ndarray
       A (N, M) array, where N is the number of residents and M is the number of hospitals. The element at (i, j) indicates the resident's preference for hospital j, where 1 is the most preferred hospital. If the resident finds a hospital unacceptable, the element would be np.nan.
 

@@ -48,8 +48,10 @@ class UniformValuationProfileGenerator(BaseValuationProfileGenerator):
   ----------
   high: float
     The upper bound of the uniform distribution. 1 by default. Must be positive.
+
   low: float
     The lower bound of the uniform distribution. 0 by default. Must be positive.
+
   seed: Union[int, None]
     The seed for the random number generator. If None, the random number generator will not be seeded.
   """
@@ -115,8 +117,10 @@ class NormalValuationProfileGenerator(BaseValuationProfileGenerator):
   ----------
   mean: float
     The mean of the normal distribution. 0.5 by default.
+
   varaince: float
     The variance of the normal distribution. 0.2 by default. Any generated values below 0 will be clipped to 0.
+
   seed: Union[int, None]
     The seed for the random number generator. If None, the random number generator will not be seeded.
   """

@@ -70,10 +70,13 @@ def dfs_path(G: Dict[int, List[Tuple[int, int]]], current: int, sink: int, visit
   G : Dict[int, List[Tuple[int, int]]]
     A flow network of the form {i: [(j, c), (k, c), ...]} where i is the index of a vertex and [(j, c), (k, c), ...] are the indices of the vertices that i is connected to along with the capacity of the edge.
     The value of the capacities cannot exceed sys.maxsize.
+
   current : int
     The index of the current vertex.
+
   sink : int
     The index of the sink vertex.
+
   visited : Dict[int, int]
     A dictionary of the form {i: j} where i is the index of a vertex and j is 0 if i is not visited, 1 if i is visited.
 
@@ -81,6 +84,7 @@ def dfs_path(G: Dict[int, List[Tuple[int, int]]], current: int, sink: int, visit
   -------
   Tuple[List[int], int]
     A tuple of the form (path, capacity) where path is a list of vertices in the path from the current vertex to the sink vertex and capacity is the capacity of the path.
+
   None
     If there is no path from the current vertex to the sink vertex.
   """
@@ -123,8 +127,10 @@ def convert_bipartite_graph_to_flow_network(G: Dict[int, List[int]], X: list, Y:
   G : Dict[int, List[int]]
     A bipartite graph of the form {i: [j, k, ...]} where i is the index of a vertex and [j, k, ...] are the indices of the vertices that i is connected to.
     The graph may be undirected (as in for every edges from x to y there is an edge from y to x) or directed. If it is directed, then the edges are assumed to be directed from X to Y.
+
   X : list
     The list of the left vertices (in the first partition) in the bipartite graph G.
+
   Y : list
     The list of the right vertices (in the second partition) in the bipartite graph G.
 
@@ -157,8 +163,10 @@ def maximum_cardinality_matching_bipartite(G: Dict[int, List[int]], X: list, Y: 
     A dictionary of the form {i: [j, k, ...]} where i is the index of a vertex and [j, k, ...] are the indices of the vertices that i is connected to.
     This graph may be directed or undirected. If it is directed, then the edges are assumed to be directed from X to Y.
     This graph must be bipartite.
+
   X : list
     The list of the left vertices (in the first partition) in the bipartite graph G.
+
   Y : list
     The list of the right vertices (in the second partition) in the bipartite graph G.
 

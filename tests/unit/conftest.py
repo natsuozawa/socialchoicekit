@@ -35,3 +35,15 @@ def apa_election_instance():
   instance = OrdinalInstance()
   instance.parse_url("https://www.preflib.org/static/data/apa/00028-00000001.soi")
   return instance
+
+@pytest.fixture
+def burlington_election_instance():
+  instance = OrdinalInstance()
+  instance.parse_url("https://www.preflib.org/static/data/burlington/00005-00000001.toc")
+  return instance
+
+@pytest.fixture
+def aspen_election_instance():
+  instance = OrdinalInstance()
+  instance.parse_url("https://www.preflib.org/static/data/aspen/00016-00000002.toi")
+  return instance

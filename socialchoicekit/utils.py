@@ -120,8 +120,10 @@ def check_bipartite_graph(G: Dict[int, List[int]], X: list, Y: list) -> None:
   G : Dict[int, List[int]]
     A dictionary of the form {i: [j, k, ...]} where i is the index of a vertex and [j, k, ...] are the indices of the vertices that i is connected to.
     The graph may be directed or undirected. If it is directed, then the edges are assumed to be directed from X to Y.
+
   X: list
     The list of the left vertices (in the first partition) in the bipartite graph G.
+
   Y: list
     The list of the right vertices (in the second partition) in the bipartite graph G.
 

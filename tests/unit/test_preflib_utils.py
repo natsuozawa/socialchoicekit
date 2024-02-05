@@ -23,3 +23,13 @@ class TestPrefLibUtils:
   def test_preflib_soi_to_profile_with_invalid_instance(self, agh_course_selection_instance):
     with pytest.raises(ValueError):
       preflib_soi_to_profile(agh_course_selection_instance)
+
+  def test_preflib_toc_to_profile(self, burlington_election_instance):
+    toc = burlington_election_instance
+    profile = preflib_toc_to_profile(toc, tie_breaker="first")
+    check_profile(profile, is_complete=True)
+    assert profile.shape == (burlington_election_instance.num_voters, burlington_election_instance.num_alternatives)
+
+  def test_preflib_toc_to_profile_with_invalid_instance(self, apa_election_instance):
+    with pytest.raises(ValueError):
+      preflib_toc_to_profile(apa_election_instance, tie_breaker="first")

@@ -13,7 +13,6 @@ class BaseScoring:
 
   Parameters
   ----------
-
   tie_breaker : {"random", "first", "accept"}
     - "random": pick from a uniform distribution among the winners
     - "first": pick the alternative with the lowest index

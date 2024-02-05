@@ -13,6 +13,7 @@ class Elicitor:
   ----------
   memoize: bool
     IF True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
+
   zero_indexed : bool
     If True, the input of the elicit function will be zero-indexed. If False, the input will be one-indexed. One-indexed by default.
   """
@@ -72,6 +73,7 @@ class Elicitor:
     ----------
     agents: np.ndarray
       The agents array. Must contain only integers that correspond to a valid agent.
+
     alternatives: np.ndarray
       The alternatives array. Must contain only integers that correspond to a valid alternative.
 
@@ -170,8 +172,10 @@ class LambdaElicitor(Elicitor):
   ----------
   elicitation_function: Callable[[int, int], float]
     A function that takes in the agent's index and the alternative's index and returns the agent's preference for the alternative.
+
   memoize: bool
-    IF True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
+    If True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
+
   zero_indexed : bool
     If True, the input of the elicit function will be zero-indexed. If False, the input will be one-indexed. Zero-indexed by default.
   """
