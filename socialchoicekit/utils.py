@@ -12,7 +12,7 @@ def check_profile(
   Parameters
   ----------
   profile: np.ndarray
-    This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    This is the ordinal profile. A (N, M) array, where N is the number of agents and M is the number of alternatives or items. The element at (i, j) indicates the agent's preference for alternative j, where 1 is the most preferred alternative.
 
   is_complete: bool
     If True, the profile does not have any NaN values. If False, the profile has NaN values. True by default.
@@ -49,7 +49,7 @@ def check_valuation_profile(
   Parameters
   ----------
     valuation_profile: np.ndarray
-      This is the (partial) cardinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the utility value (voter's cardinal preference) for alternative j. If the value is unknown, the element would be NaN.
+      This is the (partial) cardinal profile. A (N, M) array, where N is the number of agents and M is the number of alternatives or items. The element at (i, j) indicates the utility value (agent's cardinal preference) for alternative or item j. If the value is unknown, the element would be NaN.
 
     is_complete: bool
       If True, the valuation profile does not have any NaN values. If False, the valuation profile has NaN values. False by default.

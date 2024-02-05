@@ -3,8 +3,9 @@ import numpy as np
 from preflibtools.instances import OrdinalInstance, CategoricalInstance
 
 from socialchoicekit.utils import check_tie_breaker
+from socialchoicekit.profile_utils import *
 
-def preflib_soc_to_profile(instance: OrdinalInstance) -> np.ndarray:
+def preflib_soc_to_profile(instance: OrdinalInstance) -> StrictCompleteProfile:
   """
   Convert a Preflib SoC (Strict Orders - Complete List) to the profile (Numpy matrix) format.
 
@@ -17,7 +18,7 @@ def preflib_soc_to_profile(instance: OrdinalInstance) -> np.ndarray:
 
   Returns
   -------
-  np.ndarray
+  StrictCompleteProfile
     The profile (Numpy matrix) format of the Preflib SoC.
   """
   if instance.data_type != "soc":
@@ -34,9 +35,9 @@ def preflib_soc_to_profile(instance: OrdinalInstance) -> np.ndarray:
     preference[indices] = np.arange(1, m + 1)
     for _ in range(multiplicity):
       arr.append(preference)
-  return np.array(arr)
+  return StrictCompleteProfile.of(np.array(arr))
 
-def preflib_soi_to_profile(instance: OrdinalInstance) -> np.ndarray:
+def preflib_soi_to_profile(instance: OrdinalInstance) -> StrictIncompleteProfile:
   """
   Convert a Preflib SoI (Strict Orders - Incomplete List) to the profile (Numpy matrix) format.
 
@@ -49,7 +50,7 @@ def preflib_soi_to_profile(instance: OrdinalInstance) -> np.ndarray:
 
   Returns
   -------
-  np.ndarray
+  StrictIncompleteProfile
     The profile (Numpy matrix) format of the Preflib SoC.
   """
   if instance.data_type != "soi":
@@ -68,9 +69,9 @@ def preflib_soi_to_profile(instance: OrdinalInstance) -> np.ndarray:
     # Multiplicity: the number of agents that had this ordinal preference
     for _ in range(multiplicity):
       arr.append(preference)
-  return np.array(arr)
+  return StrictIncompleteProfile.of(np.array(arr))
 
-def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random") -> np.ndarray:
+def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random") -> CompleteProfileWithTies:
   """
   Convert a Preflib ToC (Orders with Ties - Complete List) to the profile (Numpy matrix) format.
 
@@ -88,7 +89,7 @@ def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
 
   Returns
   -------
-  np.ndarray
+  CompleteProfileWithTies
     The profile (Numpy matrix) format of the Preflib ToC.
   """
   if instance.data_type != "toc":
@@ -116,9 +117,9 @@ def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
       current_rank += len(tied_items)
     for _ in range(multiplicity):
       arr.append(preference)
-  return np.array(arr)
+  return CompleteProfileWithTies.of(np.array(arr))
 
-def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random") -> np.ndarray:
+def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random") -> IncompleteProfileWithTies:
   """
   Convert a Preflib ToI (Orders with Ties - Incomplete List) to the profile (Numpy matrix) format.
 
@@ -136,7 +137,7 @@ def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
 
   Returns
   -------
-  np.ndarray
+  IncompleteProfileWithTies
     The profile (Numpy matrix) format of the Preflib ToI.
   """
   if instance.data_type != "toi":
@@ -162,9 +163,9 @@ def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
       current_rank += len(tied_items)
     for _ in range(multiplicity):
       arr.append(preference)
-  return np.array(arr)
+  return IncompleteProfileWithTies.of(np.array(arr))
 
-def preflib_categorical_to_profile(instance: CategoricalInstance, tie_breaker: str = "random") -> np.ndarray:
+def preflib_categorical_to_profile(instance: CategoricalInstance, tie_breaker: str = "random") -> IncompleteProfileWithTies:
   """
   Convert a Preflib categorical instance to the profile (Numpy matrix) format.
 
@@ -182,7 +183,7 @@ def preflib_categorical_to_profile(instance: CategoricalInstance, tie_breaker: s
 
   Returns
   -------
-  np.ndarray
+  IncompleteProfileWithTies
     The profile (Numpy matrix) format of the Preflib categorical instance.
   """
   # This is essentially equal to a toi.
@@ -206,4 +207,4 @@ def preflib_categorical_to_profile(instance: CategoricalInstance, tie_breaker: s
       current_rank += len(tied_items)
     for _ in range(instance.multiplicity[p]):
       arr.append(preference)
-  return np.array(arr)
+  return IncompleteProfileWithTies.of(np.array(arr))
