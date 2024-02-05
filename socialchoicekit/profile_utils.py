@@ -1,6 +1,6 @@
 import numpy as np
 
-from socialchoicekit.utils import check_tie_breaker, check_profile
+from socialchoicekit.utils import check_tie_breaker, check_profile, check_valuation_profile
 
 class Profile(np.ndarray):
   """
@@ -13,6 +13,7 @@ class Profile(np.ndarray):
 
   @staticmethod
   def of(arr: np.ndarray) -> "Profile":
+    check_profile(arr, is_complete=False, is_strict=False)
     return arr.view(Profile)
 
 class StrictProfile(Profile):
@@ -23,6 +24,7 @@ class StrictProfile(Profile):
   """
   @staticmethod
   def of(arr: np.ndarray) -> "StrictProfile":
+    check_profile(arr, is_complete=False, is_strict=True)
     return arr.view(StrictProfile)
 
 class ProfileWithTies(Profile):
@@ -33,6 +35,7 @@ class ProfileWithTies(Profile):
   """
   @staticmethod
   def of(arr: np.ndarray) -> "ProfileWithTies":
+    check_profile(arr, is_complete=False, is_strict=False)
     return arr.view(ProfileWithTies)
 
 class CompleteProfile(Profile):
@@ -43,6 +46,7 @@ class CompleteProfile(Profile):
   """
   @staticmethod
   def of(arr: np.ndarray) -> "CompleteProfile":
+    check_profile(arr, is_complete=True, is_strict=False)
     return arr.view(CompleteProfile)
 
 class IncompleteProfile(Profile):
@@ -53,6 +57,7 @@ class IncompleteProfile(Profile):
   """
   @staticmethod
   def of(arr: np.ndarray) -> "IncompleteProfile":
+    check_profile(arr, is_complete=False, is_strict=False)
     return arr.view(IncompleteProfile)
 
 class StrictCompleteProfile(StrictProfile, CompleteProfile):
@@ -63,6 +68,7 @@ class StrictCompleteProfile(StrictProfile, CompleteProfile):
   """
   @staticmethod
   def of(arr: np.ndarray) -> "StrictCompleteProfile":
+    check_profile(arr, is_complete=True, is_strict=True)
     return arr.view(StrictCompleteProfile)
 
 class StrictIncompleteProfile(StrictProfile, IncompleteProfile):
@@ -73,6 +79,7 @@ class StrictIncompleteProfile(StrictProfile, IncompleteProfile):
   """
   @staticmethod
   def of(arr: np.ndarray) -> "StrictIncompleteProfile":
+    check_profile(arr, is_complete=False, is_strict=True)
     return arr.view(StrictIncompleteProfile)
 
 class CompleteProfileWithTies(ProfileWithTies, CompleteProfile):
@@ -83,6 +90,7 @@ class CompleteProfileWithTies(ProfileWithTies, CompleteProfile):
   """
   @staticmethod
   def of(arr: np.ndarray) -> "CompleteProfileWithTies":
+    check_profile(arr, is_complete=True, is_strict=False)
     return arr.view(CompleteProfileWithTies)
 
 class IncompleteProfileWithTies(ProfileWithTies, IncompleteProfile):
@@ -93,6 +101,7 @@ class IncompleteProfileWithTies(ProfileWithTies, IncompleteProfile):
   """
   @staticmethod
   def of(arr: np.ndarray) -> "IncompleteProfileWithTies":
+    check_profile(arr, is_complete=False, is_strict=False)
     return arr.view(IncompleteProfileWithTies)
 
 class ValuationProfile(np.ndarray):
@@ -106,6 +115,7 @@ class ValuationProfile(np.ndarray):
 
   @staticmethod
   def of(arr: np.ndarray) -> "ValuationProfile":
+    check_valuation_profile(arr, is_complete=False)
     return arr.view(ValuationProfile)
 
 class CompleteValuationProfile(ValuationProfile):
@@ -116,6 +126,7 @@ class CompleteValuationProfile(ValuationProfile):
   """
   @staticmethod
   def of(arr: np.ndarray) -> "CompleteValuationProfile":
+    check_valuation_profile(arr, is_complete=True)
     return arr.view(CompleteValuationProfile)
 
 class IncompleteValuationProfile(ValuationProfile):
@@ -126,4 +137,5 @@ class IncompleteValuationProfile(ValuationProfile):
   """
   @staticmethod
   def of(arr: np.ndarray) -> "IncompleteValuationProfile":
+    check_valuation_profile(arr, is_complete=False)
     return arr.view(IncompleteValuationProfile)
