@@ -49,3 +49,13 @@ class TestPrefLibUtils:
   def test_preflib_toi_to_profile_with_invalid_instance(self, agh_course_selection_instance):
     with pytest.raises(ValueError):
       preflib_toi_to_profile(agh_course_selection_instance, tie_breaker="first")
+
+  def test_preflib_categorical_to_profile(self, french_president_election_instance):
+    cat = french_president_election_instance
+    profile_1 = preflib_categorical_to_profile(cat, tie_breaker="first")
+    # This dataset happens to be complete. Categorical preference data can be incomplete in general.
+    check_profile(profile_1, is_complete=True)
+    assert profile_1.shape == (french_president_election_instance.num_voters, french_president_election_instance.num_alternatives)
+    profile_2 = preflib_categorical_to_profile(cat, tie_breaker="random")
+    check_profile(profile_2, is_complete=True)
+    assert profile_2.shape == (french_president_election_instance.num_voters, french_president_election_instance.num_alternatives)

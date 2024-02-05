@@ -1,6 +1,6 @@
 import numpy as np
 
-from preflibtools.instances import OrdinalInstance
+from preflibtools.instances import OrdinalInstance, CategoricalInstance
 
 from socialchoicekit.utils import check_tie_breaker
 
@@ -99,11 +99,12 @@ def preflib_toc_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
     # Multiplicity: the number of agents that had this ordinal preference
     flattened_order = []
     for tied_items in order:
+      tied_items = list(tied_items)
       if tie_breaker == "random":
-        np.random.shuffle(list(tied_items))
+        np.random.shuffle(tied_items)
       elif tie_breaker == "first":
-        tied_items = np.sort(tied_items)
-      flattened_order += list(tied_items)
+        tied_items = list(np.sort(tied_items))
+      flattened_order += tied_items
     for _ in range(multiplicity):
       arr.append(flattened_order)
   return np.array(arr)
@@ -141,13 +142,53 @@ def preflib_toi_to_profile(instance: OrdinalInstance, tie_breaker: str = "random
     # Multiplicity: the number of agents that had this ordinal preference
     flattened_order = []
     for tied_items in order:
+      tied_items = list(tied_items)
       if tie_breaker == "random":
-        np.random.shuffle(list(tied_items))
+        np.random.shuffle(tied_items)
       if tie_breaker == "first":
-        tied_items = np.sort(tied_items)
-      flattened_order += list(tied_items)
+        tied_items = list(np.sort(tied_items))
+      flattened_order += tied_items
 
     flattened_order += [np.nan] * (instance.num_alternatives - len(flattened_order))
     for _ in range(multiplicity):
+      arr.append(flattened_order)
+  return np.array(arr)
+
+def preflib_categorical_to_profile(instance: CategoricalInstance, tie_breaker: str = "random") -> np.ndarray:
+  """
+  Convert a Preflib categorical instance to the profile (Numpy matrix) format.
+  Note that this procedure is tie-breaking. Information about ties are not preserved in the converted profile.
+  Tie-breaking is done by random, but a tie_breaker may be supplied as an argument.
+
+  For details on Preflib categorical, see https://www.preflib.org/format
+
+  Parameters
+  ----------
+  instance: CategoricalInstance
+    The Preflib categorical instance to convert. This is included in the preflibtools.instances module.
+
+  tie_breaker : {"random", "first", "accept"}
+    - "random": shuffle the tied items into a random order
+    - "first": sort the tied items in ascending order
+    - "accept": keep the order of the tied items as is
+
+  Returns
+  -------
+  np.ndarray
+    The profile (Numpy matrix) format of the Preflib categorical instance.
+  """
+  # This is essentially equal to a toi.
+  arr = []
+  for p in instance.preferences:
+    flattened_order = []
+    for tied_items in p:
+      tied_items = list(tied_items)
+      if tie_breaker == "random":
+        np.random.shuffle(tied_items)
+      if tie_breaker == "first":
+        tied_items = list(np.sort(tied_items))
+      flattened_order += tied_items
+    flattened_order += [np.nan] * (instance.num_alternatives - len(flattened_order))
+    for _ in range(instance.multiplicity[p]):
       arr.append(flattened_order)
   return np.array(arr)

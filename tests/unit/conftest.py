@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from preflibtools.instances import OrdinalInstance
+from preflibtools.instances import OrdinalInstance, CategoricalInstance
 @pytest.fixture
 def profile_a():
   return np.array([
@@ -46,4 +46,10 @@ def burlington_election_instance():
 def aspen_election_instance():
   instance = OrdinalInstance()
   instance.parse_url("https://www.preflib.org/static/data/aspen/00016-00000002.toi")
+  return instance
+
+@pytest.fixture
+def french_president_election_instance():
+  instance = CategoricalInstance()
+  instance.parse_url("https://www.preflib.org/static/data/frenchapproval/00026-00000001.cat")
   return instance
