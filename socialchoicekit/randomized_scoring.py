@@ -24,7 +24,7 @@ class BaseRandomizedScoring:
     self.voting_rule = voting_rule
     self.index_fixer = 0 if zero_indexed else 1
 
-  def score(self, scores_by_voter: np.ndarray) -> np.ndarray:
+  def score(self, profile: Profile) -> np.ndarray:
     """
     The scoring function for this voting rule. Returns a list of alternatives with their scores.
 
@@ -34,8 +34,8 @@ class BaseRandomizedScoring:
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: Profile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
@@ -43,7 +43,7 @@ class BaseRandomizedScoring:
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
 
-    return self.voting_rule.score(scores_by_voter)
+    return self.voting_rule.score(profile)
 
   def scf(self, profile: Profile) -> int:
     """
@@ -55,8 +55,8 @@ class BaseRandomizedScoring:
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: Profile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------

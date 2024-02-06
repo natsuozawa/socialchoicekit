@@ -36,7 +36,7 @@ class LambdaTSF:
 
     Parameters
     ----------
-    profile: np.ndarray
+    profile: Profile
       A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
 
     elicitor: Elicitor
