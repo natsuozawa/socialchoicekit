@@ -14,7 +14,7 @@ from preflibtools.instances import OrdinalInstance
 
 from socialchoicekit.preflib_utils import preflib_soc_to_profile
 from socialchoicekit.data_generation import UniformValuationProfileGenerator
-from socialchoicekit.deterministic_scoring import Plurality, Borda, SocialWelfare
+from socialchoicekit.deterministic_scoring import Plurality, SocialWelfare
 from socialchoicekit.elicitation_voting import KARV
 from socialchoicekit.elicitation_utils import ValuationProfileElicitor, SynchronousStdInElicitor
 

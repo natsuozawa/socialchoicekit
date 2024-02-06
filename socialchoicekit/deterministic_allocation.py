@@ -58,7 +58,7 @@ def root_n_serial_dictatorship(
   Parameters
   ----------
   profile: Profile
-    A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the agent's preference for item j. If the agent finds an item unacceptable, the element would be np.nan.
+    A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the agent's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
 
   Returns
   -------

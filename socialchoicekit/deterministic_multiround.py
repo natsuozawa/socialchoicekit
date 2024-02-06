@@ -1,7 +1,8 @@
 import numpy as np
 
 from socialchoicekit.deterministic_scoring import Plurality
-from socialchoicekit.utils import check_profile, check_tie_breaker, break_tie
+from socialchoicekit.utils import check_tie_breaker, break_tie
+from socialchoicekit.profile_utils import CompleteProfile
 
 """
 Deterministic multiround rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016).
@@ -33,7 +34,7 @@ class SingleTransferableVote:
     self.voting_rule = Plurality(zero_indexed=zero_indexed)
     check_tie_breaker(tie_breaker, include_accept=False)
 
-  def scf(self, profile: np.ndarray) -> int:
+  def scf(self, profile: CompleteProfile) -> int:
     """
     The social choice function for this voting rule. Returns a single winning alternative.
 
@@ -43,19 +44,18 @@ class SingleTransferableVote:
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: CompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
     int
       A single winning alternative.
     """
-    check_profile(profile)
     current_profile = profile
     alternatives = np.arange(profile.shape[1]) + self.index_fixer
     while True:
-      score = self.voting_rule.score(current_profile)
+      score = self.voting_rule.score(CompleteProfile.of(current_profile))
       if alternatives.shape[0] == 1:
         break
       # Access the first element here because np.where returns a tuple.

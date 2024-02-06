@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 
 from socialchoicekit.deterministic_scoring import *
+from socialchoicekit.profile_utils import IncompleteValuationProfile
 
 class TestDeterministicScoring:
   def test_plurality_a(self, profile_a):
@@ -46,11 +47,11 @@ class TestDeterministicScoring:
 
   @pytest.fixture
   def cardinal_profile_1(self):
-    return np.array([
+    return IncompleteValuationProfile.of(np.array([
       [0.9, 0, 0.05, 0.04, 0.01],
       [0.1, 0.05, 0.15, 0.4, 0.3],
       [0.7, np.nan, 0.01, 0.2, 0.09]
-    ])
+    ]))
 
   @pytest.fixture
   def social_welfare_1(self):

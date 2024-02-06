@@ -1,6 +1,7 @@
 import numpy as np
 
 from socialchoicekit.deterministic_scoring import *
+from socialchoicekit.profile_utils import Profile, CompleteProfile, StrictCompleteProfile
 
 """
 Randomized scoring rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016).
@@ -44,7 +45,7 @@ class BaseRandomizedScoring:
 
     return self.voting_rule.score(scores_by_voter)
 
-  def scf(self, profile: np.ndarray) -> int:
+  def scf(self, profile: Profile) -> int:
     """
     The social choice function for this voting rule. Returns a single winning alternative.
 

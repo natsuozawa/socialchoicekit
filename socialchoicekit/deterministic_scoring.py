@@ -1,7 +1,8 @@
 import numpy as np
 from typing import Union
 
-from socialchoicekit.utils import check_tie_breaker, check_profile, break_tie
+from socialchoicekit.utils import check_tie_breaker, break_tie
+from socialchoicekit.profile_utils import Profile, CompleteProfile, StrictCompleteProfile, ValuationProfile
 
 """
 Deterministic scoring rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016).
@@ -97,7 +98,7 @@ class Plurality(BaseScoring):
   def __init__(self, tie_breaker: str = "random", zero_indexed: bool = False) -> None:
     super().__init__(tie_breaker, zero_indexed)
 
-  def score(self, profile: np.ndarray) -> np.ndarray:
+  def score(self, profile: Profile) -> np.ndarray:
     """
     The scoring function for this voting rule. Returns a list of alternatives with their scores.
 
@@ -107,19 +108,18 @@ class Plurality(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: Profile
+    A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's preference for alternative j, where 1 is the most preferred alternative. If the agent's preference for the alternative is unknown or the alternative is unacceptable, the element would be np.nan.
 
     Returns
     -------
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    check_profile(profile)
     scores_by_voter = np.where(profile == 1, 1, 0)
     return super().score(scores_by_voter)
 
-  def swf(self, profile: np.ndarray) -> np.ndarray:
+  def swf(self, profile: Profile) -> np.ndarray:
     """
     The social welfare function for this voting rule. Returns a ranked list of alternatives with the scores. Note that tie breaking behavior is undefined.
 
@@ -129,8 +129,8 @@ class Plurality(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: Profile
+      A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's preference for alternative j, where 1 is the most preferred alternative. If the agent's preference for the alternative is unknown or the alternative is unacceptable, the element would be np.nan.
 
     Returns
     -------
@@ -140,7 +140,7 @@ class Plurality(BaseScoring):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
+  def scf(self, profile: Profile) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -150,8 +150,8 @@ class Plurality(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: Profile
+      A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's preference for alternative j, where 1 is the most preferred alternative. If the agent's preference for the alternative is unknown or the alternative is unacceptable, the element would be np.nan.
 
     Returns
     -------
@@ -178,7 +178,7 @@ class Borda(BaseScoring):
   def __init__(self, tie_breaker: str = "random", zero_indexed: bool = False) -> None:
     super().__init__(tie_breaker, zero_indexed)
 
-  def score(self, profile: np.ndarray) -> np.ndarray:
+  def score(self, profile: CompleteProfile) -> np.ndarray:
     """
     The scoring function for this voting rule. Returns a list of alternatives with their scores.
 
@@ -188,19 +188,18 @@ class Borda(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: CompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    check_profile(profile)
     scores_by_voter = (profile.shape[1] - profile)
     return super().score(scores_by_voter)
 
-  def swf(self, profile: np.ndarray) -> np.ndarray:
+  def swf(self, profile: CompleteProfile) -> np.ndarray:
     """
     The social welfare function for this voting rule. Returns a ranked list of alternatives with the scores. Note that tie breaking behavior is undefined.
 
@@ -210,8 +209,8 @@ class Borda(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: CompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
@@ -221,7 +220,7 @@ class Borda(BaseScoring):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
+  def scf(self, profile: CompleteProfile) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -231,8 +230,8 @@ class Borda(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: CompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
@@ -244,7 +243,6 @@ class Borda(BaseScoring):
 
 class Veto(BaseScoring):
   """
-  (Temporary description)
   The veto voting rule, also known as the anti-plurality rule, names a single, least-preferred alternative, and the veto voting rule then selects, as the winner(s) of an election (aka the “social choice(s)”) the alternative(s) with the fewest vetoes.
 
   Parameters
@@ -260,7 +258,7 @@ class Veto(BaseScoring):
   def __init__(self, tie_breaker: str = "random", zero_indexed: bool = False) -> None:
     super().__init__(tie_breaker, zero_indexed)
 
-  def score(self, profile: np.ndarray) -> np.ndarray:
+  def score(self, profile: StrictCompleteProfile) -> np.ndarray:
     """
     The scoring function for this voting rule. Returns a list of alternatives with their scores.
 
@@ -270,19 +268,19 @@ class Veto(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    check_profile(profile)
+    # TODO: support all Profiles
     scores_by_voter = np.where(profile < profile.shape[1], 1, 0)
     return super().score(scores_by_voter)
 
-  def swf(self, profile: np.ndarray) -> np.ndarray:
+  def swf(self, profile: StrictCompleteProfile) -> np.ndarray:
     """
     The social welfare function for this voting rule. Returns a ranked list of alternatives with the scores. Note that tie breaking behavior is undefined.
 
@@ -292,8 +290,8 @@ class Veto(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
@@ -303,7 +301,7 @@ class Veto(BaseScoring):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
+  def scf(self, profile: StrictCompleteProfile) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -313,8 +311,8 @@ class Veto(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
@@ -326,7 +324,6 @@ class Veto(BaseScoring):
 
 class KApproval(BaseScoring):
   """
-  (Temporary description)
   The k-approval voting rule names the k most-preferred alternatives, and the k-approval voting rule then selects, as the winner(s) of an election (aka the “social choice(s)”) the alternative(s) with the highest number of approvals.
 
   Parameters
@@ -348,7 +345,7 @@ class KApproval(BaseScoring):
     self.k = k
     super().__init__(tie_breaker, zero_indexed)
 
-  def score(self, profile: np.ndarray) -> np.ndarray:
+  def score(self, profile: StrictCompleteProfile) -> np.ndarray:
     """
     The scoring function for this voting rule. Returns a list of alternatives with their scores.
 
@@ -358,19 +355,18 @@ class KApproval(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    check_profile(profile)
     scores_by_voter = np.where(profile <= self.k, 1, 0)
     return super().score(scores_by_voter)
 
-  def swf(self, profile: np.ndarray) -> np.ndarray:
+  def swf(self, profile: StrictCompleteProfile) -> np.ndarray:
     """
     The social welfare function for this voting rule. Returns a ranked list of alternatives with the scores. Note that tie breaking behavior is undefined.
 
@@ -380,8 +376,8 @@ class KApproval(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
@@ -391,7 +387,7 @@ class KApproval(BaseScoring):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
+  def scf(self, profile: StrictCompleteProfile) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -401,8 +397,8 @@ class KApproval(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
@@ -430,7 +426,7 @@ class Harmonic(BaseScoring):
   def __init__(self, tie_breaker: str = "random", zero_indexed: bool = False) -> None:
     super().__init__(tie_breaker, zero_indexed)
 
-  def score(self, profile: np.ndarray) -> np.ndarray:
+  def score(self, profile: CompleteProfile) -> np.ndarray:
     """
     The scoring function for this voting rule. Returns a list of alternatives with their scores.
 
@@ -440,19 +436,18 @@ class Harmonic(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: CompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    check_profile(profile)
     scores_by_voter = 1 / profile
     return super().score(scores_by_voter)
 
-  def swf(self, profile: np.ndarray) -> np.ndarray:
+  def swf(self, profile: CompleteProfile) -> np.ndarray:
     """
     The social welfare function for this voting rule. Returns a ranked list of alternatives with the scores. Note that tie breaking behavior is undefined.
 
@@ -462,8 +457,8 @@ class Harmonic(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: CompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
@@ -473,7 +468,7 @@ class Harmonic(BaseScoring):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
+  def scf(self, profile: CompleteProfile) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -483,8 +478,8 @@ class Harmonic(BaseScoring):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: CompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
@@ -497,28 +492,15 @@ class Harmonic(BaseScoring):
 class SocialWelfare(BaseScoring):
   """
   Computes the social welfare for alternatives based on an inputted valuation profile.
-
-  Parameters
-  ----------
-  tie_breaker : {"random", "first", "accept"}
-    - "random": pick from a uniform distribution among the winners
-    - "first": pick the alternative with the lowest index
-    - "accept": return all winners in an array
-
-  zero_indexed : bool
-    If True, the output of the social welfare function and social choice function will be zero-indexed. If False, the output will be one-indexed. One-indexed by default.
   """
   def __init__(
     self,
-    tie_breaker: str = "random",
-    zero_indexed: bool = False,
   ):
-    self.tie_breaker = tie_breaker
-    self.zero_indexed = zero_indexed
+    pass
 
   def score(
     self,
-    valuation_profile: np.ndarray,
+    valuation_profile: ValuationProfile,
   ) -> np.ndarray:
     """
     Computes the normalized social welfare for each alternative based on an inputted valuation profile.
@@ -526,7 +508,7 @@ class SocialWelfare(BaseScoring):
 
     Parameters
     ----------
-    valuation_profile: np.ndarray
+    valuation_profile: ValuationProfile
       A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's cardinal utility for alternative j. If the agent finds an item or alternative unacceptable, the element would be np.nan.
 
     Returns

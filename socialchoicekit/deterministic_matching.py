@@ -3,7 +3,6 @@ import numpy as np
 from typing import List, Tuple
 import heapq
 
-from socialchoicekit.utils import check_profile
 from socialchoicekit.profile_utils import StrictProfile
 
 class GaleShapley:

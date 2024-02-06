@@ -1,15 +1,19 @@
-from socialchoicekit.deterministic_scoring import Plurality
 import numpy as np
 from typing import cast
 import pytest
 
+from socialchoicekit.deterministic_scoring import Plurality
+from socialchoicekit.profile_utils import StrictCompleteProfile
+
 class TestBasicVoting:
   @pytest.fixture
   def profile_single(self):
-    return np.array([[1]])
+    return StrictCompleteProfile.of(np.array([[1]]))
 
   @pytest.fixture
   def profile_empty(self):
+    # Do not convert this into a Profile here because it will raise an error
+    # before this method returns.
     return np.array([[]])
 
   @pytest.fixture
@@ -42,10 +46,10 @@ class TestBasicVoting:
 
   @pytest.fixture
   def profile_tie(self):
-    return np.array([
+    return StrictCompleteProfile.of(np.array([
       [1, 2],
       [2, 1],
-    ])
+    ]))
 
   def test_tie_breaker(self, profile_tie):
     voting_rule_without_tie_breaker = Plurality(tie_breaker="accept")
@@ -74,17 +78,17 @@ class TestBasicVoting:
   def test_empty(self, profile_empty):
     voting_rule = Plurality()
     with pytest.raises(ValueError):
-      voting_rule.scf(profile_empty)
+      voting_rule.scf(StrictCompleteProfile.of(profile_empty))
 
   def test_1d(self, profile_1d):
     voting_rule = Plurality()
     with pytest.raises(ValueError):
-      voting_rule.scf(profile_1d)
+      voting_rule.scf(StrictCompleteProfile.of(profile_1d))
 
   def test_3d(self, profile_3d):
     voting_rule = Plurality()
     with pytest.raises(ValueError):
-      voting_rule.scf(profile_3d)
+      voting_rule.scf(StrictCompleteProfile.of(profile_3d))
 
   # def test_repeat(self, profile_repeat):
   #   voting_rule = Plurality()
@@ -94,9 +98,9 @@ class TestBasicVoting:
   def test_negative(self, profile_negative):
     voting_rule = Plurality()
     with pytest.raises(ValueError):
-      voting_rule.scf(profile_negative)
+      voting_rule.scf(StrictCompleteProfile.of(profile_negative))
 
   def test_invalid_alternative(self, profile_invalid_alternative):
     voting_rule = Plurality()
     with pytest.raises(ValueError):
-      voting_rule.scf(profile_invalid_alternative)
+      voting_rule.scf(StrictCompleteProfile.of(profile_invalid_alternative))
