@@ -1,7 +1,8 @@
 import numpy as np
 from typing import Union
 
-from socialchoicekit.utils import check_tie_breaker, check_profile, break_tie
+from socialchoicekit.utils import check_tie_breaker, break_tie
+from socialchoicekit.profile_utils import StrictCompleteProfile
 
 class BaseTournament:
   """
@@ -78,25 +79,25 @@ class Copeland(BaseTournament):
   def __init__(self, tie_breaker: str = "random", zero_indexed: bool = False) -> None:
     super().__init__(tie_breaker, zero_indexed)
 
-  def score(self, profile: np.ndarray) -> np.ndarray:
+  def score(self, profile: StrictCompleteProfile) -> np.ndarray:
     """
     The scoring function for this voting rule. Returns a list of alternatives with their scores.
 
     Notes
     -----
-    Complexity O(M^2N)
+    Complexity O(M^2 N)
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    check_profile(profile)
+    # TODO: Add support for all Profiles
     net_preferences = np.zeros((profile.shape[1], profile.shape[1]))
     for i in range(profile.shape[1]):
       preferences_by_voter = profile - profile[:, i].reshape(profile.shape[0], 1)
@@ -111,7 +112,7 @@ class Copeland(BaseTournament):
 
     return score
 
-  def swf(self, profile: np.ndarray) -> np.ndarray:
+  def swf(self, profile: StrictCompleteProfile) -> np.ndarray:
     """
     The social welfare function for this voting rule. Returns a ranked list of alternatives with the scores. Note that tie breaking behavior is undefined.
 
@@ -121,8 +122,8 @@ class Copeland(BaseTournament):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
@@ -132,7 +133,7 @@ class Copeland(BaseTournament):
     score = self.score(profile)
     return super().swf(score)
 
-  def scf(self, profile: np.ndarray) -> Union[np.ndarray, int]:
+  def scf(self, profile: StrictCompleteProfile) -> Union[np.ndarray, int]:
     """
     The social choice function for this voting rule. Returns a set of alternatives with the highest scores. With a tie breaking rule, returns a single alternative.
 
@@ -142,8 +143,8 @@ class Copeland(BaseTournament):
 
     Parameters
     ----------
-    profile: np.ndarray
-      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------

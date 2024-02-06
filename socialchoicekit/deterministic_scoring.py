@@ -116,7 +116,7 @@ class Plurality(BaseScoring):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    scores_by_voter = np.where(profile == 1, 1, 0)
+    scores_by_voter = np.where(profile.view(np.ndarray) == 1, 1, 0)
     return super().score(scores_by_voter)
 
   def swf(self, profile: Profile) -> np.ndarray:
@@ -196,7 +196,7 @@ class Borda(BaseScoring):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    scores_by_voter = (profile.shape[1] - profile)
+    scores_by_voter = (profile.shape[1] - profile.view(np.ndarray))
     return super().score(scores_by_voter)
 
   def swf(self, profile: CompleteProfile) -> np.ndarray:
@@ -277,7 +277,7 @@ class Veto(BaseScoring):
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
     # TODO: support all Profiles
-    scores_by_voter = np.where(profile < profile.shape[1], 1, 0)
+    scores_by_voter = np.where(profile.view(np.ndarray) < profile.shape[1], 1, 0)
     return super().score(scores_by_voter)
 
   def swf(self, profile: StrictCompleteProfile) -> np.ndarray:
@@ -363,7 +363,7 @@ class KApproval(BaseScoring):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    scores_by_voter = np.where(profile <= self.k, 1, 0)
+    scores_by_voter = np.where(profile.view(np.ndarray) <= self.k, 1, 0)
     return super().score(scores_by_voter)
 
   def swf(self, profile: StrictCompleteProfile) -> np.ndarray:
@@ -444,7 +444,7 @@ class Harmonic(BaseScoring):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    scores_by_voter = 1 / profile
+    scores_by_voter = 1 / profile.view(np.ndarray)
     return super().score(scores_by_voter)
 
   def swf(self, profile: CompleteProfile) -> np.ndarray:

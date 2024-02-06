@@ -90,10 +90,10 @@ class UniformValuationProfileGenerator(BaseValuationProfileGenerator):
     n = profile.shape[0]
     m = profile.shape[1]
 
-    ranked_profile = np.argsort(profile, axis=1)
+    ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
 
     # Preserve np.nan
-    ans = profile * 0.0
+    ans = profile.view(np.ndarray) * 0.0
 
     for agent in range(n):
       num_not_nan = np.count_nonzero(~np.isnan(profile[agent]))
@@ -155,10 +155,10 @@ class NormalValuationProfileGenerator(BaseValuationProfileGenerator):
     n = profile.shape[0]
     m = profile.shape[1]
 
-    ranked_profile = np.argsort(profile, axis=1)
+    ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
 
     # Preserve np.nan
-    ans = profile * 0.0
+    ans = profile.view(np.ndarray) * 0.0
 
     for agent in range(n):
       num_not_nan = np.count_nonzero(~np.isnan(profile[agent]))
@@ -192,10 +192,10 @@ def compute_ordinal_profile(cardinal_profile: ValuationProfile) -> StrictProfile
   m = cardinal_profile.shape[1]
 
   # Sort by descending with np.nan at end
-  ranked_profile = np.argsort(cardinal_profile * -1, axis=1)
+  ranked_profile = np.argsort(cardinal_profile * -1, axis=1).view(np.ndarray)
 
   # Preserve np.nan
-  ans = cardinal_profile * 0
+  ans = cardinal_profile.view(np.ndarray) * 0
   for agent in range(n):
     for item_rank in range(m):
       # Preserve np.nan with +=

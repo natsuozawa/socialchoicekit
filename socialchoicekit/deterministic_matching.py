@@ -57,8 +57,8 @@ class GaleShapley:
       raise ValueError("The resident profile and hospital profile dimensions do not match.")
 
     # Decrease by one because we will be using 0-indexing to access the ranked versions of these profiles.
-    rprofile = resident_profile - 1
-    hprofile = hospital_profile - 1
+    rprofile = resident_profile.view(np.ndarray) - 1
+    hprofile = hospital_profile.view(np.ndarray) - 1
 
     # NaN will be put last.
     ranked_rprofile = np.argsort(rprofile, axis=1)

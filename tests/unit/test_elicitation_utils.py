@@ -2,15 +2,16 @@ import numpy as np
 import pytest
 
 from socialchoicekit.elicitation_utils import ValuationProfileElicitor, SynchronousStdInElicitor, LambdaElicitor
+from socialchoicekit.profile_utils import CompleteValuationProfile
 
 class TestElicitationUtils:
   @pytest.fixture
   def basic_profile_1(self):
-    return np.array([
+    return CompleteValuationProfile.of(np.array([
       [1, 2, 3],
       [3, 1, 2],
       [1, 2, 3],
-    ])
+    ]))
 
   def test_memoization(self, basic_profile_1):
     vpe_1 = ValuationProfileElicitor(basic_profile_1)

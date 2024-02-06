@@ -3,7 +3,7 @@ from preflibtools.instances import OrdinalInstance
 
 from typing import Union, Callable
 
-from socialchoicekit.utils import check_valuation_profile
+from socialchoicekit.profile_utils import ValuationProfile, CompleteValuationProfile
 
 class Elicitor:
   """
@@ -108,7 +108,7 @@ class ValuationProfileElicitor(Elicitor):
 
   Parameters
   ----------
-  valuation_profile: np.ndarray
+  valuation_profile: ValuationProfile
     This is the cardinal profile. A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's preference for alternative j. If the agent finds an alternative unacceptable, the element would be np.nan.
 
   memoize: bool
@@ -116,10 +116,9 @@ class ValuationProfileElicitor(Elicitor):
   """
   def __init__(
     self,
-    valuation_profile: np.ndarray,
+    valuation_profile: ValuationProfile,
     memoize: bool = True,
   ) -> None:
-    check_valuation_profile(valuation_profile, is_complete=False)
     self.valuation_profile = valuation_profile
     super().__init__(memoize=memoize, zero_indexed=True)
 

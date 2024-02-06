@@ -52,7 +52,7 @@ class SingleTransferableVote:
     int
       A single winning alternative.
     """
-    current_profile = profile
+    current_profile = profile.view(np.ndarray)
     alternatives = np.arange(profile.shape[1]) + self.index_fixer
     while True:
       score = self.voting_rule.score(CompleteProfile.of(current_profile))

@@ -2,7 +2,7 @@ import numpy as np
 
 from socialchoicekit.deterministic_allocation import MaximumWeightMatching, root_n_serial_dictatorship
 from socialchoicekit.elicitation_utils import Elicitor, SynchronousStdInElicitor
-from socialchoicekit.utils import check_profile
+from socialchoicekit.profile_utils import IncompleteValuationProfile, Profile, StrictProfile
 
 class LambdaTSF:
   """
@@ -28,7 +28,7 @@ class LambdaTSF:
 
   def scf(
     self,
-    profile: np.ndarray,
+    profile: Profile,
     elicitor: Elicitor = SynchronousStdInElicitor(),
   ) -> np.ndarray:
     """
@@ -47,16 +47,18 @@ class LambdaTSF:
     np.ndarray
       A numpy array containing the allocated item for each agent or np.nan if the agent is unallocated.
     """
-    check_profile(profile, is_complete=False)
-
     if self.lambda_ > profile.shape[1]:
       raise ValueError("Invalid lambda")
+
+    # TODO: Verify support for all Profiles
+    if not isinstance(profile, StrictProfile):
+      raise ValueError("Profile must be a StrictProfile for now")
 
     n = profile.shape[0]
     m = profile.shape[1]
 
     # Element at (i, j) is agent i's j+1th most preferred alternative (0-indexed alternative number)
-    ranked_profile = np.argsort(profile, axis=1)
+    ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
     # Element at i is agent i's favorite alternative
     v_favorite = elicitor.elicit_multiple(np.arange(n), ranked_profile[:, 0])
 
@@ -75,7 +77,7 @@ class LambdaTSF:
 
     # Element at (i, j) is the simulated welfare of alternative j for agent i
     epsilon = 1e-5
-    v_tilde = profile * 0 + epsilon
+    v_tilde: np.ndarray = profile.view(np.ndarray) * 0 + epsilon
     v_tilde[np.arange(n), ranked_profile[:, 0]] = v_favorite
     # Element at i is the least preferred alternative (0-indexed alternative number) in agent i's lambda-acceptable set
     # Add a very small threshold to distinguish between unacceptable alterantives and alternatives that did not fit in any acceptable set.
@@ -88,7 +90,7 @@ class LambdaTSF:
       v_tilde[(i_indices, j_indices)] = v_favorite[i_indices] / alpha_l
       Q_prev = p_star
 
-    return self.mwm.scf(v_tilde)
+    return self.mwm.scf(IncompleteValuationProfile.of(v_tilde))
 
 class MatchTwoQueries:
   """
@@ -108,7 +110,7 @@ class MatchTwoQueries:
 
   def scf(
     self,
-    profile: np.ndarray,
+    profile: Profile,
     elicitor: Elicitor = SynchronousStdInElicitor(),
   ) -> np.ndarray:
     """
@@ -116,7 +118,7 @@ class MatchTwoQueries:
 
     Parameters
     ----------
-    profile: np.ndarray
+    profile: StrictProfile
       A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
 
     elicitor: Elicitor
@@ -127,14 +129,16 @@ class MatchTwoQueries:
     np.ndarray
       A numpy array containing the allocated item for each agent or np.nan if the agent is unallocated.
     """
-    check_profile(profile, is_complete=False)
+    # TODO: Verify support for all Profiles
+    if not isinstance(profile, StrictProfile):
+      raise ValueError("Profile must be a StrictProfile for now")
 
     n = profile.shape[0]
 
-    ranked_profile = np.argsort(profile, axis=1)
+    ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
 
     epsilon = 1e-5
-    v_tilde = profile * 0 + epsilon
+    v_tilde = profile.view(np.ndarray) * 0 + epsilon
 
     # Elicit the agent's favorite item.
     v_tilde[np.arange(n), ranked_profile[:, 0]] = elicitor.elicit_multiple(np.arange(n), ranked_profile[:, 0])
@@ -145,4 +149,4 @@ class MatchTwoQueries:
     # Elicit the agent's cardinal utility of the item they are assigned to in A.
     v_tilde[np.arange(n), A] = elicitor.elicit_multiple(np.arange(n), A)
 
-    return self.mwm.scf(v_tilde)
+    return self.mwm.scf(IncompleteValuationProfile.of(v_tilde))

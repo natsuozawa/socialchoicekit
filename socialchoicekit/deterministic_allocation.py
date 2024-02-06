@@ -68,7 +68,7 @@ def root_n_serial_dictatorship(
   n = profile.shape[0]
   m = profile.shape[1]
 
-  ranked_profile = np.argsort(profile, axis=1)
+  ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
   # Element j is the number of times item j was allocated so far.
   allocation_count = np.zeros(m)
   # Element i is the item that agent i is allocated to.
