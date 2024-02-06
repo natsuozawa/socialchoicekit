@@ -3,25 +3,26 @@ import pytest
 
 from socialchoicekit.elicitation_voting import LambdaPRV, KARV
 from socialchoicekit.elicitation_utils import ValuationProfileElicitor
+from socialchoicekit.profile_utils import StrictCompleteProfile, CompleteValuationProfile
 
 class TestElicitationVoting:
   @pytest.fixture
   def basic_profile_1(self):
-    return np.array([
+    return StrictCompleteProfile.of(np.array([
       [1, 4, 3, 2],
       [4, 2, 1, 3],
       [4, 3, 2, 1],
       [3, 4, 2, 1]
-    ])
+    ]))
 
   @pytest.fixture
   def basic_valuation_profile_1(self):
-    return np.array([
+    return CompleteValuationProfile.of(np.array([
       [0.5, 0.1, 0.1, 0.3],
       [0.2, 0.2, 0.4, 0.2],
       [0.1, 0.3, 0.3, 0.3],
       [0.2, 0.1, 0.3, 0.4],
-    ])
+    ]))
 
   def test_lambda_prv_basic_1(self, basic_profile_1, basic_valuation_profile_1):
     lprv_1 = LambdaPRV(lambda_=1)

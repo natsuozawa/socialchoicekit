@@ -3,7 +3,7 @@ from preflibtools.instances import OrdinalInstance
 
 from typing import Union, Callable
 
-from socialchoicekit.profile_utils import ValuationProfile, CompleteValuationProfile
+from socialchoicekit.profile_utils import ValuationProfile
 
 class Elicitor:
   """

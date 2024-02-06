@@ -1,7 +1,7 @@
 import numpy as np
 
 from socialchoicekit.bistochastic import birkhoff_von_neumann
-from socialchoicekit.utils import check_profile, check_square_matrix
+from socialchoicekit.profile_utils import StrictProfile
 
 class RandomSerialDictatorship:
   """
@@ -18,13 +18,13 @@ class RandomSerialDictatorship:
   ) -> None:
     self.index_fixer = 0 if zero_indexed else 1
 
-  def scf(self, profile: np.ndarray) -> np.ndarray:
+  def scf(self, profile: StrictProfile) -> np.ndarray:
     """
     The (provisional) social choice function for this voting rule. Returns at most one item allocated for each agent.
 
     Parameters
     ----------
-    profile: np.ndarray
+    profile: StrictProfile
       A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
 
     Returns
@@ -32,8 +32,7 @@ class RandomSerialDictatorship:
     np.ndarray
       A numpy array containing the allocated item for each agent or np.nan if the agent is unallocated.
     """
-    check_profile(profile, is_complete=False)
-    pref = np.array(profile)
+    pref = np.array(profile.view(np.ndarray))
     allocation = np.full(profile.shape[0], np.nan)
 
     order = np.arange(pref.shape[0])
@@ -65,7 +64,7 @@ class SimultaneousEating:
 
   def bistochastic(
     self,
-    profile: np.ndarray,
+    profile: StrictProfile,
     speeds: np.ndarray
   ) -> np.ndarray:
     """
@@ -73,7 +72,7 @@ class SimultaneousEating:
 
     Parameters
     ----------
-    profile: np.ndarray
+    profile: StrictProfile
       An (N, N) array, where M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
 
     speeds: np.ndarray
@@ -84,12 +83,11 @@ class SimultaneousEating:
     np.ndarray
       A bistochastic matrix.
     """
-    check_square_matrix(profile)
 
     n = profile.shape[0]
 
     # Element at (i, j) is agent i's j+1th most preferred item (0-indexed alternative number)
-    ranked_items = np.argsort(profile, axis=1)
+    ranked_items = np.argsort(profile, axis=1).view(np.ndarray)
     # Element at i is the position of the item in ranked_items that agent i is eating. If agent has nothing else to eat, the element would be np.nan.
     current_position = np.zeros(n)
     # Element at j is the fraction of item j that is remaining. If the item is completely eaten, the element would be np.nan.
@@ -141,7 +139,7 @@ class SimultaneousEating:
 
   def scf(
     self,
-    profile: np.ndarray,
+    profile: StrictProfile,
     speeds: np.ndarray
   ) -> np.ndarray:
     """
@@ -149,7 +147,7 @@ class SimultaneousEating:
 
     Parameters
     ----------
-    profile: np.ndarray
+    profile: StrictProfile
       An (N, N) array, where M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
 
     speeds: np.ndarray
@@ -181,13 +179,13 @@ class ProbabilisticSerial:
   ) -> None:
     self.simultaneous_eating = SimultaneousEating(zero_indexed=zero_indexed)
 
-  def bistochastic(self, profile: np.ndarray) -> np.ndarray:
+  def bistochastic(self, profile: StrictProfile) -> np.ndarray:
     """
     The bistochastic matrix outputted by this voting rule on a preference profile. This bistochastic matrix can be decomposed with the Birkhoff von Neumann algorithm (implemented in bistochastic.birkhoff_von_neumann) to a convex combination of permuation matrices.
 
     Parameters
     ----------
-    profile: np.ndarray
+    profile: StrictProfile
       An (N, N) array, where M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
 
     Returns
@@ -197,13 +195,13 @@ class ProbabilisticSerial:
     """
     return self.simultaneous_eating.bistochastic(profile, np.ones(profile.shape[0]))
 
-  def scf(self, profile: np.ndarray) -> np.ndarray:
+  def scf(self, profile: StrictProfile) -> np.ndarray:
     """
     The (provisional) social choice function for this voting rule. Returns at most one item allocated for each agent.
 
     Parameters
     ----------
-    profile: np.ndarray
+    profile: StrictProfile
       An (N, N) array, where M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
 
     Returns

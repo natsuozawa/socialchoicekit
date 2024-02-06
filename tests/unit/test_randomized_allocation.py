@@ -2,15 +2,16 @@ import pytest
 import numpy as np
 
 from socialchoicekit.randomized_allocation import RandomSerialDictatorship, ProbabilisticSerial, SimultaneousEating
+from socialchoicekit.profile_utils import StrictIncompleteProfile
 
 class TestRandomizedAllocation:
   @pytest.fixture
   def basic_profile_1(self):
-    return np.array([
+    return StrictIncompleteProfile.of(np.array([
       [1, 2, 3, 4],
       [2, 1, np.nan, np.nan],
       [3, np.nan, 2, 1],
-    ])
+    ]))
 
   def test_random_serial_dictatorship_basic_1(self, basic_profile_1):
     rsd = RandomSerialDictatorship()
@@ -19,12 +20,12 @@ class TestRandomizedAllocation:
 
   @pytest.fixture
   def basic_profile_2(self):
-    return np.array([
+    return StrictIncompleteProfile.of(np.array([
       [1, 2, 3, 4],
       [2, 1, np.nan, np.nan],
       [3, np.nan, 2, 1],
       [np.nan, np.nan, np.nan, np.nan],
-    ])
+    ]))
 
   def test_random_serial_dictatorship_basic_2(self, basic_profile_2):
     rsd = RandomSerialDictatorship()
@@ -33,12 +34,12 @@ class TestRandomizedAllocation:
 
   @pytest.fixture
   def basic_profile_3(self):
-    return np.array([
-      [1, 2, 3, 4],
+    return StrictIncompleteProfile.of(np.array([
+      [1.0, 2.0, 3.0, 4.0],
       [1, 2, 3, np.nan],
       [3, np.nan, 2, 1],
       [2, 1, 3, np.nan],
-    ])
+    ]))
 
   def test_probabilistic_serial_3(self, basic_profile_3):
     ps = ProbabilisticSerial()

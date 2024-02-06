@@ -1,8 +1,9 @@
 import numpy as np
 from typing import Union
 
-from socialchoicekit.utils import check_tie_breaker, check_profile, check_valuation_profile, break_tie
+from socialchoicekit.utils import check_tie_breaker, break_tie
 from socialchoicekit.elicitation_utils import Elicitor, SynchronousStdInElicitor
+from socialchoicekit.profile_utils import StrictCompleteProfile
 
 class BaseElicitationVoting:
   """
@@ -77,7 +78,7 @@ class LambdaPRV(BaseElicitationVoting):
 
   def score(
     self,
-    profile: np.ndarray,
+    profile: StrictCompleteProfile,
     elicitor: Elicitor = SynchronousStdInElicitor(),
   ) -> np.ndarray:
     """
@@ -85,8 +86,8 @@ class LambdaPRV(BaseElicitationVoting):
 
     Parameters
     ----------
-    profile: np.ndarray
-      This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     elicitor: Elicitor
       The elicitor that will be used to query the agents.
@@ -111,7 +112,7 @@ class LambdaPRV(BaseElicitationVoting):
 
   def scf(
     self,
-    profile: np.ndarray,
+    profile: StrictCompleteProfile,
     elicitor: Elicitor = SynchronousStdInElicitor()
   ) -> Union[np.ndarray, int]:
     """
@@ -119,8 +120,8 @@ class LambdaPRV(BaseElicitationVoting):
 
     Parameters
     ----------
-    profile: np.ndarray
-      This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     elicitor: Elicitor
       The elicitor that will be used to query the agents.
@@ -164,7 +165,7 @@ class KARV(BaseElicitationVoting):
 
   def score(
     self,
-    profile: np.ndarray,
+    profile: StrictCompleteProfile,
     elicitor: Elicitor = SynchronousStdInElicitor(),
   ) -> np.ndarray:
     """
@@ -172,8 +173,8 @@ class KARV(BaseElicitationVoting):
 
     Parameters
     ----------
-    profile: np.ndarray
-      This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompeleteProfile
+      This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     elicitor: Elicitor
       The elicitor that will be used to query the agents.
@@ -183,8 +184,6 @@ class KARV(BaseElicitationVoting):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
-    check_profile(profile)
-
     if self.k > profile.shape[1]:
       raise ValueError("Invalid k")
 
@@ -192,7 +191,7 @@ class KARV(BaseElicitationVoting):
     m = profile.shape[1]
 
     # Element at (i, j) is agent i's j+1th most preferred alternative (0-indexed alternative number)
-    ranked_profile = np.argsort(profile, axis=1)
+    ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
     # Element at i is agent i's favorite alternative
     v_favorite = elicitor.elicit_multiple(np.arange(n), ranked_profile[:, 0])
 
@@ -226,7 +225,7 @@ class KARV(BaseElicitationVoting):
 
   def scf(
     self,
-    profile: np.ndarray,
+    profile: StrictCompleteProfile,
     elicitor: Elicitor = SynchronousStdInElicitor(),
   ) -> Union[np.ndarray, int]:
     """
@@ -234,8 +233,8 @@ class KARV(BaseElicitationVoting):
 
     Parameters
     ----------
-    profile: np.ndarray
-      This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative.
+    profile: StrictCompleteProfile
+      This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
 
     elicitor: Elicitor
       The elicitor that will be used to query the agents.
