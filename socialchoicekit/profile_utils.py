@@ -140,6 +140,22 @@ class IncompleteValuationProfile(ValuationProfile):
     check_valuation_profile(arr, is_complete=False)
     return arr.view(IncompleteValuationProfile)
 
+def incomplete_valuation_profile_to_complete_valuation_profile(
+  valuation_profile: ValuationProfile,
+) -> CompleteValuationProfile:
+  """
+  Converts an incomplete valuation profile to a complete valuation profile. np.nan values will be assigned a value of 0.
+
+  Parameters
+  ----------
+  valuation_profile: ValuationProfile
+
+  Returns
+  -------
+  CompleteValuationProfile
+  """
+  return CompleteValuationProfile.of(np.where(np.isnan(valuation_profile), 0, valuation_profile))
+
 def incomplete_profile_to_complete_profile(
   profile: Profile,
   tie_breaker: str = "random",
