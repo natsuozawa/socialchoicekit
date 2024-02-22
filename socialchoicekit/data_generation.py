@@ -174,30 +174,3 @@ class NormalValuationProfileGenerator(BaseValuationProfileGenerator):
         ans[agent, item] = utilities[item_rank]
     return ValuationProfile.of(ans)
 
-def compute_ordinal_profile(cardinal_profile: ValuationProfile) -> StrictProfile:
-  """
-  Computes the ordinal utility from the inputted cardinal utility. The input cardinal utility does not need to be normalized or complete.
-
-  Parameters
-  ----------
-  cardinal_profile: ValuationProfile
-    A (N, M) array, where N is the number of agents and M is the number of items or alternatives. The element at (i, j) indicates the agent's cardinal utility for alternative j. If the agent finds an item or alternative unacceptable, the element would be np.nan.
-
-  Returns
-  -------
-  StrictProfile
-    A (N, M) array, where N is the number of agents and M is the number of items or alternatives. The element at (i, j) indicates the agent's ordinal utility for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative. If the agent finds an item or alternative unacceptable, the element would be np.nan.
-  """
-  n = cardinal_profile.shape[0]
-  m = cardinal_profile.shape[1]
-
-  # Sort by descending with np.nan at end
-  ranked_profile = np.argsort(cardinal_profile * -1, axis=1).view(np.ndarray)
-
-  # Preserve np.nan
-  ans = cardinal_profile.view(np.ndarray) * 0
-  for agent in range(n):
-    for item_rank in range(m):
-      # Preserve np.nan with +=
-      ans[agent, ranked_profile[agent, item_rank]] += item_rank + 1
-  return StrictProfile.of(ans)
