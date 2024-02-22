@@ -3,7 +3,9 @@ from ortools.linear_solver.pywraplp import Solver
 
 from typing import Union
 
-from socialchoicekit.profile_utils import Profile, StrictProfile, ValuationProfile, CompleteValuationProfile
+from socialchoicekit.profile_utils import Profile, StrictProfile, StrictCompleteProfile, ValuationProfile, CompleteValuationProfile
+from socialchoicekit.distortion import optimal_distortion_lp
+from socialchoicekit.utils import check_profile
 
 class BaseValuationProfileGenerator:
   """
@@ -179,6 +181,14 @@ class WorstDistortionValuationProfileGenerator(BaseValuationProfileGenerator):
   """
   Generates a cardinal profile consistent with the original ordinal profile that maximizes distortion for voting.
   This uses the method introduced in Ebadian et al. (2024)
+
+  Given an ordinal profile, there are many cardinal profiles that are consistent with the ordinal profile (ie follow the same ordered structure).
+  For any voting rule, we can calculate its distortion on an ordinal profile as follows.
+  Given a voting rule, we can calculate its distortion on each cardinal profile consistent with the ordinal profile. Let the maximum of these distortions be the distortion of the voting rule on the ordinal profile.
+  Then, the best possible distortion for a given ordinal profile is given by the voting rule which has the lowest distortion on the ordinal profile.
+  The resulting distortion on the ordinal profile then becomes a lower bound on the distortion on this ordinal profile for any algorithm.
+  Note that given an ordinal profile (or a cardinal profile) and a fixed (randomized) voting rule,
+  the distortion can be higher than this optimal distortion.
   """
   def __init__(
     self,
@@ -187,85 +197,29 @@ class WorstDistortionValuationProfileGenerator(BaseValuationProfileGenerator):
 
   def generate(
     self,
-    profile: StrictProfile,
+    profile: StrictCompleteProfile,
   ) -> CompleteValuationProfile:
     """
     Generates a cardinal profile based on the inputted ordinal profile.
 
     Parameters
     ----------
-    profile: StrictProfile
-      A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's ordinal utility for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative. If the agent finds an item or alternative unacceptable, the element would be np.nan.
+    profile: StrictCompleteProfile
+      A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's ordinal utility for alternative j, where 1 is the most preferred alternative.
 
     Returns
     -------
     ValuationProfile
       A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's cardinal utility for alternative j. If the agent finds an item or alternative unacceptable, the element would be np.nan.
     """
+    check_profile(profile)
     n = profile.shape[0]
     m = profile.shape[1]
 
-    ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
-
-    solver = Solver.CreateSolver('GLOP')
-    if not solver:
-      raise Exception('Solver not found.')
-
-    # Variable definitions
-    p_hat = []
-    for a in range(m):
-      p_hat.append(solver.NumVar(0, solver.infinity(), f'p-hat_{a}'))
-    delta = [[] for _ in range(n)]
-    alpha = [[] for _ in range(n)]
-    beta = [[] for _ in range(n)]
-    for i in range(n):
-      for r in range(m):
-        delta[i].append(solver.NumVar(-solver.infinity(), solver.infinity(), f'delta_{i}_{r}'))
-        alpha[i].append(solver.NumVar(-solver.infinity(), solver.infinity(), f'alpha_{i}_{r}'))
-        beta[i].append(solver.NumVar(-solver.infinity(), solver.infinity(), f'beta_{i}_{r}'))
-
-    # Constraints
-    # Main
-    for i in range(n):
-      # r in [2, m - 1] in 1-indexed is equal to [1, m - 1) is 0-indexed
-      for r in range(1, m - 1):
-        j = ranked_profile[i, r]
-        # There will be no out of bounds error here because r >= 1
-        solver.Add(delta[i][profile[i, j]] >= alpha[i][r - 1])
-      for r in range(m):
-        j = ranked_profile[i, r]
-        solver.Add(delta[i][profile[i, j]] >= beta[i][r])
-    for a in range(m):
-      solver.Add(solver.Sum([delta[i][a] for i in range(n)]) <= 0)
-    # Top partial maximums
-    for i in range(n):
-      for r in range(m):
-        if r > 0:
-          solver.Add(alpha[i][r] >= alpha[i][r - 1])
-          # Rotate the 1/r to the other side to avoid array scalar multiplication
-          solver.Add(r * alpha[i][r] >= solver.Sum([-p_hat[ranked_profile[i, l]] for l in range(r)]))
-    # Bottom partial sums
-    for i in range(n):
-      for r in range(m):
-        if r < m:
-          solver.Add(beta[i][r] >= beta[i][r + 1])
-          # Rotate the 1/r to the other side to avoid array scalar multiplication
-          solver.Add(r * beta[i][r] >= solver.Sum([1 - p_hat[ranked_profile[i, l]] for l in range(r)]))
-
-    # Variable ranges are hard coded in the variable definitions
-
-    # Objective function
-    solver.minimize(solver.Sum(p_hat))
-
-    # Solve
-    status = solver.Solve()
-
-    if status != solver.OPTIMAL:
-      raise Exception('The problem does not have an optimal solution.')
-
+    solver = optimal_distortion_lp(profile)
     # Retrieve values
-    distortion = solver.Objective().value()
-    p_hat_values = [p_hat[a].solution_value() for a in range(m)]
+    distortion = solver.Objective().Value()
+    # p_hat_values = [p_hat[a].solution_value() for a in range(m)]
 
     # Create cardinal profile
     ans = np.zeros((n, m))
