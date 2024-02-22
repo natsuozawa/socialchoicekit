@@ -60,6 +60,14 @@ socialchoicekit.deterministic\_tournament module
    :undoc-members:
    :show-inheritance:
 
+socialchoicekit.distortion module
+---------------------------------
+
+.. automodule:: socialchoicekit.distortion
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 socialchoicekit.elicitation\_allocation module
 ----------------------------------------------
 
