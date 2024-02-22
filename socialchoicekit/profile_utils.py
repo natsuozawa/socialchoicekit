@@ -139,3 +139,113 @@ class IncompleteValuationProfile(ValuationProfile):
   def of(arr: np.ndarray) -> "IncompleteValuationProfile":
     check_valuation_profile(arr, is_complete=False)
     return arr.view(IncompleteValuationProfile)
+
+def incomplete_valuation_profile_to_complete_valuation_profile(
+  valuation_profile: ValuationProfile,
+) -> CompleteValuationProfile:
+  """
+  Converts an incomplete valuation profile to a complete valuation profile. np.nan values will be assigned a value of 0.
+
+  Parameters
+  ----------
+  valuation_profile: ValuationProfile
+
+  Returns
+  -------
+  CompleteValuationProfile
+  """
+  return CompleteValuationProfile.of(np.where(np.isnan(valuation_profile), 0, valuation_profile))
+
+def incomplete_profile_to_complete_profile(
+  profile: Profile,
+  tie_breaker: str = "random",
+) -> CompleteProfile:
+  """
+  Converts an incomplete profile to a complete profile. np.nan values will be assigned a rank such that they are least preferred.
+
+  Parameters
+  ----------
+  profile: Profile
+
+  tie_breaker: {"random", "first", "accept"}
+    - "random": shuffle np.nan items into a random order
+    - "first": sort the np.nan items in ascending order
+    - "accept": give all np.nan items the same rank - this results in a non-strict profile
+
+  Returns
+  -------
+  StrictCompleteProfile
+    if profile is StrictProfile and tie_breaker is not "accept"
+  CompleteProfileWithTies
+    otherwise
+  """
+  check_tie_breaker(tie_breaker, include_accept=True)
+  check_profile(profile, is_complete=False, is_strict=False)
+  n = profile.shape[0]
+  m = profile.shape[1]
+  complete_profile = np.array(profile)
+  for i in range(n):
+    nan_indices = np.where(np.isnan(profile[i]))[0]
+    num_nan = len(nan_indices)
+    if tie_breaker == "random":
+      np.random.shuffle(nan_indices)
+    elif tie_breaker == "first":
+      nan_indices = np.sort(nan_indices)
+    if tie_breaker == "accept":
+      complete_profile[i, nan_indices] = m - num_nan + 1
+    else:
+      # np.arange is not inclusive of the second argument.
+      complete_profile[i, nan_indices] = np.arange(m - num_nan + 1, m + 1)
+  if tie_breaker != "accept" and isinstance(profile, StrictProfile):
+    return StrictCompleteProfile.of(complete_profile)
+  return CompleteProfileWithTies.of(complete_profile)
+
+def profile_with_ties_to_strict_profile(
+  profile: Profile,
+  tie_breaker: str = "random",
+):
+  """
+  Converts a profile with ties to a strict profile. If there are ties, the tie_breaker will be used to break the ties.
+
+  Parameters
+  ----------
+  profile: Profile
+
+  tie_breaker: {"random", "first"}
+    - "random": shuffle the tied items into a random order
+    - "first": sort the tied items in ascending order
+    accept is not allowed.
+
+  Returns
+  -------
+  StrictCompleteProfile
+    if profile is CompleteProfile
+  StrictIncompleteProfile
+    otherwise
+  """
+  check_tie_breaker(tie_breaker, include_accept=False)
+  check_profile(profile, is_complete=False, is_strict=False)
+  n = profile.shape[0]
+  m = profile.shape[1]
+  strict_profile = np.array(profile)
+  ranked_profile = np.argsort(profile, axis=1)
+  for i in range(n):
+    r = 0
+    while r < m:
+      k = 1
+      while k < m - r and profile[i, ranked_profile[i, r + k]] == profile[i, ranked_profile[i, r]]:
+        k += 1
+      num_tied = k
+      if num_tied > 1:
+        # There is a tie.
+        tied_indices = np.array([ranked_profile[i, r + j] for j in range(num_tied)])
+        if tie_breaker == "random":
+          np.random.shuffle(tied_indices)
+        if tie_breaker == "first":
+          tied_indices = np.sort(tied_indices)
+        strict_profile[i, tied_indices] = np.arange(r + 1, r + num_tied + 1)
+
+      r += num_tied
+  if isinstance(profile, CompleteProfile):
+    return StrictCompleteProfile.of(strict_profile)
+  return StrictIncompleteProfile.of(strict_profile)
