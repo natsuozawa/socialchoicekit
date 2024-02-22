@@ -3,7 +3,8 @@ import numpy as np
 from typing import List, Tuple
 import heapq
 
-from socialchoicekit.profile_utils import StrictProfile
+from socialchoicekit.profile_utils import StrictProfile, StrictCompleteProfile, CompleteValuationProfile, compute_ordinal_profile
+from socialchoicekit.utils import check_valuation_profile
 
 class GaleShapley:
   """
@@ -173,3 +174,54 @@ class GaleShapley:
           continue
         ans.append((resident + self.index_fixer, hospital + self.index_fixer))
       return ans
+
+class Irving:
+  """
+  Algorithm for computing an optimal stable matching introduced in Irving et al (1987) and modified for cardinal utilities (called weighted preference lists in the paper).
+  This algorithm works with a simplified version of the hospital resident problem (HR) where each hospital can only take one resident, and the number of hospitals and residents are equal. We call this the stable marriage problem (SM).
+  We replace residents with men and hospitals with women.
+  The algorithm also will only work with complete valuation profiles.
+  """
+  def __init__(
+    self,
+  ):
+    pass
+
+  def scf(
+    self,
+    valuation_profile_1: CompleteValuationProfile,
+    valuation_profile_2: CompleteValuationProfile,
+  ) -> List[Tuple[int, int]]:
+    """
+    The social choice function for this voting rule. Returns a stable matching that optimizes social welfare based on the given valuation profile.
+
+    Parameters
+    ----------
+    valuation_profile: CompleteValuationProfile
+      A (N, N) array, where N is the number of men and also the number of women. The element at (i, j) indicates the ith man's cardinal preference for woman j.
+
+    Returns
+    -------
+    List[Tuple[int, int]]
+      A list containing assignments (resident, hospital) for each assignment.
+    """
+    check_valuation_profile(valuation_profile_1, is_complete=True)
+    check_valuation_profile(valuation_profile_2, is_complete=True)
+
+    n = valuation_profile_1.shape[0]
+    assert n == valuation_profile_2.shape[0]
+    assert n == valuation_profile_1.shape[1]
+    assert n == valuation_profile_2.shape[1]
+
+    profile_1 = compute_ordinal_profile(valuation_profile_1).view(np.ndarray)
+    profile_2 = compute_ordinal_profile(valuation_profile_2).view(np.ndarray)
+
+    stable_marriage = GaleShapley(resident_oriented=True, zero_indexed=True).scf(
+      StrictCompleteProfile.of(profile_1),
+      StrictCompleteProfile.of(profile_2),
+      np.ones(n, dtype=int)
+    )
+    # Capacity requriement is tested in TestDeterministicMatching.
+
+    # O(n^3) routine to find all the rotations
+    return []
