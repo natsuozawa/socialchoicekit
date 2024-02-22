@@ -100,6 +100,14 @@ socialchoicekit.preflib\_utils module
    :undoc-members:
    :show-inheritance:
 
+socialchoicekit.profile\_utils module
+-------------------------------------
+
+.. automodule:: socialchoicekit.profile_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 socialchoicekit.randomized\_allocation module
 ---------------------------------------------
 
