@@ -80,3 +80,6 @@ class TestProfileUtils:
     strict_incomeplete_profile_first = profile_with_ties_to_strict_profile(incomplete_profile_with_ties_1, tie_breaker="first")
     assert np.array_equal(strict_incomeplete_profile_first,strict_incomplete_profile_1, equal_nan=True)
     assert isinstance(strict_incomeplete_profile_first, StrictIncompleteProfile)
+
+    strict_complete_profile_random = profile_with_ties_to_strict_profile(complete_profile_with_ties_1, tie_breaker="random")
+    assert np.sum(strict_complete_profile_random) == np.sum(strict_complete_profile_1)
