@@ -216,7 +216,7 @@ class WorstDistortionValuationProfileGenerator(BaseValuationProfileGenerator):
     n = profile.shape[0]
     m = profile.shape[1]
 
-    solver = optimal_distortion_lp(profile)
+    solver, _ = optimal_distortion_lp(profile)
     # Retrieve values
     distortion = solver.Objective().Value()
     # p_hat_values = [p_hat[a].solution_value() for a in range(m)]
