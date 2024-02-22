@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 from socialchoicekit.deterministic_scoring import *
-from socialchoicekit.profile_utils import IncompleteValuationProfile
+from socialchoicekit.profile_utils import IncompleteValuationProfile, CompleteValuationProfile
 
 class TestDeterministicScoring:
   def test_plurality_a(self, profile_a):
@@ -62,3 +62,19 @@ class TestDeterministicScoring:
     sw = SocialWelfare()
     score = sw.score(cardinal_profile_1)
     assert np.allclose(score, social_welfare_1)
+    winner = sw.scf(cardinal_profile_1)
+    assert winner == 1
+
+  @pytest.fixture
+  def cardinal_profile_2(self):
+    return CompleteValuationProfile.of(np.array([
+      [0.5, 0.5, 0, 0],
+      [0.5, 0.5, 0, 0],
+      [0, 0, 0.5, 0.5],
+      [0, 0, 0.5, 0.5],
+    ]))
+
+  def test_social_welfare_2(self, cardinal_profile_2):
+    sw = SocialWelfare(tie_breaker="accept")
+    winners = sw.scf(cardinal_profile_2)
+    assert np.array_equal(winners, [1, 2, 3, 4])
