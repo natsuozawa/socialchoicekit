@@ -1,10 +1,10 @@
 import numpy as np
 
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import heapq
 
 from socialchoicekit.profile_utils import StrictProfile, StrictCompleteProfile, CompleteValuationProfile, compute_ordinal_profile
-from socialchoicekit.utils import check_valuation_profile
+from socialchoicekit.utils import check_valuation_profile, check_profile
 
 class GaleShapley:
   """
@@ -177,7 +177,7 @@ class GaleShapley:
 
 class Irving:
   """
-  Algorithm for computing an optimal stable matching introduced in Irving et al (1987) and modified for cardinal utilities (called weighted preference lists in the paper).
+  Algorithm for computing an optimal stable matching introduced in Irving et al. (1987) and modified for cardinal utilities (called weighted preference lists in the paper).
   This algorithm works with a simplified version of the hospital resident problem (HR) where each hospital can only take one resident, and the number of hospitals and residents are equal. We call this the stable marriage problem (SM).
   We replace residents with men and hospitals with women.
   The algorithm also will only work with complete valuation profiles.
@@ -191,14 +191,28 @@ class Irving:
     self,
     valuation_profile_1: CompleteValuationProfile,
     valuation_profile_2: CompleteValuationProfile,
+    profile_1: Optional[StrictCompleteProfile] = None,
+    profile_2: Optional[StrictCompleteProfile] = None,
   ) -> List[Tuple[int, int]]:
     """
     The social choice function for this voting rule. Returns a stable matching that optimizes social welfare based on the given valuation profile.
+    The optional ordinal profile parameters will be useful if the valuation profile(s) provided are simulated (or estimated) and contains ties.
+    The ordinal profile(s) will be used to maintain stability.
+    The Irving algorithm assumes a strict ordering of preferences to create rotations. If a strict complete ordinal profile is not given, the ordinal profile will be automatically computed from the valuation profile (ties will be randomly broken).
+    To break ties in some other way, use profile_utils.compute_ordinal_profile.
 
     Parameters
     ----------
-    valuation_profile: CompleteValuationProfile
+    valuation_profile_1: CompleteValuationProfile
       A (N, N) array, where N is the number of men and also the number of women. The element at (i, j) indicates the ith man's cardinal preference for woman j.
+    valuation_profile_2: CompleteValuationProfile
+      A (N, N) array, where N is the number of women and also the number of men. The element at (i, j) indicates the ith woman's cardinal preference for man j.
+    profile_1: Optional[StrictCompleteProfile]
+      An optional (N, N) array, where N is the number of men and also the number of women. The element at (i, j) indicates the ith man's ordinal preference for woman j. 1 is the most preferred.
+      If None, then the ordinal profile will be computed from the valuation profile.
+    profile_2: Optional[StrictCompleteProfile]
+      An optional (N, N) array, where N is the number of women and also the number of men. The element at (i, j) indicates the ith woman's ordinal preference for man j. 1 is the most preferred.
+      If None, then the ordinal profile will be computed from the valuation profile.
 
     Returns
     -------
@@ -207,21 +221,57 @@ class Irving:
     """
     check_valuation_profile(valuation_profile_1, is_complete=True)
     check_valuation_profile(valuation_profile_2, is_complete=True)
+    if isinstance(profile_1, StrictCompleteProfile):
+      check_profile(profile_1, is_complete=True, is_strict=True)
+      ordinal_profile_1 = profile_1.view(np.ndarray)
+    else:
+      ordinal_profile_1 = compute_ordinal_profile(valuation_profile_1).view(np.ndarray)
+    if isinstance(profile_2, StrictCompleteProfile):
+      check_profile(profile_2, is_complete=True, is_strict=True)
+      ordinal_profile_2 = profile_2.view(np.ndarray)
+    else:
+      ordinal_profile_2 = compute_ordinal_profile(valuation_profile_2).view(np.ndarray)
 
     n = valuation_profile_1.shape[0]
-    assert n == valuation_profile_2.shape[0]
-    assert n == valuation_profile_1.shape[1]
-    assert n == valuation_profile_2.shape[1]
+    assert (n, n) == valuation_profile_1.shape
+    assert (n, n) == valuation_profile_2.shape
+    assert (n, n) == ordinal_profile_1.shape
+    assert (n, n) == ordinal_profile_2.shape
 
-    profile_1 = compute_ordinal_profile(valuation_profile_1).view(np.ndarray)
-    profile_2 = compute_ordinal_profile(valuation_profile_2).view(np.ndarray)
+    # 0-indexed
+    ranked_profile_1 = np.argsort(valuation_profile_1, axis=1)
+    ranked_profile_2 = np.argsort(valuation_profile_2, axis=1)
+    prof_1 = ordinal_profile_1 - 1
+    prof_2 = ordinal_profile_2 - 1
 
+    # Get the male optimal stable matching.
     stable_marriage = GaleShapley(resident_oriented=True, zero_indexed=True).scf(
-      StrictCompleteProfile.of(profile_1),
-      StrictCompleteProfile.of(profile_2),
+      StrictCompleteProfile.of(ordinal_profile_1),
+      StrictCompleteProfile.of(ordinal_profile_2),
       np.ones(n, dtype=int)
     )
     # Capacity requriement is tested in TestDeterministicMatching.
+
+    # Check each man is matched to exactly one woman and vice versa.
+    assert len(stable_marriage) == n
+    assert len(set([i for i, _ in stable_marriage])) == n
+    assert len(set([j for _, j in stable_marriage])) == n
+
+    # Reconstruct preference lists. (0-indexed)
+    # We first cut [0, matched_woman) from the man's preference lists because of Property 3 in Irving et al (1987): in the male optimal solution, every man is matched to the first woman on his shortlist.
+    man_preference_lists = {i: ranked_profile_1[i, prof_1[i, j]:] for i, j in stable_marriage}
+    # We first cut (matched_man, n-1] from the woman's preference lists because of Property 2 in Irving et al (1987): in the male optimal solution, every woman is matched to the last man on her shortlist.
+    woman_preference_lists = {j: ranked_profile_2[j, :prof_2[j, i]] for i, j in stable_marriage}
+
+    # We then enforce the first statement of Property 2.
+    for i in range(n):
+      for index, j in enumerate(man_preference_lists[i]):
+        if i not in woman_preference_lists[j]:
+          man_preference_lists[i] = np.delete(man_preference_lists[i], index)
+    for j in range(n):
+      for index, i in enumerate(woman_preference_lists[j]):
+        if j not in man_preference_lists[i]:
+          woman_preference_lists[j] = np.delete(woman_preference_lists[j], index)
 
     # O(n^3) routine to find all the rotations
     return []
