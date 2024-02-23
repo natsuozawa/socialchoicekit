@@ -104,3 +104,4 @@ class TestProfileUtils:
     ordinal_profile = compute_ordinal_profile(cardinal_profile_2)
     check_profile(ordinal_profile, is_complete=False)
     assert np.array_equal(ordinal_profile, ordinal_profile_2, equal_nan=True)
+    assert isinstance(ordinal_profile, StrictIncompleteProfile)

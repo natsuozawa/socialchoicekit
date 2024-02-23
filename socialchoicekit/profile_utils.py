@@ -248,6 +248,8 @@ def compute_ordinal_profile(cardinal_profile: ValuationProfile) -> StrictProfile
   StrictProfile
     A (N, M) array, where N is the number of agents and M is the number of items or alternatives. The element at (i, j) indicates the agent's ordinal utility for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative. If the agent finds an item or alternative unacceptable, the element would be np.nan.
   """
+  # TODO: allow for tie_breaker specification
+
   n = cardinal_profile.shape[0]
   m = cardinal_profile.shape[1]
 
@@ -260,4 +262,6 @@ def compute_ordinal_profile(cardinal_profile: ValuationProfile) -> StrictProfile
     for item_rank in range(m):
       # Preserve np.nan with +=
       ans[agent, ranked_profile[agent, item_rank]] += item_rank + 1
-  return StrictProfile.of(ans)
+  if isinstance(cardinal_profile, CompleteValuationProfile):
+    return StrictCompleteProfile.of(ans)
+  return StrictIncompleteProfile.of(ans)
