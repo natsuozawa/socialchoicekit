@@ -1,6 +1,6 @@
 import numpy as np
 
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 import heapq
 
 from socialchoicekit.profile_utils import StrictProfile, StrictCompleteProfile, CompleteValuationProfile, compute_ordinal_profile
@@ -263,7 +263,8 @@ class Irving:
     # We first cut (matched_man, n-1] from the woman's preference lists because of Property 2 in Irving et al (1987): in the male optimal solution, every woman is matched to the last man on her shortlist.
     woman_preference_lists = {j: ranked_profile_2[j, :prof_2[j, i]] for i, j in stable_marriage}
 
-    # We then enforce the first statement of Property 2.
+    # We then reduce the shortlist to enforce the first statement of Property 2.
+    # This is O(n^3) using a naive approach.
     for i in range(n):
       for index, j in enumerate(man_preference_lists[i]):
         if i not in woman_preference_lists[j]:
@@ -275,3 +276,68 @@ class Irving:
 
     # O(n^3) routine to find all the rotations
     return []
+
+  def find_rotations(
+    self,
+    man_preference_lists: Dict[int, np.ndarray],
+    womman_preference_lists: Dict[int, np.ndarray],
+  ) -> List[List[Tuple[int, int]]]:
+    """
+    This is an internal routine to find the set of all rotations that are exposed in a stable matching, given the preference lists.
+    We find the solution by constructing the graph G(S) as described in Irving et al. (1987) and finding all cycles in G(S).
+
+    Complexity
+    ----------
+    O(n)
+
+    Parameters
+    ----------
+    man_preference_lists: Dict[int, np.ndarray]
+      A dictionary where the key is an integer indicating a man in 0-index. The value is an array of integers. The kth element indicates the man's kth most preferred woman in his shortlist in 0-index.
+      This shortlist must be reduced.
+    woman_preference_lists: Dict[int, np.ndarray]
+      A dictionary where the key is an integer indicating a woman in 0-index. The value is an array of integers. The kth element indicates the woman's kth most preferred man in her shortlist in 0-index.
+      This shortlist must be reduced.
+
+    Returns
+    -------
+    List[List[Tuple[int, int]]]
+      A list containing all the rotations in the stable matching. Each rotation is a list of man-woman pairs.
+    """
+    # Graph G(S)
+    # Nodes: man (0-indexed)
+    # Edges: betwen man i and man i' if the woman who is second on man i's preference list
+    # has man i' at the top of her preference list.
+    # Note that in this graph, each node has at most one outgoing edge.
+    n = len(man_preference_lists)
+    G = {i: [] for i in range(n)}
+    for i in range(n):
+      if len(man_preference_lists[i]) <= 1:
+        continue
+      j = man_preference_lists[i][1]
+      i_prime = womman_preference_lists[j][0]
+      if i != i_prime:
+        G[i].append(i_prime)
+
+    # Find all cycles in G(S)
+    # We exploit the fact that G(S) is a directed graph with at most one outgoing edge from each node.
+    visited = [False] * n
+    start_point = 0
+    cycles = []
+    while True:
+      if visited[start_point]:
+        start_point += 1
+        if start_point == n:
+          break
+        continue
+      cycle = []
+      current_node = start_point
+      while not visited[current_node]:
+        visited[current_node] = True
+        next_node = G[current_node][0]
+        cycle.append((current_node, next_node))
+        current_node = next_node
+
+      index = cycle.index((current_node, G[current_node][0]))
+      cycles.append(cycle[index:])
+    return cycles
