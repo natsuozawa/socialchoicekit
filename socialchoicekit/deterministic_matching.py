@@ -324,11 +324,9 @@ class Irving:
     visited = [False] * n
     start_point = 0
     cycles = []
-    while True:
+    while start_point < n:
       if visited[start_point]:
         start_point += 1
-        if start_point == n:
-          break
         continue
       cycle = []
       current_node = start_point
@@ -337,7 +335,6 @@ class Irving:
         next_node = G[current_node][0]
         cycle.append((current_node, next_node))
         current_node = next_node
-
       index = cycle.index((current_node, G[current_node][0]))
       cycles.append(cycle[index:])
     return cycles
