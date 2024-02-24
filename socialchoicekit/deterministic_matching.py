@@ -302,7 +302,7 @@ class Irving:
     Returns
     -------
     List[List[Tuple[int, int]]]
-      A list containing all the rotations in the stable matching. Each rotation is a list of man-woman pairs.
+      A list containing all the rotations in the stable matching. Each rotation is a list of 0-indexed man-woman pairs.
     """
     # Graph G(S)
     # Nodes: man (0-indexed)
@@ -333,9 +333,9 @@ class Irving:
       while not visited[current_node]:
         visited[current_node] = True
         next_node = G[current_node][0]
-        cycle.append((current_node, next_node))
+        cycle.append((current_node, man_preference_lists[current_node][0]))
         current_node = next_node
-      index = cycle.index((current_node, G[current_node][0]))
+      index = cycle.index((current_node, man_preference_lists[current_node][0]))
       cycles.append(cycle[index:])
     return cycles
 
@@ -351,7 +351,7 @@ class Irving:
     Parameters
     ----------
     rotation: List[Tuple[int, int]]
-      Rotations of the form [(m_0, w_0), ..., (m_{r-1}, w_{r-1})]
+      Rotations of the form [(m_0, w_0), ..., (m_{r-1}, w_{r-1})] where m_i, w_i are 0-indexed.
 
     valuation_profile_1: CompleteValuationProfile
       The male valuation profile.
