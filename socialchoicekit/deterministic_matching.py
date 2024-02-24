@@ -338,3 +338,35 @@ class Irving:
       index = cycle.index((current_node, G[current_node][0]))
       cycles.append(cycle[index:])
     return cycles
+
+  def rotation_weight(
+    self,
+    rotation: List[Tuple[int, int]],
+    valuation_profile_1: CompleteValuationProfile,
+    valuation_profile_2: CompleteValuationProfile,
+  ) -> float:
+    """
+    The weight of a rotation as defined in Irving et al. (1987).
+
+    Parameters
+    ----------
+    rotation: List[Tuple[int, int]]
+      Rotations of the form [(m_0, w_0), ..., (m_{r-1}, w_{r-1})]
+
+    valuation_profile_1: CompleteValuationProfile
+      The male valuation profile.
+
+    valuation_profile_1: CompleteValuationProfile
+      The female valuation profile.
+
+    Returns
+    -------
+    float
+      The weight of the rotation.
+    """
+    r = len(rotation)
+    ans = 0
+    for i in range(r):
+      ans += valuation_profile_1[rotation[i][0], rotation[i][1]] - valuation_profile_1[rotation[i][0], rotation[(i + 1) % r][1]]
+      ans -= valuation_profile_2[rotation[i][1], rotation[i][0]] - valuation_profile_2[rotation[i][1], rotation[(i - 1) % r][0]]
+    return ans
