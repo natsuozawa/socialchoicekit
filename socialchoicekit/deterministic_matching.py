@@ -265,17 +265,79 @@ class Irving:
 
     # We then reduce the shortlist to enforce the first statement of Property 2.
     # This is O(n^3) using a naive approach.
+    new_man_preference_lists = {}
+    new_woman_preference_lists = {}
     for i in range(n):
-      for index, j in enumerate(man_preference_lists[i]):
-        if i not in woman_preference_lists[j]:
-          man_preference_lists[i] = np.delete(man_preference_lists[i], index)
+      new_man_preference_lists[i] = np.array([])
+      for j in man_preference_lists[i]:
+        if i in woman_preference_lists[j]:
+          new_man_preference_lists[i] = np.append(new_man_preference_lists[i], j)
     for j in range(n):
-      for index, i in enumerate(woman_preference_lists[j]):
-        if j not in man_preference_lists[i]:
-          woman_preference_lists[j] = np.delete(woman_preference_lists[j], index)
+      new_woman_preference_lists[j] = np.array([])
+      for i in woman_preference_lists[j]:
+        if j not in new_man_preference_lists[i]:
+          new_woman_preference_lists[j] = np.append(new_woman_preference_lists[j], i)
+
+    man_preference_lists = new_man_preference_lists
+    woman_preference_lists = new_woman_preference_lists
 
     # O(n^3) routine to find all the rotations
     return []
+
+  def find_all_rotations(
+    self,
+    man_preference_lists: Dict[int, np.ndarray],
+    woman_preference_lists: Dict[int, np.ndarray],
+  ) -> List[List[Tuple[int, int]]]:
+    """
+    This is an internal routine to find the set of al rotations that we can obtain by eliminating some rotations. This includes the rotations that are already exposed in a stable matching.
+    The parameters indicate the reduced preference lists at the time of finding a stable matching.
+
+    Complexity
+    ----------
+    O(n^3)
+
+    Parameters
+    ----------
+    man_preference_lists: Dict[int, np.ndarray]
+      A dictionary where the key is an integer indicating a man in 0-index. The value is an array of integers. The kth element indicates the man's kth most preferred woman in his shortlist in 0-index.
+      This shortlist must be reduced.
+    woman_preference_lists: Dict[int, np.ndarray]
+      A dictionary where the key is an integer indicating a woman in 0-index. The value is an array of integers. The kth element indicates the woman's kth most preferred man in her shortlist in 0-index.
+      This shortlist must be reduced.
+
+    Returns
+    -------
+    List[List[Tuple[int, int]]]
+      A list containing all the rotations reachable in the stable matching. Each rotation is a list of 0-indexed man-woman pairs.
+    """
+    ans = []
+    # No node can be in two cycles at once in G(S).
+    # Therefore, no man or woman is in two rotations at once.
+    # Hence, we eliminate all the rotations in the same level simultaneously to expose a new set of rotations.
+    while True:
+      rotations = self.find_rotations(man_preference_lists, woman_preference_lists)
+      if len(rotations) == 0:
+        break
+      ans += rotations
+      # The outer two loops are O(n) combined
+      # because we only update the preference lists once for each person in each level.
+      for rotation in rotations:
+        # Eliminate.
+        r = len(rotation)
+        for i in range(r):
+          m_i_minus_1 = rotation[(i - 1) % r][0]
+          w_i = rotation[i][1]
+          k = len(woman_preference_lists[w_i])
+          # This part is O(n) in total of all levels.
+          while k >= 0:
+            if woman_preference_lists[w_i][k] == m_i_minus_1:
+              woman_preference_lists[w_i] = woman_preference_lists[w_i][:k]
+              break
+            k -= 1
+      # Eliminate male preference lists.
+      # TODO
+    return ans
 
   def find_rotations(
     self,
@@ -294,15 +356,15 @@ class Irving:
     ----------
     man_preference_lists: Dict[int, np.ndarray]
       A dictionary where the key is an integer indicating a man in 0-index. The value is an array of integers. The kth element indicates the man's kth most preferred woman in his shortlist in 0-index.
-      This shortlist must be reduced.
+      Each man's shortlist does not have to be fully reduced. Only the first and second elements are used.
     woman_preference_lists: Dict[int, np.ndarray]
       A dictionary where the key is an integer indicating a woman in 0-index. The value is an array of integers. The kth element indicates the woman's kth most preferred man in her shortlist in 0-index.
-      This shortlist must be reduced.
+      Each woman's shortlist does not have to be reduced. Only the last element is used.
 
     Returns
     -------
     List[List[Tuple[int, int]]]
-      A list containing all the rotations in the stable matching. Each rotation is a list of 0-indexed man-woman pairs.
+      A list containing all the rotations in exposed the stable matching. Each rotation is a list of 0-indexed man-woman pairs.
     """
     # Graph G(S)
     # Nodes: man (0-indexed)
@@ -315,7 +377,7 @@ class Irving:
       if len(man_preference_lists[i]) <= 1:
         continue
       j = man_preference_lists[i][1]
-      i_prime = womman_preference_lists[j][0]
+      i_prime = womman_preference_lists[j][-1]
       if i != i_prime:
         G[i].append(i_prime)
 
