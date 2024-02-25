@@ -259,35 +259,35 @@ class Irving:
 
     # Reconstruct preference lists. (0-indexed)
     # We first cut [0, matched_woman) from the man's preference lists because of Property 3 in Irving et al (1987): in the male optimal solution, every man is matched to the first woman on his shortlist.
-    man_preference_lists = {i: ranked_profile_1[i, prof_1[i, j]:] for i, j in stable_marriage}
+    preference_lists_1 = {i: ranked_profile_1[i, prof_1[i, j]:] for i, j in stable_marriage}
     # We first cut (matched_man, n-1] from the woman's preference lists because of Property 2 in Irving et al (1987): in the male optimal solution, every woman is matched to the last man on her shortlist.
-    woman_preference_lists = {j: ranked_profile_2[j, :prof_2[j, i]] for i, j in stable_marriage}
+    preference_lists_2 = {j: ranked_profile_2[j, :prof_2[j, i]] for i, j in stable_marriage}
 
     # We then reduce the shortlist to enforce the first statement of Property 2.
     # This is O(n^3) using a naive approach.
-    new_man_preference_lists = {}
-    new_woman_preference_lists = {}
+    new_preference_lists_1 = {}
+    new_preference_lists_2 = {}
     for i in range(n):
-      new_man_preference_lists[i] = np.array([])
-      for j in man_preference_lists[i]:
-        if i in woman_preference_lists[j]:
-          new_man_preference_lists[i] = np.append(new_man_preference_lists[i], j)
+      new_preference_lists_1[i] = np.array([])
+      for j in preference_lists_1[i]:
+        if i in preference_lists_2[j]:
+          new_preference_lists_1[i] = np.append(preference_lists_1[i], j)
     for j in range(n):
-      new_woman_preference_lists[j] = np.array([])
-      for i in woman_preference_lists[j]:
-        if j not in new_man_preference_lists[i]:
-          new_woman_preference_lists[j] = np.append(new_woman_preference_lists[j], i)
+      new_preference_lists_2[j] = np.array([])
+      for i in preference_lists_2[j]:
+        if j not in new_preference_lists_1[i]:
+          new_preference_lists_2[j] = np.append(new_preference_lists_2[j], i)
 
-    man_preference_lists = new_man_preference_lists
-    woman_preference_lists = new_woman_preference_lists
+    preference_lists_1 = new_preference_lists_1
+    preference_lists_2 = new_preference_lists_2
 
     # O(n^3) routine to find all the rotations
     return []
 
   def find_all_rotations(
     self,
-    man_preference_lists: Dict[int, np.ndarray],
-    woman_preference_lists: Dict[int, np.ndarray],
+    preference_lists_1: Dict[int, np.ndarray],
+    preference_lists_2: Dict[int, np.ndarray],
   ) -> List[List[Tuple[int, int]]]:
     """
     This is an internal routine to find the set of al rotations that we can obtain by eliminating some rotations. This includes the rotations that are already exposed in a stable matching.
@@ -299,24 +299,41 @@ class Irving:
 
     Parameters
     ----------
-    man_preference_lists: Dict[int, np.ndarray]
+    preference_lists_1: Dict[int, np.ndarray]
       A dictionary where the key is an integer indicating a man in 0-index. The value is an array of integers. The kth element indicates the man's kth most preferred woman in his shortlist in 0-index.
       This shortlist must be reduced.
-    woman_preference_lists: Dict[int, np.ndarray]
+      The dictionary must contain n keys and each preference list must be at most n long.
+    preference_lists_2: Dict[int, np.ndarray]
       A dictionary where the key is an integer indicating a woman in 0-index. The value is an array of integers. The kth element indicates the woman's kth most preferred man in her shortlist in 0-index.
       This shortlist must be reduced.
+      The dictionary must contain n keys and each preference list must be at most n long.
 
     Returns
     -------
     List[List[Tuple[int, int]]]
       A list containing all the rotations reachable in the stable matching. Each rotation is a list of 0-indexed man-woman pairs.
     """
+    n = len(preference_lists_1)
+    assert n == len(preference_lists_2)
+
     ans = []
+
+    # Use binary indicator representation to allow for faster access to see if an element is in the preference list.
+    # This technique allows for the entire routine to be O(n^3).
+    # 1 to indicate that the pair is still in the preference list. 0 to indicate otherwise.
+    preference_matrix_1 = {(i, j): 1 for i in range(n) for j in preference_lists_1[i]}
+    preference_matrix_2 = {(j, i): 1 for j in range(n) for i in preference_lists_2[j]}
+
+    # Male preference list is incomplete to the right of the start pointer
+    # and is indicated by [start_pointer, r)
+    # where r is the original length of the preference list.
+    # Female preference list is complete and is indicated by [0, end_pointer]
+
     # No node can be in two cycles at once in G(S).
     # Therefore, no man or woman is in two rotations at once.
     # Hence, we eliminate all the rotations in the same level simultaneously to expose a new set of rotations.
     while True:
-      rotations = self.find_rotations(man_preference_lists, woman_preference_lists)
+      rotations = self.find_rotations(preference_lists_1, preference_lists_2)
       if len(rotations) == 0:
         break
       ans += rotations
@@ -328,21 +345,31 @@ class Irving:
         for i in range(r):
           m_i_minus_1 = rotation[(i - 1) % r][0]
           w_i = rotation[i][1]
-          k = len(woman_preference_lists[w_i])
+          k = len(preference_lists_2[w_i])
           # This part is O(n) in total of all levels.
           while k >= 0:
-            if woman_preference_lists[w_i][k] == m_i_minus_1:
-              woman_preference_lists[w_i] = woman_preference_lists[w_i][:k]
+            if preference_lists_2[w_i][k] == m_i_minus_1:
+              preference_lists_2[w_i] = preference_lists_2[w_i][:k]
               break
+            preference_matrix_2[(w_i, preference_lists_2[w_i][k])] = 0
             k -= 1
-      # Eliminate male preference lists.
-      # TODO
+    # Eliminate male preference lists. O(n^2)
+    for i in range(n):
+      k = 0
+      while k < len(preference_lists_1[i]):
+        j = preference_lists_1[i][k]
+        in_preference_list = preference_matrix_2.get((j, i), 0)
+        if in_preference_list:
+          preference_lists_1[i] = preference_lists_1[i][k:]
+          break
+        preference_matrix_1[(i, j)] = 0
+        k += 1
     return ans
 
   def find_rotations(
     self,
-    man_preference_lists: Dict[int, np.ndarray],
-    womman_preference_lists: Dict[int, np.ndarray],
+    preference_lists_1: Dict[int, np.ndarray],
+    preference_lists_2: Dict[int, np.ndarray],
   ) -> List[List[Tuple[int, int]]]:
     """
     This is an internal routine to find the set of all rotations that are exposed in a stable matching, given the preference lists.
@@ -354,12 +381,14 @@ class Irving:
 
     Parameters
     ----------
-    man_preference_lists: Dict[int, np.ndarray]
+    preference_lists_1: Dict[int, np.ndarray]
       A dictionary where the key is an integer indicating a man in 0-index. The value is an array of integers. The kth element indicates the man's kth most preferred woman in his shortlist in 0-index.
       Each man's shortlist does not have to be fully reduced. Only the first and second elements are used.
-    woman_preference_lists: Dict[int, np.ndarray]
+      The dictionary must contain n keys and each preference list must be at most n long.
+    preference_lists_2: Dict[int, np.ndarray]
       A dictionary where the key is an integer indicating a woman in 0-index. The value is an array of integers. The kth element indicates the woman's kth most preferred man in her shortlist in 0-index.
       Each woman's shortlist does not have to be reduced. Only the last element is used.
+      The dictionary must contain n keys and each preference list must be at most n long.
 
     Returns
     -------
@@ -371,13 +400,14 @@ class Irving:
     # Edges: betwen man i and man i' if the woman who is second on man i's preference list
     # has man i' at the top of her preference list.
     # Note that in this graph, each node has at most one outgoing edge.
-    n = len(man_preference_lists)
+    n = len(preference_lists_1)
+    assert n == len(preference_lists_2)
     G = {i: [] for i in range(n)}
     for i in range(n):
-      if len(man_preference_lists[i]) <= 1:
+      if len(preference_lists_1[i]) <= 1:
         continue
-      j = man_preference_lists[i][1]
-      i_prime = womman_preference_lists[j][-1]
+      j = preference_lists_1[i][1]
+      i_prime = preference_lists_2[j][-1]
       if i != i_prime:
         G[i].append(i_prime)
 
@@ -395,9 +425,9 @@ class Irving:
       while not visited[current_node]:
         visited[current_node] = True
         next_node = G[current_node][0]
-        cycle.append((current_node, man_preference_lists[current_node][0]))
+        cycle.append((current_node, preference_lists_1[current_node][0]))
         current_node = next_node
-      index = cycle.index((current_node, man_preference_lists[current_node][0]))
+      index = cycle.index((current_node, preference_lists_1[current_node][0]))
       cycles.append(cycle[index:])
     return cycles
 
