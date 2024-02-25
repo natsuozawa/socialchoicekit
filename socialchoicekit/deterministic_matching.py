@@ -281,7 +281,15 @@ class Irving:
     preference_lists_1 = new_preference_lists_1
     preference_lists_2 = new_preference_lists_2
 
-    # O(n^3) routine to find all the rotations
+    rotations = self.find_all_rotations(preference_lists_1, preference_lists_2)
+
+    # Construct P'
+    rotation_of_pair = {}
+    for index, rotation in enumerate(rotations):
+      for i, j in rotation:
+        rotation_of_pair[(i, j)] = index
+    eliminating_rotations_of_pair = {}
+    # TODO: we have to use the results of find_all_rotations that are not published in the return values
     return []
 
   def find_all_rotations(
