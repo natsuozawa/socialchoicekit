@@ -281,24 +281,23 @@ class Irving:
     preference_lists_1 = new_preference_lists_1
     preference_lists_2 = new_preference_lists_2
 
-    rotations = self.find_all_rotations(preference_lists_1, preference_lists_2)
+    rotations, eliminating_rotations_of_pair = self.find_all_rotations_and_eliminations(preference_lists_1, preference_lists_2)
 
     # Construct P'
     rotation_of_pair = {}
     for index, rotation in enumerate(rotations):
       for i, j in rotation:
         rotation_of_pair[(i, j)] = index
-    eliminating_rotations_of_pair = {}
-    # TODO: we have to use the results of find_all_rotations that are not published in the return values
     return []
 
-  def find_all_rotations(
+  def find_all_rotations_and_eliminations(
     self,
     preference_lists_1: Dict[int, np.ndarray],
     preference_lists_2: Dict[int, np.ndarray],
-  ) -> List[List[Tuple[int, int]]]:
+  ) -> Tuple[List[List[Tuple[int, int]]], Dict[Tuple[int, int], int]]:
     """
     This is an internal routine to find the set of al rotations that we can obtain by eliminating some rotations. This includes the rotations that are already exposed in a stable matching.
+    We also note for each pair if there is a rotation that eliminates it.
     The parameters indicate the reduced preference lists at the time of finding a stable matching.
 
     Complexity
@@ -318,8 +317,14 @@ class Irving:
 
     Returns
     -------
+    Tuple[List[List[Tuple[int, int]]], Dict[Tuple[int, int], int]
+      Each item is described below.
+
     List[List[Tuple[int, int]]]
       A list containing all the rotations reachable in the stable matching. Each rotation is a list of 0-indexed man-woman pairs.
+
+    Dict[Tuple[int, int], int]
+      A map from a 0-indexed man-woman pair (m, w) to the 0-indexed index (in the first item of the returned tuple) of the rotation that eliminates it.
     """
     n = len(preference_lists_1)
     assert n == len(preference_lists_2)
@@ -340,6 +345,9 @@ class Irving:
     # No node can be in two cycles at once in G(S).
     # Therefore, no man or woman is in two rotations at once.
     # Hence, we eliminate all the rotations in the same level simultaneously to expose a new set of rotations.
+
+    eliminating_rotations_of_pair = {}
+    current_rotation = -1
     while True:
       rotations = self.find_rotations(preference_lists_1, preference_lists_2)
       if len(rotations) == 0:
@@ -348,6 +356,7 @@ class Irving:
       # The outer two loops are O(n) combined
       # because we only update the preference lists once for each person in each level.
       for rotation in rotations:
+        current_rotation += 1
         # Eliminate.
         r = len(rotation)
         for i in range(r):
@@ -360,6 +369,7 @@ class Irving:
               preference_lists_2[w_i] = preference_lists_2[w_i][:k]
               break
             preference_matrix_2[(w_i, preference_lists_2[w_i][k])] = 0
+            eliminating_rotations_of_pair[(preference_lists_2[w_i][k], w_i)] = current_rotation
             k -= 1
     # Eliminate male preference lists. O(n^2)
     for i in range(n):
@@ -372,7 +382,7 @@ class Irving:
           break
         preference_matrix_1[(i, j)] = 0
         k += 1
-    return ans
+    return ans, eliminating_rotations_of_pair
 
   def find_rotations(
     self,
