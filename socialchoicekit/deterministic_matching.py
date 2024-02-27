@@ -284,10 +284,41 @@ class Irving:
     rotations, eliminating_rotations_of_pair = self.find_all_rotations_and_eliminations(preference_lists_1, preference_lists_2)
 
     # Construct P'
+    # Nodes: rotation
+    # Edges: From rule 1 and 2
+    # Rule 1: If (m, w) is a member of a rotation, say pi,and w’ is the first woman
+    # below w in m’s list such that (m, w’) is a member of some other rotation,
+    # say rho, then P’ contains adirected edgefrom pi to rho.
+    # Rule 2: If (m, w’) is not a member of any rotation, but is eliminated by some rotation,
+    # say pi, and w is the first woman above w’ in m’s list such that (m, w) is
+    # a member of some rotation, say rho, then P’ contains a directed edge from pi to rho.
+    P_prime = {pi: [] for pi in rotations}
+
     rotation_of_pair = {}
     for index, rotation in enumerate(rotations):
       for i, j in rotation:
         rotation_of_pair[(i, j)] = index
+
+    # We use i, j instead of m, w here.
+    for i in range(n):
+      for index, j in enumerate(preference_lists_1[i]):
+        if index == len(preference_lists_1[i]) - 1:
+          # Cannot create edges from the last woman on the preference list.
+          # So skip.
+          continue
+        if (i, j) not in rotation_of_pair:
+          # We cannot construct (m, w) which is in a rotation.
+          continue
+        pi = rotation_of_pair[(i, j)]
+        j_prime = preference_lists_1[i][index + 1]
+        if (i, j_prime) in rotation_of_pair:
+          # Rule 1 is satisfied.
+          rho = rotation_of_pair[(i, j_prime)]
+        elif (i, j_prime) in eliminating_rotations_of_pair:
+          # Rule 2 is satisfied.
+          rho = eliminating_rotations_of_pair[(i, j_prime)]
+        P_prime[pi].append(rho)
+
     return []
 
   def find_all_rotations_and_eliminations(
