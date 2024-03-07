@@ -223,6 +223,7 @@ class Irving:
     """
     check_valuation_profile(valuation_profile_1, is_complete=True)
     check_valuation_profile(valuation_profile_2, is_complete=True)
+
     if isinstance(profile_1, StrictCompleteProfile):
       check_profile(profile_1, is_complete=True, is_strict=True)
       ordinal_profile_1 = profile_1.view(np.ndarray)
@@ -240,12 +241,6 @@ class Irving:
     assert (n, n) == ordinal_profile_1.shape
     assert (n, n) == ordinal_profile_2.shape
 
-    # 0-indexed
-    ranked_profile_1 = np.argsort(valuation_profile_1, axis=1)
-    ranked_profile_2 = np.argsort(valuation_profile_2, axis=1)
-    prof_1 = ordinal_profile_1 - 1
-    prof_2 = ordinal_profile_2 - 1
-
     # Get the male optimal stable matching.
     stable_marriage = GaleShapley(resident_oriented=True, zero_indexed=True).scf(
       StrictCompleteProfile.of(ordinal_profile_1),
@@ -259,29 +254,7 @@ class Irving:
     assert len(set([i for i, _ in stable_marriage])) == n
     assert len(set([j for _, j in stable_marriage])) == n
 
-    # Reconstruct preference lists. (0-indexed)
-    # We first cut [0, matched_woman) from the man's preference lists because of Property 3 in Irving et al (1987): in the male optimal solution, every man is matched to the first woman on his shortlist.
-    preference_lists_1 = {i: ranked_profile_1[i, prof_1[i, j]:] for i, j in stable_marriage}
-    # We first cut (matched_man, n-1] from the woman's preference lists because of Property 2 in Irving et al (1987): in the male optimal solution, every woman is matched to the last man on her shortlist.
-    preference_lists_2 = {j: ranked_profile_2[j, :prof_2[j, i]] for i, j in stable_marriage}
-
-    # We then reduce the shortlist to enforce the first statement of Property 2.
-    # This is O(n^3) using a naive approach.
-    new_preference_lists_1 = {}
-    new_preference_lists_2 = {}
-    for i in range(n):
-      new_preference_lists_1[i] = np.array([])
-      for j in preference_lists_1[i]:
-        if i in preference_lists_2[j]:
-          new_preference_lists_1[i] = np.append(preference_lists_1[i], j)
-    for j in range(n):
-      new_preference_lists_2[j] = np.array([])
-      for i in preference_lists_2[j]:
-        if j not in new_preference_lists_1[i]:
-          new_preference_lists_2[j] = np.append(new_preference_lists_2[j], i)
-
-    preference_lists_1 = new_preference_lists_1
-    preference_lists_2 = new_preference_lists_2
+    preference_lists_1, preference_lists_2 = self.find_initial_preference_lists(stable_marriage, ordinal_profile_1 - 1, ordinal_profile_2 - 1)
 
     rotations, eliminating_rotations_of_pair = self.find_all_rotations_and_eliminations(preference_lists_1, preference_lists_2)
 
@@ -335,6 +308,60 @@ class Irving:
     max_flow = ford_fulkerson(network, -1, -2)
     # TODO: modify FF implementation to return min_cut
     return []
+
+  def find_initial_preference_lists(
+    self,
+    stable_marriage:  List[Tuple[int, int]],
+    profile_1: np.ndarray,
+    profile_2: np.ndarray,
+  ) -> Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]:
+    """
+    This is an internal routine to find the initial preference lists.
+
+    Parameters
+    ----------
+    stable_marriage: List[Tuple[int, int]]
+
+    profile_1: np.ndarray
+      0-indexed
+
+    profile_2: np.ndarray
+      0-indexed
+
+    Returns
+    -------
+    Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]
+      all entries are 0-indexed
+    """
+    n = profile_1.shape[0]
+    prof_1 = profile_1.view(np.ndarray) - 1
+    prof_2 = profile_2.view(np.ndarray) - 1
+
+    # 0-indexed
+    ranked_profile_1 = np.argsort(prof_1, axis=1)
+    ranked_profile_2 = np.argsort(prof_2, axis=1)
+
+    # Reconstruct preference lists. (0-indexed)
+    # We first cut [0, matched_woman) from the man's preference lists because of Property 3 in Irving et al (1987): in the male optimal solution, every man is matched to the first woman on his shortlist.
+    preference_lists_1 = {i: ranked_profile_1[i, prof_1[i, j]:] for i, j in stable_marriage}
+    # We first cut (matched_man, n-1] from the woman's preference lists because of Property 2 in Irving et al (1987): in the male optimal solution, every woman is matched to the last man on her shortlist.
+    preference_lists_2 = {j: ranked_profile_2[j, :prof_2[j, i]] for i, j in stable_marriage}
+
+    # We then reduce the shortlist to enforce the first statement of Property 2.
+    # This is O(n^3) using a naive approach.
+    new_preference_lists_1 = {}
+    new_preference_lists_2 = {}
+    for i in range(n):
+      new_preference_lists_1[i] = np.array([])
+      for j in preference_lists_1[i]:
+        if i in preference_lists_2[j]:
+          new_preference_lists_1[i] = np.append(preference_lists_1[i], j)
+    for j in range(n):
+      new_preference_lists_2[j] = np.array([])
+      for i in preference_lists_2[j]:
+        if j not in new_preference_lists_1[i]:
+          new_preference_lists_2[j] = np.append(new_preference_lists_2[j], i)
+    return new_preference_lists_1, new_preference_lists_2
 
   def find_all_rotations_and_eliminations(
     self,
