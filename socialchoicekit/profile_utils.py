@@ -287,6 +287,22 @@ def is_consistent_valuation_profile(
   """
   check_valuation_profile(valuation_profile, is_complete=False)
   check_profile(profile, is_complete=False, is_strict=False)
-  ordinal_profile = compute_ordinal_profile(valuation_profile)
-  return np.array_equal(ordinal_profile, profile, equal_nan=True)
 
+  n = valuation_profile.shape[0]
+  m = valuation_profile.shape[1]
+
+  # Sort by descending with np.nan at end
+  ranked_valuation_profile = np.argsort(valuation_profile * -1, axis=1).view(np.ndarray)
+  ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
+
+  # Preserve np.nan
+  for agent in range(n):
+    for item_rank in range(m):
+      item_from_valuation_profile = ranked_valuation_profile[agent, item_rank]
+      item_from_profile = ranked_profile[agent, item_rank]
+      if item_from_valuation_profile == item_from_profile:
+        continue
+      elif np.allclose(valuation_profile[agent, item_from_profile], valuation_profile[agent, item_from_valuation_profile]):
+        continue
+      return False
+  return True

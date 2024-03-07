@@ -106,5 +106,23 @@ class TestProfileUtils:
     assert np.array_equal(ordinal_profile, ordinal_profile_2, equal_nan=True)
     assert isinstance(ordinal_profile, StrictIncompleteProfile)
 
-  def test_is_consistent_profile_2(self, cardinal_profile_2, ordinal_profile_2):
+  def test_is_consistent_valuation_profile_2(self, cardinal_profile_2, ordinal_profile_2):
     assert is_consistent_valuation_profile(cardinal_profile_2, ordinal_profile_2)
+    assert is_consistent_valuation_profile(cardinal_profile_2[1:] + cardinal_profile_2[:1], ordinal_profile_2) == False
+
+  @pytest.fixture
+  def ordinal_profile_3(self):
+    return StrictCompleteProfile.of(np.array([
+      [1, 3, 2],
+      [1, 3, 2],
+    ]))
+
+  @pytest.fixture
+  def cardinal_profile_3(self):
+    return CompleteValuationProfile.of(np.array([
+      [0.5, 0.25, 0.25],
+      [0.4, 0.3, 0.4],
+    ]))
+
+  def test_is_consistent_valuation_profile_3(self, cardinal_profile_3, ordinal_profile_3):
+    assert is_consistent_valuation_profile(cardinal_profile_3, ordinal_profile_3)
