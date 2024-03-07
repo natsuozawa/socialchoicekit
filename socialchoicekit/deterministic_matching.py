@@ -2,9 +2,11 @@ import numpy as np
 
 from typing import List, Tuple, Optional, Dict
 import heapq
+import sys
 
 from socialchoicekit.profile_utils import StrictProfile, StrictCompleteProfile, CompleteValuationProfile, compute_ordinal_profile
 from socialchoicekit.utils import check_valuation_profile, check_profile
+from socialchoicekit.flow import ford_fulkerson
 
 class GaleShapley:
   """
@@ -292,7 +294,7 @@ class Irving:
     # Rule 2: If (m, w’) is not a member of any rotation, but is eliminated by some rotation,
     # say pi, and w is the first woman above w’ in m’s list such that (m, w) is
     # a member of some rotation, say rho, then P’ contains a directed edge from pi to rho.
-    P_prime = {pi: [] for pi in rotations}
+    P_prime = {pi: [] for pi in range(len(rotations))}
 
     rotation_of_pair = {}
     for index, rotation in enumerate(rotations):
@@ -319,6 +321,19 @@ class Irving:
           rho = eliminating_rotations_of_pair[(i, j_prime)]
         P_prime[pi].append(rho)
 
+    # source s: -1, sink t: -2
+    # Elements represent (destination, capacity)
+    network: Dict[int, List[Tuple[int, int]]] = {-1: [], -2: []}
+    for pi in P_prime:
+      network[pi] = [(rho, sys.maxsize) for rho in P_prime[pi]]
+      w = self.rotation_weight(rotations[pi], valuation_profile_1, valuation_profile_2)
+      if w < 0:
+        network[pi].append((-2, int(-w)))
+      elif w > 0:
+        network[-1].append((pi, int(w)))
+
+    max_flow = ford_fulkerson(network, -1, -2)
+    # TODO: modify FF implementation to return min_cut
     return []
 
   def find_all_rotations_and_eliminations(
@@ -488,6 +503,7 @@ class Irving:
   ) -> float:
     """
     The weight of a rotation as defined in Irving et al. (1987).
+    The weight of the rotation must be smaller than sys.maxsize to work with Irving.
 
     Parameters
     ----------
