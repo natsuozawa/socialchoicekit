@@ -105,3 +105,6 @@ class TestProfileUtils:
     check_profile(ordinal_profile, is_complete=False)
     assert np.array_equal(ordinal_profile, ordinal_profile_2, equal_nan=True)
     assert isinstance(ordinal_profile, StrictIncompleteProfile)
+
+  def test_is_consistent_profile_2(self, cardinal_profile_2, ordinal_profile_2):
+    assert is_consistent_valuation_profile(cardinal_profile_2, ordinal_profile_2)

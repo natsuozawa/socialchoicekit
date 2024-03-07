@@ -266,3 +266,28 @@ def compute_ordinal_profile(cardinal_profile: ValuationProfile) -> StrictProfile
   if isinstance(cardinal_profile, CompleteValuationProfile):
     return StrictCompleteProfile.of(ans)
   return StrictIncompleteProfile.of(ans)
+
+def is_consistent_valuation_profile(
+  valuation_profile: ValuationProfile,
+  profile: Profile,
+):
+  """
+  Checks if the supplied valuation profile is consistent with the supplied ordinal profile.
+
+  Parameters
+  ----------
+  valuation_profile: ValuationProfile
+
+  profile: Profile
+
+  Returns
+  -------
+  bool
+    True if the valuation profile is consistent with the ordinal profile. False otherwise.
+  """
+  check_profile(profile, is_complete=False, is_strict=False)
+  check_valuation_profile(valuation_profile, is_complete=False)
+  ranked_valuation_profile = np.argsort(-1 * valuation_profile, axis=1).view(np.ndarray)
+  ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
+  return np.array_equal(ranked_valuation_profile, ranked_profile)
+
