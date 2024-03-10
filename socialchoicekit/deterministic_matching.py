@@ -256,12 +256,16 @@ class Irving:
 
     preference_lists_1, preference_lists_2 = self.find_initial_preference_lists(stable_marriage, ordinal_profile_1 - 1, ordinal_profile_2 - 1)
 
-    rotations, eliminating_rotations_of_pair = self.find_all_rotations_and_eliminations(preference_lists_1, preference_lists_2)
+    # Copy because find_all_rotations_and_eliminations will consume these lists.
+    initial_preference_lists_1 = {i: np.array(preference_lists_1[i]) for i in range(n)}
+    initial_preference_lists_2 = {i: np.array(preference_lists_2[i]) for i in range(n)}
+
+    rotations, eliminating_rotation_of_pair = self.find_all_rotations_and_eliminations(initial_preference_lists_1, initial_preference_lists_2)
 
     # Construct P'
     # Nodes: rotation
     # Edges: From rule 1 and 2
-    # Rule 1: If (m, w) is a member of a rotation, say pi,and w’ is the first woman
+    # Rule 1: If (m, w) is a member of a rotation, say pi, and w’ is the first woman
     # below w in m’s list such that (m, w’) is a member of some other rotation,
     # say rho, then P’ contains adirected edgefrom pi to rho.
     # Rule 2: If (m, w’) is not a member of any rotation, but is eliminated by some rotation,
@@ -282,17 +286,20 @@ class Irving:
           # So skip.
           continue
         if (i, j) not in rotation_of_pair:
-          # We cannot construct (m, w) which is in a rotation.
+          # We want to construct (m, w) which is in a rotation
+          # as the rotation that (m, w) belongs to becomes the destination of an edge.
+          # So skip.
           continue
         pi = rotation_of_pair[(i, j)]
         j_prime = preference_lists_1[i][index + 1]
         if (i, j_prime) in rotation_of_pair:
           # Rule 1 is satisfied.
           rho = rotation_of_pair[(i, j_prime)]
-        elif (i, j_prime) in eliminating_rotations_of_pair:
+        elif (i, j_prime) in eliminating_rotation_of_pair:
           # Rule 2 is satisfied.
-          rho = eliminating_rotations_of_pair[(i, j_prime)]
-        P_prime[pi].append(rho)
+          rho = eliminating_rotation_of_pair[(i, j_prime)]
+        if (rho not in P_prime[pi]):
+          P_prime[pi].append(rho)
 
     # source s: -1, sink t: -2
     # Elements represent (destination, capacity)
@@ -323,29 +330,30 @@ class Irving:
     stable_marriage: List[Tuple[int, int]]
 
     profile_1: np.ndarray
-      0-indexed
+      0-indexed.
+      Note: this argument will be consumed and change to the preference list after applying al rotations found.
 
     profile_2: np.ndarray
-      0-indexed
+      0-indexed.
+      Note: this argument will be consumed and change to the preference list after applying al rotations found.
 
     Returns
     -------
     Tuple[Dict[int, np.ndarray], Dict[int, np.ndarray]]
       all entries are 0-indexed
+      all arrays should have np.integer dtype.
     """
     n = profile_1.shape[0]
-    prof_1 = profile_1.view(np.ndarray) - 1
-    prof_2 = profile_2.view(np.ndarray) - 1
 
     # 0-indexed
-    ranked_profile_1 = np.argsort(prof_1, axis=1)
-    ranked_profile_2 = np.argsort(prof_2, axis=1)
+    ranked_profile_1 = np.argsort(profile_1, axis=1)
+    ranked_profile_2 = np.argsort(profile_2, axis=1)
 
     # Reconstruct preference lists. (0-indexed)
     # We first cut [0, matched_woman) from the man's preference lists because of Property 3 in Irving et al (1987): in the male optimal solution, every man is matched to the first woman on his shortlist.
-    preference_lists_1 = {i: ranked_profile_1[i, prof_1[i, j]:] for i, j in stable_marriage}
+    preference_lists_1 = {i: ranked_profile_1[i, profile_1[i, j]:] for i, j in stable_marriage}
     # We first cut (matched_man, n-1] from the woman's preference lists because of Property 2 in Irving et al (1987): in the male optimal solution, every woman is matched to the last man on her shortlist.
-    preference_lists_2 = {j: ranked_profile_2[j, :prof_2[j, i] + 1] for i, j in stable_marriage}
+    preference_lists_2 = {j: ranked_profile_2[j, :profile_2[j, i] + 1] for i, j in stable_marriage}
 
     # We then reduce the shortlist to enforce the first statement of Property 2.
     # This is O(n^3) using a naive approach.
@@ -361,6 +369,10 @@ class Irving:
       for i in preference_lists_2[j]:
         if j in new_preference_lists_1[i]:
           new_preference_lists_2[j] = np.append(new_preference_lists_2[j], i)
+
+    for i in range(n):
+      new_preference_lists_1[i] = new_preference_lists_1[i].astype(np.int64)
+      new_preference_lists_2[i] = new_preference_lists_2[i].astype(np.int64)
     return new_preference_lists_1, new_preference_lists_2
 
   def find_all_rotations_and_eliminations(

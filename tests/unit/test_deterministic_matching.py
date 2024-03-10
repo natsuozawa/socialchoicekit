@@ -224,11 +224,17 @@ class TestDeterministicMatching:
       np.ones(ordinal_profile_1.shape[0], dtype=int),
     )
 
-    preference_list_1, preference_list_2 = irving.find_initial_preference_lists(stable_marriage, ordinal_profile_1, ordinal_profile_2)
+    preference_list_1, preference_list_2 = irving.find_initial_preference_lists(
+      stable_marriage,
+      ordinal_profile_1 - 1,
+      ordinal_profile_2 - 1
+    )
 
     for i in shortlist_1.keys():
+      assert np.issubdtype(preference_list_1[i].dtype, np.integer)
       assert np.array_equal(preference_list_1[i], shortlist_1[i])
     for i in shortlist_2.keys():
+      assert np.issubdtype(preference_list_2[i].dtype, np.integer)
       assert np.array_equal(preference_list_2[i], shortlist_2[i])
 
   def test_find_rotations_2(self, initial_preference_lists_2, exposed_rotations_2):
@@ -262,3 +268,13 @@ class TestDeterministicMatching:
     )
 
     assert len(rotations) == len(all_rotations_2)
+
+  def test_irving_2(self, profiles_2):
+    ordinal_profile_1, ordinal_profile_2, cardinal_profile_1, cardinal_profile_2 = profiles_2
+    irving = Irving()
+    irving.scf(
+      cardinal_profile_1,
+      cardinal_profile_2,
+      ordinal_profile_1,
+      ordinal_profile_2,
+    )
