@@ -117,7 +117,7 @@ class TestDeterministicMatching:
     return StrictCompleteProfile.of(ordinal_profile_1 + 1), StrictCompleteProfile.of(ordinal_profile_2 + 1), CompleteValuationProfile.of(cardinal_profile_1), CompleteValuationProfile.of(cardinal_profile_2)
 
   @pytest.fixture
-  def initial_preference_lists_1(self):
+  def initial_preference_lists_2(self):
     preference_list_1 = {
       0: np.array([3, 1, 5, 7, 4]) - 1,
       1: np.array([1, 3, 4, 8, 7]) - 1,
@@ -164,9 +164,9 @@ class TestDeterministicMatching:
     assert (6, 7) in stable_marriage
     assert (7, 1) in stable_marriage
 
-  def test_find_initial_preference_lists_2(self, profiles_2, initial_preference_lists_1):
+  def test_find_initial_preference_lists_2(self, profiles_2, initial_preference_lists_2):
     ordinal_profile_1, ordinal_profile_2, _, _ = profiles_2
-    shortlist_1, shortlist_2 = initial_preference_lists_1
+    shortlist_1, shortlist_2 = initial_preference_lists_2
 
     irving = Irving()
 
@@ -184,3 +184,13 @@ class TestDeterministicMatching:
       assert np.array_equal(preference_list_1[i], shortlist_1[i])
     for i in shortlist_2.keys():
       assert np.array_equal(preference_list_2[i], shortlist_2[i])
+
+  def test_find_rotations_2(self, initial_preference_lists_2):
+    shortlist_1, shortlist_2 = initial_preference_lists_2
+    irving = Irving()
+    rotations = irving.find_rotations(shortlist_1, shortlist_2)
+
+    exposed_rotations_2 = [[(0, 2), (1, 0)], [(2, 6), (4, 3), (7, 1)], [(3, 4), (6, 7), (5, 5)]]
+    for rotation in rotations:
+      assert rotation in exposed_rotations_2
+    assert len(rotations) == len(exposed_rotations_2)
