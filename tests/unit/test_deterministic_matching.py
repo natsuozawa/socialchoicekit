@@ -185,8 +185,18 @@ class TestDeterministicMatching:
     ]
 
   @pytest.fixture
-  def eliminations_2(self):
+  def sparsest_rotation_poset_graph_2(self):
     return {
+      0: [3, 4],
+      1: [3, 4, 5],
+      2: [3, 5],
+      3: [6, 7],
+      4: [6, 7],
+      5: [7],
+      6: [8],
+      7: [8],
+      8: [9],
+      9: [],
     }
 
   def test_profile_consistency_2(self, profiles_2):
@@ -268,6 +278,20 @@ class TestDeterministicMatching:
     )
 
     assert len(rotations) == len(all_rotations_2)
+
+  def test_construct_sparse_rotation_poset_graph(self, initial_preference_lists_2, sparsest_rotation_poset_graph_2):
+    shortlist_1, shortlist_2 = initial_preference_lists_2
+    irving = Irving()
+    preference_lists_1 = {i: np.array(shortlist_1[i]) for i in range(len(shortlist_1))}
+    rotations, eliminations = irving.find_all_rotations_and_eliminations(shortlist_1, shortlist_2)
+    P_prime = irving.construct_sparse_rotation_poset_graph(rotations, preference_lists_1, eliminations)
+
+    # Check that this is a supergraph of the sparsest rotation poset graph.
+    for i in sparsest_rotation_poset_graph_2:
+      for j in sparsest_rotation_poset_graph_2[i]:
+        assert j in P_prime[i]
+
+    # TODO: Check that there are no cycles.
 
   def test_irving_2(self, profiles_2):
     ordinal_profile_1, ordinal_profile_2, cardinal_profile_1, cardinal_profile_2 = profiles_2
