@@ -271,6 +271,8 @@ class Irving:
     # Rule 2: If (m, w’) is not a member of any rotation, but is eliminated by some rotation,
     # say pi, and w is the first woman above w’ in m’s list such that (m, w) is
     # a member of some rotation, say rho, then P’ contains a directed edge from pi to rho.
+    # The way we implement Rule 2 is for all pairs (m, w) that are members of some rotation,
+    # we find all pairs (m, w') where w' is between w and the next w'' such that (m, w'') is a member of some rotation.
     P_prime = {pi: [] for pi in range(len(rotations))}
 
     rotation_of_pair = {}
@@ -278,28 +280,40 @@ class Irving:
       for i, j in rotation:
         rotation_of_pair[(i, j)] = index
 
-    # We use i, j instead of m, w here.
-    for i in range(n):
-      for index, j in enumerate(preference_lists_1[i]):
-        if index == len(preference_lists_1[i]) - 1:
-          # Cannot create edges from the last woman on the preference list.
-          # So skip.
-          continue
-        if (i, j) not in rotation_of_pair:
+    for m in range(n):
+      j = 0
+      # Cannot create edges from the last woman on the preference list. End at n - 1.
+      while j < len(preference_lists_1[m]) - 1:
+        w = preference_lists_1[m][j]
+        if (m, w) not in rotation_of_pair:
           # We want to construct (m, w) which is in a rotation
           # as the rotation that (m, w) belongs to becomes the destination of an edge.
           # So skip.
+          j += 1
           continue
-        pi = rotation_of_pair[(i, j)]
-        j_prime = preference_lists_1[i][index + 1]
-        if (i, j_prime) in rotation_of_pair:
-          # Rule 1 is satisfied.
-          rho = rotation_of_pair[(i, j_prime)]
-        elif (i, j_prime) in eliminating_rotation_of_pair:
-          # Rule 2 is satisfied.
-          rho = eliminating_rotation_of_pair[(i, j_prime)]
-        if (rho not in P_prime[pi]):
-          P_prime[pi].append(rho)
+        rot = rotation_of_pair[(m, w)]
+        j_prime = j + 1
+        while j_prime < len(preference_lists_1[m]):
+          w_prime = preference_lists_1[m][j_prime]
+          if (m, w_prime) in rotation_of_pair:
+            # Rule 1 is satisfied.
+            pi = rot
+            rho = rotation_of_pair[(m, w_prime)]
+            # Draw edge from pi to rho if not already drawn.
+            if (rho not in P_prime[pi]):
+              P_prime[pi].append(rho)
+            break
+          elif (m, w_prime) in eliminating_rotation_of_pair:
+            # Rule 2 is satisfied.
+            pi = eliminating_rotation_of_pair[(m, w_prime)]
+            rho = rot
+            # Draw edge from pi to rho if not already drawn.
+            if (rho not in P_prime[pi]):
+              P_prime[pi].append(rho)
+          j_prime += 1
+        # We have that Rule 1 was satisfied last unless we've reached the end of m's preference list. (Because if rule 2 was satisfied, j_prime would increment and the loop would continue).
+        # Hence, w_prime is in some rotation. We set this to the next pi.
+        j = j_prime
 
     # source s: -1, sink t: -2
     # Elements represent (destination, capacity)
