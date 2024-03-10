@@ -435,26 +435,42 @@ class Irving:
         for i in range(r):
           m_i_minus_1 = rotation[(i - 1) % r][0]
           w_i = rotation[i][1]
-          k = len(preference_lists_2[w_i])
+          k = len(preference_lists_2[w_i]) - 1
           # This part is O(n) in total of all levels.
           while k >= 0:
             if preference_lists_2[w_i][k] == m_i_minus_1:
-              preference_lists_2[w_i] = preference_lists_2[w_i][:k]
+              preference_lists_2[w_i] = preference_lists_2[w_i][:k + 1]
               break
             preference_matrix_2[(w_i, preference_lists_2[w_i][k])] = 0
             eliminating_rotations_of_pair[(preference_lists_2[w_i][k], w_i)] = current_rotation
             k -= 1
-    # Eliminate male preference lists. O(n^2)
-    for i in range(n):
-      k = 0
-      while k < len(preference_lists_1[i]):
-        j = preference_lists_1[i][k]
-        in_preference_list = preference_matrix_2.get((j, i), 0)
-        if in_preference_list:
-          preference_lists_1[i] = preference_lists_1[i][k:]
-          break
-        preference_matrix_1[(i, j)] = 0
-        k += 1
+      # Eliminate male preference lists. O(n^2)
+      for i in range(n):
+        k = 0
+        while True:
+          if k >= preference_lists_1[i].shape[0]:
+            preference_lists_1[i] = np.array([])
+            break
+          j = preference_lists_1[i][k]
+          in_preference_list = preference_matrix_2.get((j, i), 0)
+          if in_preference_list:
+            preference_lists_1[i] = preference_lists_1[i][k:]
+            break
+          preference_matrix_1[(i, j)] = 0
+          k += 1
+        # Since the first two elements of each male preference list has to be valid, we have to eliminate again.
+        k = 1
+        while True:
+          if k >= preference_lists_1[i].shape[0]:
+            # :1 will return an empty array safely if the original array is empty.
+            preference_lists_1[i] = preference_lists_1[i][:1]
+            break
+          j = preference_lists_1[i][k]
+          in_preference_list = preference_matrix_2.get((j, i), 0)
+          if in_preference_list:
+            preference_lists_1[i] = np.append(preference_lists_1[i][0], preference_lists_1[i][k:])
+            break
+          k += 1
     return ans, eliminating_rotations_of_pair
 
   def find_rotations(
@@ -515,11 +531,19 @@ class Irving:
       current_node = start_point
       while not visited[current_node]:
         visited[current_node] = True
+        # Reached a node with no outgoing edges. This is possible if the shortlist has less than 2 elements.
+        if (len(G[current_node]) == 0):
+          break
         next_node = G[current_node][0]
         cycle.append((current_node, preference_lists_1[current_node][0]))
         current_node = next_node
-      index = cycle.index((current_node, preference_lists_1[current_node][0]))
-      cycles.append(cycle[index:])
+      # If we have an outgoing edge from the current node,
+      # we might have found a cycle. Check.
+      if len(preference_lists_1[current_node]) > 0:
+        start_cycle_pair = (current_node, preference_lists_1[current_node][0])
+        if start_cycle_pair in cycle:
+          index = cycle.index(start_cycle_pair)
+          cycles.append(cycle[index:])
     return cycles
 
   def rotation_weight(

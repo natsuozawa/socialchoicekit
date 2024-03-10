@@ -142,6 +142,30 @@ class TestDeterministicMatching:
 
     return preference_list_1, preference_list_2
 
+  @pytest.fixture
+  def exposed_rotations_2(self):
+    return [[(0, 2), (1, 0)], [(2, 6), (4, 3), (7, 1)], [(3, 4), (6, 7), (5, 5)]]
+
+  @pytest.fixture
+  def all_rotations_2(self):
+    return [
+      [(0, 2), (1, 0)],
+      [(2, 6), (4, 3), (7, 1)],
+      [(3, 4), (6, 7), (5, 5)],
+      [(0, 0), (5, 4), (7, 6)],
+      [(1, 2), (2, 3)],
+      [(3, 7), (6, 5), (4, 1)],
+      [(2, 2), (7, 0)],
+      [(1, 3), (4, 7), (5, 6)],
+      [(0, 4), (4, 6), (7, 2)],
+      [(2, 0), (6, 1), (4, 2), (3, 5)],
+    ]
+
+  @pytest.fixture
+  def eliminations_2(self):
+    return {
+    }
+
   def test_profile_consistency_2(self, profiles_2):
     ordinal_profile_1, ordinal_profile_2, cardinal_profile_1, cardinal_profile_2 = profiles_2
     assert is_consistent_valuation_profile(cardinal_profile_1, ordinal_profile_1)
@@ -177,7 +201,6 @@ class TestDeterministicMatching:
       np.ones(ordinal_profile_1.shape[0], dtype=int),
     )
 
-    # TODO: fix
     preference_list_1, preference_list_2 = irving.find_initial_preference_lists(stable_marriage, ordinal_profile_1, ordinal_profile_2)
 
     for i in shortlist_1.keys():
@@ -185,12 +208,34 @@ class TestDeterministicMatching:
     for i in shortlist_2.keys():
       assert np.array_equal(preference_list_2[i], shortlist_2[i])
 
-  def test_find_rotations_2(self, initial_preference_lists_2):
+  def test_find_rotations_2(self, initial_preference_lists_2, exposed_rotations_2):
     shortlist_1, shortlist_2 = initial_preference_lists_2
     irving = Irving()
     rotations = irving.find_rotations(shortlist_1, shortlist_2)
 
-    exposed_rotations_2 = [[(0, 2), (1, 0)], [(2, 6), (4, 3), (7, 1)], [(3, 4), (6, 7), (5, 5)]]
-    for rotation in rotations:
-      assert rotation in exposed_rotations_2
+    # We must compare in this way because there are multiple valid orders of pairs in each rotation.
+    assert all(
+      [any(
+        [any(
+          [pair in answer_rotation for pair in solved_rotation]
+        ) for answer_rotation in exposed_rotations_2]
+      ) for solved_rotation in rotations]
+    )
+
     assert len(rotations) == len(exposed_rotations_2)
+
+  def test_find_all_rotations_and_eliminations_2(self, initial_preference_lists_2, all_rotations_2):
+    shortlist_1, shortlist_2 = initial_preference_lists_2
+    irving = Irving()
+    # We don't test eliminations for now.
+    rotations, _ = irving.find_all_rotations_and_eliminations(shortlist_1, shortlist_2)
+
+    assert all(
+      [any(
+        [any(
+          [pair in answer_rotation for pair in solved_rotation]
+        ) for answer_rotation in all_rotations_2]
+      ) for solved_rotation in rotations]
+    )
+
+    assert len(rotations) == len(all_rotations_2)
