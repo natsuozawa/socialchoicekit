@@ -345,7 +345,7 @@ class Irving:
     # We first cut [0, matched_woman) from the man's preference lists because of Property 3 in Irving et al (1987): in the male optimal solution, every man is matched to the first woman on his shortlist.
     preference_lists_1 = {i: ranked_profile_1[i, prof_1[i, j]:] for i, j in stable_marriage}
     # We first cut (matched_man, n-1] from the woman's preference lists because of Property 2 in Irving et al (1987): in the male optimal solution, every woman is matched to the last man on her shortlist.
-    preference_lists_2 = {j: ranked_profile_2[j, :prof_2[j, i]] for i, j in stable_marriage}
+    preference_lists_2 = {j: ranked_profile_2[j, :prof_2[j, i] + 1] for i, j in stable_marriage}
 
     # We then reduce the shortlist to enforce the first statement of Property 2.
     # This is O(n^3) using a naive approach.
@@ -355,11 +355,11 @@ class Irving:
       new_preference_lists_1[i] = np.array([])
       for j in preference_lists_1[i]:
         if i in preference_lists_2[j]:
-          new_preference_lists_1[i] = np.append(preference_lists_1[i], j)
+          new_preference_lists_1[i] = np.append(new_preference_lists_1[i], j)
     for j in range(n):
       new_preference_lists_2[j] = np.array([])
       for i in preference_lists_2[j]:
-        if j not in new_preference_lists_1[i]:
+        if j in new_preference_lists_1[i]:
           new_preference_lists_2[j] = np.append(new_preference_lists_2[j], i)
     return new_preference_lists_1, new_preference_lists_2
 

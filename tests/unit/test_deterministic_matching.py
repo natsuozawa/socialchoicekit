@@ -133,7 +133,7 @@ class TestDeterministicMatching:
       0: np.array([4, 3, 8, 1, 2]) - 1,
       1: np.array([3, 7, 5, 8]) - 1,
       2: np.array([7, 5, 8, 3, 6, 2, 1]) - 1,
-      3: np.array([4, 6, 4, 2, 7, 3, 1, 5]) - 1,
+      3: np.array([6, 4, 2, 7, 3, 1, 5]) - 1,
       4: np.array([8, 7, 1, 5, 6, 4]) - 1,
       5: np.array([5, 4, 7, 6]) - 1,
       6: np.array([1, 4, 5, 6, 2, 8, 3]) - 1,
@@ -177,6 +177,7 @@ class TestDeterministicMatching:
       np.ones(ordinal_profile_1.shape[0], dtype=int),
     )
 
+    # TODO: fix
     preference_list_1, preference_list_2 = irving.find_initial_preference_lists(stable_marriage, ordinal_profile_1, ordinal_profile_2)
 
     for i in shortlist_1.keys():
