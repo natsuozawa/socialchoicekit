@@ -242,7 +242,7 @@ class Irving:
     assert (n, n) == ordinal_profile_2.shape
 
     # Get the male optimal stable matching.
-    stable_marriage = GaleShapley(resident_oriented=True, zero_indexed=True).scf(
+    stable_matching = GaleShapley(resident_oriented=True, zero_indexed=True).scf(
       StrictCompleteProfile.of(ordinal_profile_1),
       StrictCompleteProfile.of(ordinal_profile_2),
       np.ones(n, dtype=int)
@@ -250,11 +250,11 @@ class Irving:
     # Capacity requriement is tested in TestDeterministicMatching.
 
     # Check each man is matched to exactly one woman and vice versa.
-    assert len(stable_marriage) == n
-    assert len(set([i for i, _ in stable_marriage])) == n
-    assert len(set([j for _, j in stable_marriage])) == n
+    assert len(stable_matching) == n
+    assert len(set([i for i, _ in stable_matching])) == n
+    assert len(set([j for _, j in stable_matching])) == n
 
-    preference_lists_1, preference_lists_2 = self.find_initial_preference_lists(stable_marriage, ordinal_profile_1 - 1, ordinal_profile_2 - 1)
+    preference_lists_1, preference_lists_2 = self.find_initial_preference_lists(stable_matching, ordinal_profile_1 - 1, ordinal_profile_2 - 1)
 
     # Copy because find_all_rotations_and_eliminations will consume these lists.
     initial_preference_lists_1 = {i: np.array(preference_lists_1[i]) for i in range(n)}
@@ -266,7 +266,9 @@ class Irving:
     P_prime = self.construct_sparse_rotation_poset_graph(rotations, preference_lists_1, eliminating_rotation_of_pair)
 
     maximum_weight_closed_subset = self.find_maximum_weight_closed_subset(P_prime, rotations, valuation_profile_1, valuation_profile_2)
-    return []
+
+    rotations_to_eliminate = [rotations[i] for i in maximum_weight_closed_subset]
+    return self.eliminate_rotations(stable_matching, rotations_to_eliminate)
 
   def find_initial_preference_lists(
     self,
@@ -702,3 +704,71 @@ class Irving:
       ans += valuation_profile_2[rotation[i][1], rotation[i][0]] - valuation_profile_2[rotation[i][1], rotation[(i - 1) % r][0]]
     ans *= -1
     return ans
+
+  def eliminate_rotations(
+    self,
+    stable_matching: List[Tuple[int, int]],
+    rotations: List[List[Tuple[int, int]]],
+  ) -> List[Tuple[int, int]]:
+    """
+    Apply a series of eliminations to a stable matching in the order given in the rotations parameter.
+    Eliminating with valid rotations will ensure stability.
+
+    Parameters
+    ----------
+    stable_matching: List[Tuple[int, int]]
+      A stable matching. This is in the form outputted by Gale-Shapley.
+
+    rotations: List[List[Tuple[int, int]]]
+      A list containing all the rotations to be applied. Each rotation is in the form (m_0, w_0), ..., (m_{r-1}, w_{r-1}) where each m_i, w_i are 0-indexed.
+      Rotations must be in the order of application.
+      Subsequent rotations must be exposed after the previous rotation is applied.
+
+    Returns
+    -------
+    List[Tuple[int, int]]
+      The stable matching after applying the eliminations.
+    """
+    # Copy to avoid changing the original argument.
+    current_stable_matching = list(stable_matching)
+
+    for rotation in rotations:
+      r = len(rotation)
+      for i in range(r):
+        pair = rotation[i]
+        # Note that this pair might be anywhere in the rotation.
+        if pair not in current_stable_matching:
+          raise ValueError(f"The rotation {rotation} is not exposed in the stable matching (after eliminating previous rotations).")
+        pair_index = current_stable_matching.index(pair)
+        # We only modify the pair in position pair_index, so we can modify in place.
+        current_stable_matching[pair_index] = (rotation[i][0], rotation[(i + 1) % r][1])
+    return current_stable_matching
+
+  def stable_matching_value(
+    self,
+    stable_matching: List[Tuple[int, int]],
+    valuation_profile_1: CompleteIntegerValuationProfile,
+    valuation_profile_2: CompleteIntegerValuationProfile,
+  ) -> int:
+    """
+    The cardinal utility (social welfare) of a stable matching. In Irving et al. (1987), this is defined as c(S).
+
+    Parameters
+    ----------
+    stable_matching: List[Tuple[int, int]]
+      A stable matching. This is in the form outputted by Gale-Shapley.
+
+    valuation_profile_1: CompleteIntegerValuationProfile
+
+    valuation_profile_2: CompleteIntegerValuationProfile
+
+    Returns
+    -------
+    int
+      The cardinal utility (social welfare) of the stable matching.
+    """
+    ans = 0
+    for m, w in stable_matching:
+      ans += valuation_profile_1[m, w] + valuation_profile_2[w, m]
+    return ans
+

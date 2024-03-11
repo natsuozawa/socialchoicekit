@@ -382,9 +382,13 @@ class TestDeterministicMatching:
   def test_irving_2(self, profiles_2):
     ordinal_profile_1, ordinal_profile_2, cardinal_profile_1, cardinal_profile_2 = profiles_2
     irving = Irving()
-    irving.scf(
+    stable_matching = irving.scf(
       cardinal_profile_1,
       cardinal_profile_2,
       ordinal_profile_1,
       ordinal_profile_2,
     )
+    expected_value = irving.stable_matching_value([(0, 0), (1, 3), (2, 2), (3, 4), (4, 1), (5, 5), (6, 7), (7, 6)], cardinal_profile_1, cardinal_profile_2)
+    actual_value = irving.stable_matching_value(stable_matching, cardinal_profile_1, cardinal_profile_2)
+    assert expected_value == actual_value
+
