@@ -551,6 +551,7 @@ class Irving:
 
     eliminating_rotation_of_pair: Dict[Tuple[int, int], int]
     """
+    # Rotation poset graph P'
     P_prime = {pi: [] for pi in range(len(rotations))}
     n = len(preference_lists_1)
 

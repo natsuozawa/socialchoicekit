@@ -282,11 +282,14 @@ class TestDeterministicMatching:
   def test_construct_sparse_rotation_poset_graph(self, initial_preference_lists_2, all_rotations_2, sparsest_rotation_poset_graph_2):
     shortlist_1, shortlist_2 = initial_preference_lists_2
     irving = Irving()
+
+    # Copy shortlist_1
     preference_lists_1 = {i: np.array(shortlist_1[i]) for i in range(len(shortlist_1))}
     rotations, eliminations = irving.find_all_rotations_and_eliminations(shortlist_1, shortlist_2)
     P_prime = irving.construct_sparse_rotation_poset_graph(rotations, preference_lists_1, eliminations)
 
     # Check that this is a supergraph of the sparsest rotation poset graph.
+    # We have to do this in a verbose way because the ordering of the rotations and the pairs in the rotations do not necessarily align.
     expected_to_actual_mapping = {}
     for i, rotation_expected in enumerate(all_rotations_2):
       for j, rotation_actual in enumerate(rotations):
