@@ -3,8 +3,8 @@ import numpy as np
 import pytest
 
 from socialchoicekit.data_generation import *
-from socialchoicekit.utils import check_profile, check_valuation_profile
-from socialchoicekit.profile_utils import StrictCompleteProfile, StrictIncompleteProfile, IncompleteValuationProfile
+from socialchoicekit.utils import check_valuation_profile
+from socialchoicekit.profile_utils import StrictCompleteProfile, StrictIncompleteProfile, IncompleteValuationProfile, compute_ordinal_profile
 
 class TestDataGeneration:
   @pytest.fixture
@@ -29,11 +29,6 @@ class TestDataGeneration:
       [1, 4, 2, 3],
       [1, 3, 4, 2],
     ]))
-
-  def test_compute_ordinal_profile(self, cardinal_profile_1, ordinal_profile_1):
-    ordinal_profile = compute_ordinal_profile(cardinal_profile_1)
-    check_profile(ordinal_profile, is_complete=False)
-    assert np.array_equal(ordinal_profile, ordinal_profile_1, equal_nan=True)
 
   def test_uniform_valuation_profile_generator_1(self, ordinal_profile_1):
     uvpg = UniformValuationProfileGenerator(high=1, low=0)

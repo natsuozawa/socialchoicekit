@@ -83,3 +83,46 @@ class TestProfileUtils:
 
     strict_complete_profile_random = profile_with_ties_to_strict_profile(complete_profile_with_ties_1, tie_breaker="random")
     assert np.sum(strict_complete_profile_random) == np.sum(strict_complete_profile_1)
+
+  @pytest.fixture
+  def ordinal_profile_2(self):
+    return StrictIncompleteProfile.of(np.array([
+      [1, 5, 2, 3, 4],
+      [4, 5, 3, 1, 2],
+      [1, np.nan, 4, 2, 3]
+    ]))
+
+  @pytest.fixture
+  def cardinal_profile_2(self):
+    return IncompleteValuationProfile.of(np.array([
+      [0.9, 0, 0.05, 0.04, 0.01],
+      [0.1, 0.05, 0.15, 0.4, 0.3],
+      [0.7, np.nan, 0.01, 0.2, 0.09]
+    ]))
+
+  def test_compute_ordinal_profile_2(self, cardinal_profile_2, ordinal_profile_2):
+    ordinal_profile = compute_ordinal_profile(cardinal_profile_2)
+    check_profile(ordinal_profile, is_complete=False)
+    assert np.array_equal(ordinal_profile, ordinal_profile_2, equal_nan=True)
+    assert isinstance(ordinal_profile, StrictIncompleteProfile)
+
+  def test_is_consistent_valuation_profile_2(self, cardinal_profile_2, ordinal_profile_2):
+    assert is_consistent_valuation_profile(cardinal_profile_2, ordinal_profile_2)
+    assert is_consistent_valuation_profile(cardinal_profile_2[1:] + cardinal_profile_2[:1], ordinal_profile_2) == False
+
+  @pytest.fixture
+  def ordinal_profile_3(self):
+    return StrictCompleteProfile.of(np.array([
+      [1, 3, 2],
+      [1, 3, 2],
+    ]))
+
+  @pytest.fixture
+  def cardinal_profile_3(self):
+    return CompleteValuationProfile.of(np.array([
+      [0.5, 0.25, 0.25],
+      [0.4, 0.3, 0.4],
+    ]))
+
+  def test_is_consistent_valuation_profile_3(self, cardinal_profile_3, ordinal_profile_3):
+    assert is_consistent_valuation_profile(cardinal_profile_3, ordinal_profile_3)

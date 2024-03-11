@@ -1,12 +1,12 @@
 import sys, copy
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union, Set
 import numpy as np
 
 from socialchoicekit.utils import check_bipartite_graph
 
-def ford_fulkerson(G: Dict[int, List[Tuple[int, int]]], s: int, t: int) -> Dict[Tuple[int, int], int]:
+def ford_fulkerson(G: Dict[int, List[Tuple[int, int]]], s: int, t: int) -> Tuple[Dict[Tuple[int, int], int], Set[int]]:
   """
-  The Ford Fulkerson algorithm for computing the maximum flow in a flow network (with depth first search)
+  The Ford Fulkerson algorithm for computing the maximum flow and minimum cut in a flow network (with depth first search)
 
   This implementation only works with integral capacities, and we use this to ensure that the algorithm terminates.
 
@@ -22,9 +22,13 @@ def ford_fulkerson(G: Dict[int, List[Tuple[int, int]]], s: int, t: int) -> Dict[
 
   Returns
   -------
+  Tuple[Dict[Tuple[int, int], int], Set[int]]
+    For each component, see below.
   Dict[Tuple[int, int], int]
     The flow network with the maximum flow. The flow network is of the form {(i, j): f} where f is the flow from vertex i to vertex j.
     This flow network includes paths in the original graph where the flow is zero.
+  Set[int]
+    A subset of the nodes that are in the source side of the minimum cut.
   """
   # Residual graph
   G_f = copy.deepcopy(G)
@@ -46,7 +50,7 @@ def ford_fulkerson(G: Dict[int, List[Tuple[int, int]]], s: int, t: int) -> Dict[
       for i in G.keys():
         for j, _ in G[i]:
           flow_final[(i, j)] = flow[(i, j)]
-      return flow_final
+      return flow_final, reachable_vertices(G_f, s)
 
     path, c_f_p = path_from_sink_to_source
     for i in range(len(path) - 1):
@@ -111,6 +115,92 @@ def dfs_path(G: Dict[int, List[Tuple[int, int]]], current: int, sink: int, visit
     visited[current] = 0
     return (best_path, best_capacity)
   return None
+
+def reachable_vertices(G: Dict[int, List[Tuple[int, int]]], s: int) -> Set[int]:
+  """
+  Finds the vertices that are reachable from a given vertex in a flow residual network.
+
+  Parameters
+  ----------
+  G_f : Dict[int, List[Tuple[int, int]]]
+    A flow residual network of the form {i: [(j, c), (k, c), ...]} where i is the index of a vertex and [(j, c), (k, c), ...] are the indices of the vertices that i is connected to along with the capacity of the edge.
+
+  s: int
+    The index to check reachability from.
+
+  Returns
+  -------
+  Set[int]
+    A list of vertices that are reachable from the given vertex.
+  """
+  ans = set()
+
+  # Perform a breadth first search.
+  frontier = set([s])
+  while True:
+    if len(frontier) == 0:
+      break
+    current_node = frontier.pop()
+    # ans also serves as the visited set.
+    if current_node not in ans:
+      ans.add(current_node)
+      for (v, c) in G[current_node]:
+        if c > 0:
+          frontier.add(v)
+  return ans
+
+def flow_across_network(flow: Dict[Tuple[int, int], int], s: int) -> int:
+  """
+  Computes the flow across a network.
+
+  Parameters
+  ----------
+  flow : Dict[Tuple[int, int], int]
+    A flow network with the maximum flow. The flow network is of the form {(i, j): f} where f is the flow from vertex i to vertex j.
+    This flow network includes paths in the original graph where the flow is zero.
+
+  s : int
+    The index of the source vertex. The source vertex should not have any incoming flow.
+
+  Returns
+  -------
+  int
+    The flow across the network.
+  """
+  ans = 0
+  for (i, j), f in flow.items():
+    if i == s:
+      ans += f
+    # The source vertex should not have any incoming flow.
+    if j == s:
+      raise ValueError("The source vertex should not have any incoming flow.")
+  return ans
+
+def capacity_across_cut(G: Dict[int, List[Tuple[int, int]]], cut: Set[int]) -> int:
+  """
+  Computes the capacity across a cut in a flow network.
+
+  Parameters
+  ----------
+  G : Dict[int, List[Tuple[int, int]]]
+    A flow network of the form {i: [(j, c), (k, c), ...]} where i is the index of a vertex and [(j, c), (k, c), ...] are the indices of the vertices that i is connected to along with the capacity of the edge.
+
+  cut : Set[int]
+    Set of vertices that form the source side of the cut.
+
+  Returns
+  -------
+  int
+    The total capacity across the cut.
+  """
+  ans = 0
+  for i in G.keys():
+    for (j, c) in G[i]:
+      if i in cut and j not in cut:
+        ans += c
+      if j in cut and i not in cut:
+        ans -= c
+  return ans
 
 def convert_bipartite_graph_to_flow_network(G: Dict[int, List[int]], X: list, Y: list) -> Dict[int, List[Tuple[int, int]]]:
   """
@@ -177,7 +267,7 @@ def maximum_cardinality_matching_bipartite(G: Dict[int, List[int]], X: list, Y: 
   """
   check_bipartite_graph(G, X, Y)
   network = convert_bipartite_graph_to_flow_network(G, X, Y)
-  flow = ford_fulkerson(network, -1, -2)
+  flow, _ = ford_fulkerson(network, -1, -2)
 
   matchings = []
   for x in X:

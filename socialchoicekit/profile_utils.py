@@ -140,21 +140,41 @@ class IncompleteValuationProfile(ValuationProfile):
     check_valuation_profile(arr, is_complete=False)
     return arr.view(IncompleteValuationProfile)
 
-def incomplete_valuation_profile_to_complete_valuation_profile(
-  valuation_profile: ValuationProfile,
-) -> CompleteValuationProfile:
+class IntegerValuationProfile(ValuationProfile):
   """
-  Converts an incomplete valuation profile to a complete valuation profile. np.nan values will be assigned a value of 0.
-
-  Parameters
-  ----------
-  valuation_profile: ValuationProfile
-
-  Returns
-  -------
-  CompleteValuationProfile
+  Valuation profile with only integer values.
+  An (N, M) array, where N is the number of agents and M is the number of alternatives or items. The element at (i, j) indicates the utility value (agent's cardinal preference) for alternative or item j. If the value is unknown or the item is unacceptable, the element would be NaN.
   """
-  return CompleteValuationProfile.of(np.where(np.isnan(valuation_profile), 0, valuation_profile))
+  @staticmethod
+  def of(arr: np.ndarray) -> "IntegerValuationProfile":
+    check_valuation_profile(arr, is_complete=False)
+    if not np.issubdtype(arr.dtype, np.integer):
+      raise ValueError("The input array must have integer values")
+    return arr.view(IntegerValuationProfile)
+
+class CompleteIntegerValuationProfile(CompleteValuationProfile, IntegerValuationProfile):
+  """
+  Valuation profile with only integer values and no NaN values.
+  An (N, M) array, where N is the number of agents and M is the number of alternatives or items. The element at (i, j) indicates the utility value (agent's cardinal preference) for alternative or item j.
+  """
+  @staticmethod
+  def of(arr: np.ndarray) -> "CompleteIntegerValuationProfile":
+    check_valuation_profile(arr, is_complete=True)
+    if not np.issubdtype(arr.dtype, np.integer):
+      raise ValueError("The input array must have integer values")
+    return arr.view(CompleteIntegerValuationProfile)
+
+class IncompleteIntegerValuationProfile(IncompleteValuationProfile, IntegerValuationProfile):
+  """
+  Valuation profile with only integer values and NaN values.
+  An (N, M) array, where N is the number of agents and M is the number of alternatives or items. The element at (i, j) indicates the utility value (agent's cardinal preference) for alternative or item j. If the value is unknown or the item is unacceptable, the element would be NaN.
+  """
+  @staticmethod
+  def of(arr: np.ndarray) -> "IncompleteIntegerValuationProfile":
+    check_valuation_profile(arr, is_complete=False)
+    if not np.issubdtype(arr.dtype, np.integer):
+      raise ValueError("The input array must have integer values")
+    return arr.view(IncompleteIntegerValuationProfile)
 
 def incomplete_profile_to_complete_profile(
   profile: Profile,
@@ -249,3 +269,92 @@ def profile_with_ties_to_strict_profile(
   if isinstance(profile, CompleteProfile):
     return StrictCompleteProfile.of(strict_profile)
   return StrictIncompleteProfile.of(strict_profile)
+
+def compute_ordinal_profile(cardinal_profile: ValuationProfile) -> StrictProfile:
+  """
+  Computes the ordinal utility from the inputted cardinal utility. The input cardinal utility does not need to be normalized or complete.
+
+  Parameters
+  ----------
+  cardinal_profile: ValuationProfile
+    A (N, M) array, where N is the number of agents and M is the number of items or alternatives. The element at (i, j) indicates the agent's cardinal utility for alternative j. If the agent finds an item or alternative unacceptable, the element would be np.nan.
+
+  Returns
+  -------
+  StrictProfile
+    A (N, M) array, where N is the number of agents and M is the number of items or alternatives. The element at (i, j) indicates the agent's ordinal utility for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative. If the agent finds an item or alternative unacceptable, the element would be np.nan.
+    This would be a StrictCompleteProfile if the input cardinal_profile is a CompleteValuationProfile. Otherwise, this would be a StrictIncompleteProfile.
+  """
+  # TODO: allow for tie_breaker specification
+
+  n = cardinal_profile.shape[0]
+  m = cardinal_profile.shape[1]
+
+  # Sort by descending with np.nan at end
+  ranked_profile = np.argsort(cardinal_profile * -1, axis=1).view(np.ndarray)
+
+  # Preserve np.nan
+  ans = cardinal_profile.view(np.ndarray) * 0
+  for agent in range(n):
+    for item_rank in range(m):
+      # Preserve np.nan with +=
+      ans[agent, ranked_profile[agent, item_rank]] += item_rank + 1
+  if isinstance(cardinal_profile, CompleteValuationProfile):
+    return StrictCompleteProfile.of(ans)
+  return StrictIncompleteProfile.of(ans)
+
+def is_consistent_valuation_profile(
+  valuation_profile: ValuationProfile,
+  profile: Profile,
+):
+  """
+  Checks if the supplied valuation profile is consistent with the supplied ordinal profile.
+
+  Parameters
+  ----------
+  valuation_profile: ValuationProfile
+
+  profile: Profile
+
+  Returns
+  -------
+  bool
+    True if the valuation profile is consistent with the ordinal profile. False otherwise.
+  """
+  check_valuation_profile(valuation_profile, is_complete=False)
+  check_profile(profile, is_complete=False, is_strict=False)
+
+  n = valuation_profile.shape[0]
+  m = valuation_profile.shape[1]
+
+  # Sort by descending with np.nan at end
+  ranked_valuation_profile = np.argsort(valuation_profile * -1, axis=1).view(np.ndarray)
+  ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
+
+  # Preserve np.nan
+  for agent in range(n):
+    for item_rank in range(m):
+      item_from_valuation_profile = ranked_valuation_profile[agent, item_rank]
+      item_from_profile = ranked_profile[agent, item_rank]
+      if item_from_valuation_profile == item_from_profile:
+        continue
+      elif np.allclose(valuation_profile[agent, item_from_profile], valuation_profile[agent, item_from_valuation_profile]):
+        continue
+      return False
+  return True
+
+def incomplete_valuation_profile_to_complete_valuation_profile(
+  valuation_profile: ValuationProfile,
+) -> CompleteValuationProfile:
+  """
+  Converts an incomplete valuation profile to a complete valuation profile. np.nan values will be assigned a value of 0.
+
+  Parameters
+  ----------
+  valuation_profile: ValuationProfile
+
+  Returns
+  -------
+  CompleteValuationProfile
+  """
+  return CompleteValuationProfile.of(np.where(np.isnan(valuation_profile), 0, valuation_profile))
