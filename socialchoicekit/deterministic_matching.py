@@ -4,7 +4,7 @@ from typing import List, Tuple, Optional, Dict
 import heapq
 import sys
 
-from socialchoicekit.profile_utils import StrictProfile, StrictCompleteProfile, CompleteValuationProfile, compute_ordinal_profile
+from socialchoicekit.profile_utils import StrictProfile, StrictCompleteProfile, CompleteIntegerValuationProfile, compute_ordinal_profile
 from socialchoicekit.utils import check_valuation_profile, check_profile
 from socialchoicekit.flow import ford_fulkerson
 
@@ -191,8 +191,8 @@ class Irving:
 
   def scf(
     self,
-    valuation_profile_1: CompleteValuationProfile,
-    valuation_profile_2: CompleteValuationProfile,
+    valuation_profile_1: CompleteIntegerValuationProfile,
+    valuation_profile_2: CompleteIntegerValuationProfile,
     profile_1: Optional[StrictCompleteProfile] = None,
     profile_2: Optional[StrictCompleteProfile] = None,
   ) -> List[Tuple[int, int]]:
@@ -205,9 +205,9 @@ class Irving:
 
     Parameters
     ----------
-    valuation_profile_1: CompleteValuationProfile
+    valuation_profile_1: CompleteIntegerValuationProfile
       A (N, N) array, where N is the number of men and also the number of women. The element at (i, j) indicates the ith man's cardinal preference for woman j.
-    valuation_profile_2: CompleteValuationProfile
+    valuation_profile_2: CompleteIntegerValuationProfile
       A (N, N) array, where N is the number of women and also the number of men. The element at (i, j) indicates the ith woman's cardinal preference for man j.
     profile_1: Optional[StrictCompleteProfile]
       An optional (N, N) array, where N is the number of men and also the number of women. The element at (i, j) indicates the ith man's ordinal preference for woman j. 1 is the most preferred.
@@ -599,8 +599,8 @@ class Irving:
   def rotation_weight(
     self,
     rotation: List[Tuple[int, int]],
-    valuation_profile_1: CompleteValuationProfile,
-    valuation_profile_2: CompleteValuationProfile,
+    valuation_profile_1: CompleteIntegerValuationProfile,
+    valuation_profile_2: CompleteIntegerValuationProfile,
   ) -> float:
     """
     The weight of a rotation as defined in Irving et al. (1987).
@@ -611,10 +611,10 @@ class Irving:
     rotation: List[Tuple[int, int]]
       Rotations of the form [(m_0, w_0), ..., (m_{r-1}, w_{r-1})] where m_i, w_i are 0-indexed.
 
-    valuation_profile_1: CompleteValuationProfile
+    valuation_profile_1: CompleteIntegerValuationProfile
       The male valuation profile.
 
-    valuation_profile_1: CompleteValuationProfile
+    valuation_profile_1: CompleteIntegerValuationProfile
       The female valuation profile.
 
     Returns

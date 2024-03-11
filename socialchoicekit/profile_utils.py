@@ -140,6 +140,42 @@ class IncompleteValuationProfile(ValuationProfile):
     check_valuation_profile(arr, is_complete=False)
     return arr.view(IncompleteValuationProfile)
 
+class IntegerValuationProfile(ValuationProfile):
+  """
+  Valuation profile with only integer values.
+  An (N, M) array, where N is the number of agents and M is the number of alternatives or items. The element at (i, j) indicates the utility value (agent's cardinal preference) for alternative or item j. If the value is unknown or the item is unacceptable, the element would be NaN.
+  """
+  @staticmethod
+  def of(arr: np.ndarray) -> "IntegerValuationProfile":
+    check_valuation_profile(arr, is_complete=False)
+    if not np.issubdtype(arr.dtype, np.integer):
+      raise ValueError("The input array must have integer values")
+    return arr.view(IntegerValuationProfile)
+
+class CompleteIntegerValuationProfile(CompleteValuationProfile, IntegerValuationProfile):
+  """
+  Valuation profile with only integer values and no NaN values.
+  An (N, M) array, where N is the number of agents and M is the number of alternatives or items. The element at (i, j) indicates the utility value (agent's cardinal preference) for alternative or item j.
+  """
+  @staticmethod
+  def of(arr: np.ndarray) -> "CompleteIntegerValuationProfile":
+    check_valuation_profile(arr, is_complete=True)
+    if not np.issubdtype(arr.dtype, np.integer):
+      raise ValueError("The input array must have integer values")
+    return arr.view(CompleteIntegerValuationProfile)
+
+class IncompleteIntegerValuationProfile(IncompleteValuationProfile, IntegerValuationProfile):
+  """
+  Valuation profile with only integer values and NaN values.
+  An (N, M) array, where N is the number of agents and M is the number of alternatives or items. The element at (i, j) indicates the utility value (agent's cardinal preference) for alternative or item j. If the value is unknown or the item is unacceptable, the element would be NaN.
+  """
+  @staticmethod
+  def of(arr: np.ndarray) -> "IncompleteIntegerValuationProfile":
+    check_valuation_profile(arr, is_complete=False)
+    if not np.issubdtype(arr.dtype, np.integer):
+      raise ValueError("The input array must have integer values")
+    return arr.view(IncompleteIntegerValuationProfile)
+
 def incomplete_profile_to_complete_profile(
   profile: Profile,
   tie_breaker: str = "random",
