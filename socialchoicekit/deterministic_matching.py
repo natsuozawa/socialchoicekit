@@ -4,7 +4,7 @@ from typing import List, Tuple, Optional, Dict, Set
 import heapq
 import sys
 
-from socialchoicekit.profile_utils import StrictProfile, StrictCompleteProfile, CompleteIntegerValuationProfile, compute_ordinal_profile
+from socialchoicekit.profile_utils import StrictProfile, StrictCompleteProfile, IntegerValuationProfile, compute_ordinal_profile
 from socialchoicekit.utils import check_valuation_profile, check_profile
 from socialchoicekit.flow import ford_fulkerson
 
@@ -191,8 +191,8 @@ class Irving:
 
   def scf(
     self,
-    valuation_profile_1: CompleteIntegerValuationProfile,
-    valuation_profile_2: CompleteIntegerValuationProfile,
+    valuation_profile_1: IntegerValuationProfile,
+    valuation_profile_2: IntegerValuationProfile,
     profile_1: Optional[StrictCompleteProfile] = None,
     profile_2: Optional[StrictCompleteProfile] = None,
   ) -> List[Tuple[int, int]]:
@@ -205,9 +205,9 @@ class Irving:
 
     Parameters
     ----------
-    valuation_profile_1: CompleteIntegerValuationProfile
+    valuation_profile_1: IntegerValuationProfile
       A (N, N) array, where N is the number of men and also the number of women. The element at (i, j) indicates the ith man's cardinal preference for woman j.
-    valuation_profile_2: CompleteIntegerValuationProfile
+    valuation_profile_2: IntegerValuationProfile
       A (N, N) array, where N is the number of women and also the number of men. The element at (i, j) indicates the ith woman's cardinal preference for man j.
     profile_1: Optional[StrictCompleteProfile]
       An optional (N, N) array, where N is the number of men and also the number of women. The element at (i, j) indicates the ith man's ordinal preference for woman j. 1 is the most preferred.
@@ -590,8 +590,8 @@ class Irving:
     self,
     P_prime: Dict[int, List[int]],
     rotations: List[List[Tuple[int, int]]],
-    valuation_profile_1: CompleteIntegerValuationProfile,
-    valuation_profile_2: CompleteIntegerValuationProfile,
+    valuation_profile_1: IntegerValuationProfile,
+    valuation_profile_2: IntegerValuationProfile,
   ) -> Set[int]:
     """
     This is an internal routine to obtain a maximum weight closed subset of the rotation poset graph P'.
@@ -605,9 +605,9 @@ class Irving:
     rotations: List[List[Tuple[int, int]]]
       Set of all rotations in the rotation poset graph. The index of the rotation corresponds to its index in P'.
 
-    valuation_profile_1: CompleteIntegerValuationProfile
+    valuation_profile_1: IntegerValuationProfile
 
-    valuation_profile_2: CompleteIntegerValuationProfile
+    valuation_profile_2: IntegerValuationProfile
 
     Returns
     -------
@@ -659,8 +659,8 @@ class Irving:
   def rotation_weight(
     self,
     rotation: List[Tuple[int, int]],
-    valuation_profile_1: CompleteIntegerValuationProfile,
-    valuation_profile_2: CompleteIntegerValuationProfile,
+    valuation_profile_1: IntegerValuationProfile,
+    valuation_profile_2: IntegerValuationProfile,
   ) -> float:
     """
     The weight of a rotation as defined in Irving et al. (1987).
@@ -671,10 +671,10 @@ class Irving:
     rotation: List[Tuple[int, int]]
       Rotations of the form [(m_0, w_0), ..., (m_{r-1}, w_{r-1})] where m_i, w_i are 0-indexed.
 
-    valuation_profile_1: CompleteIntegerValuationProfile
+    valuation_profile_1: IntegerValuationProfile
       The male valuation profile.
 
-    valuation_profile_1: CompleteIntegerValuationProfile
+    valuation_profile_1: IntegerValuationProfile
       The female valuation profile.
 
     Returns
@@ -747,8 +747,8 @@ class Irving:
   def stable_matching_value(
     self,
     stable_matching: List[Tuple[int, int]],
-    valuation_profile_1: CompleteIntegerValuationProfile,
-    valuation_profile_2: CompleteIntegerValuationProfile,
+    valuation_profile_1: IntegerValuationProfile,
+    valuation_profile_2: IntegerValuationProfile,
   ) -> int:
     """
     The cardinal utility (social welfare) of a stable matching. In Irving et al. (1987), this is defined as c(S).
@@ -758,9 +758,9 @@ class Irving:
     stable_matching: List[Tuple[int, int]]
       A stable matching. This is in the form outputted by Gale-Shapley.
 
-    valuation_profile_1: CompleteIntegerValuationProfile
+    valuation_profile_1: IntegerValuationProfile
 
-    valuation_profile_2: CompleteIntegerValuationProfile
+    valuation_profile_2: IntegerValuationProfile
 
     Returns
     -------
@@ -771,4 +771,3 @@ class Irving:
     for m, w in stable_matching:
       ans += valuation_profile_1[m, w] + valuation_profile_2[w, m]
     return ans
-

@@ -3,7 +3,7 @@ from preflibtools.instances import OrdinalInstance
 
 from typing import Union, Callable
 
-from socialchoicekit.profile_utils import ValuationProfile
+from socialchoicekit.profile_utils import ValuationProfile, IntegerValuationProfile
 
 class Elicitor:
   """
@@ -102,6 +102,95 @@ class Elicitor:
     # Override this method in the subclass
     raise NotImplementedError
 
+class IntegerElicitor(Elicitor):
+  """
+  This class is the base class for elicitors that elicit integer values
+  Therefore, this is not meant to be instantiated.
+
+  Parameters
+  ----------
+  memoize: bool
+    IF True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
+
+  zero_indexed : bool
+    If True, the input of the elicit function will be zero-indexed. If False, the input will be one-indexed. One-indexed by default.
+  """
+  def __init__(
+    self,
+    memoize: bool = True,
+    zero_indexed: bool = False,
+  ) -> None:
+    super().__init__(memoize=memoize, zero_indexed=zero_indexed)
+
+  def elicit(
+    self,
+    agent: int,
+    alternative: int,
+  ) -> int:
+    """
+    Returns the agent's preference for the alternative.
+
+    Parameters
+    ----------
+    agent: int
+      The agent's index.
+    alternative: int
+      The alternative's index.
+
+    Returns
+    -------
+    int
+      The agent's preference for the alternative.
+    """
+    elicited_value: Union[int, float] = super().elicit(agent, alternative)
+    if isinstance(elicited_value, float) and not elicited_value.is_integer():
+      raise ValueError("The elicited value must be an integer.")
+    return int(elicited_value)
+
+  def elicit_multiple(
+      self,
+      agents: np.ndarray,
+      alternatives: np.ndarray,
+  ) -> np.ndarray:
+    """
+    Given an agents array and an alternative array both of size N, returns an array of size N containing the elicited values.
+    (The ith agent is elicited about the ith alternative.)
+
+    Parameters
+    ----------
+    agents: np.ndarray
+      The agents array. Must contain only integers that correspond to a valid agent.
+
+    alternatives: np.ndarray
+      The alternatives array. Must contain only integers that correspond to a valid alternative.
+
+    Returns
+    -------
+    np.ndarray
+      The elicited values. Size is the same as the size of the two input arrays.
+      The array is of integer type.
+    """
+    if agents.shape != alternatives.shape:
+      raise ValueError("The two input arrays must have the same shape.")
+
+    if not (np.issubdtype(agents.dtype, np.integer) and np.issubdtype(alternatives.dtype, np.integer)):
+      raise ValueError("The input arrays must contain only integers.")
+
+    ans = []
+    for agent, alternative in zip(agents, alternatives):
+      ans.append(self.elicit(agent, alternative))
+
+    return np.array(ans, dtype=int)
+
+  def _elicit_impl(
+    self,
+    agent: int,
+    alternative: int,
+  ) -> float:
+    # This method should return all ints as floats, which will be converted in the elicit method.
+    # Override this method in the subclass
+    raise NotImplementedError
+
 class ValuationProfileElicitor(Elicitor):
   """
   Responds to queries from a valuation profile that is fully pre-populated.
@@ -129,7 +218,68 @@ class ValuationProfileElicitor(Elicitor):
   ) -> float:
     return self.valuation_profile[agent, alternative]
 
+class IntegerValuationProfileElicitor(IntegerElicitor):
+  """
+  Responds to queries from an integer valuation profile that is fully pre-populated.
+
+  Parameters
+  ----------
+  valuation_profile: IntegerValuationProfile
+    This is the cardinal profile. A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's preference for alternative j.
+
+  memoize: bool
+    IF True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
+  """
+  def __init__(
+    self,
+    valuation_profile: IntegerValuationProfile,
+    memoize: bool = True,
+  ) -> None:
+    self.valuation_profile = valuation_profile
+    super().__init__(memoize=memoize, zero_indexed=True)
+
+  def _elicit_impl(
+    self,
+    agent: int,
+    alternative: int,
+  ) -> float:
+    return float(self.valuation_profile[agent, alternative])
+
 class SynchronousStdInElicitor(Elicitor):
+  """
+  Responds to queries by reading each answer from the standard input synchronously.
+  Outputs questions in English to the standard output.
+
+  Parameters
+  ----------
+  zero_indexed : bool
+    If True, the input of the elicit function will be zero-indexed. If False, the input will be one-indexed. One-indexed by default.
+
+  memoize: bool
+    IF True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
+  """
+  def __init__(
+    self,
+    preflib_instance: Union[OrdinalInstance, None] = None,
+    memoize: bool = True,
+    zero_indexed: bool = False,
+  ) -> None:
+    self.preflib_instance = preflib_instance
+    super().__init__(memoize=memoize, zero_indexed=zero_indexed)
+
+  def _elicit_impl(
+    self,
+    agent: int,
+    alternative: int,
+  ) -> float:
+    agent_name = agent
+    alternative_name = alternative
+    if self.preflib_instance is not None:
+      alternative_name = self.preflib_instance.alternatives_name[alternative]
+    print(f"Agent {agent_name}, what is your preference for alternative {alternative_name}?")
+    return float(input())
+
+class IntegerSynchronousStdInElicitor(IntegerElicitor):
   """
   Responds to queries by reading each answer from the standard input synchronously.
   Outputs questions in English to the standard output.
@@ -171,6 +321,38 @@ class LambdaElicitor(Elicitor):
   ----------
   elicitation_function: Callable[[int, int], float]
     A function that takes in the agent's index and the alternative's index and returns the agent's preference for the alternative.
+
+  memoize: bool
+    If True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.
+
+  zero_indexed : bool
+    If True, the input of the elicit function will be zero-indexed. If False, the input will be one-indexed. Zero-indexed by default.
+  """
+  def __init__(
+    self,
+    elicitation_function: Callable[[int, int], float],
+    memoize: bool = True,
+    zero_indexed: bool = True,
+  ) -> None:
+    self.elicitation_function = elicitation_function
+    super().__init__(memoize=memoize, zero_indexed=zero_indexed)
+
+  def _elicit_impl(
+    self,
+    agent: int,
+    alternative: int,
+  ) -> float:
+    return self.elicitation_function(agent, alternative)
+
+class IntegerLambdaElicitor(IntegerElicitor):
+  """
+  Responds to queries by calling a user-provided function.
+
+  Parameters
+  ----------
+  elicitation_function: Callable[[int, int], float]
+    A function that takes in the agent's index and the alternative's index and returns the agent's preference for the alternative.
+    This function should return an integer but in float form.
 
   memoize: bool
     If True, the elicitor will memoize the elicited values. If False, the elicitor may ask repeated questions. When the memoized value is referenced, the elicitation count will not change. True by default.

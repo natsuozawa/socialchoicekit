@@ -391,4 +391,3 @@ class TestDeterministicMatching:
     expected_value = irving.stable_matching_value([(0, 0), (1, 3), (2, 2), (3, 4), (4, 1), (5, 5), (6, 7), (7, 6)], cardinal_profile_1, cardinal_profile_2)
     actual_value = irving.stable_matching_value(stable_matching, cardinal_profile_1, cardinal_profile_2)
     assert expected_value == actual_value
-
