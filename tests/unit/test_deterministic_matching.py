@@ -6,7 +6,7 @@ from typing import Dict, Tuple, List
 import sys
 
 from socialchoicekit.deterministic_matching import GaleShapley, Irving
-from socialchoicekit.profile_utils import StrictIncompleteProfile, StrictCompleteProfile, CompleteValuationProfile, is_consistent_valuation_profile
+from socialchoicekit.profile_utils import StrictIncompleteProfile, StrictCompleteProfile, IntegerValuationProfile
 from socialchoicekit.flow import ford_fulkerson
 
 class TestDeterministicMatching:
@@ -141,7 +141,7 @@ class TestDeterministicMatching:
     cardinal_profile_1 = np.take_along_axis(ranked_cardinal_profile_1, ordinal_profile_1, axis=1)
     cardinal_profile_2 = np.take_along_axis(ranked_cardinal_profile_2, ordinal_profile_2, axis=1)
 
-    return StrictCompleteProfile.of(ordinal_profile_1 + 1), StrictCompleteProfile.of(ordinal_profile_2 + 1), CompleteValuationProfile.of(cardinal_profile_1), CompleteValuationProfile.of(cardinal_profile_2)
+    return StrictCompleteProfile.of(ordinal_profile_1 + 1), StrictCompleteProfile.of(ordinal_profile_2 + 1), IntegerValuationProfile.of(cardinal_profile_1), IntegerValuationProfile.of(cardinal_profile_2)
 
   @pytest.fixture
   def initial_preference_lists_2(self):
