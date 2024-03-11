@@ -570,13 +570,13 @@ class Irving:
           # So skip.
           j += 1
           continue
-        rot = rotation_of_pair[(m, w)]
+        rotation = rotation_of_pair[(m, w)]
         j_prime = j + 1
         while j_prime < len(preference_lists_1[m]):
           w_prime = preference_lists_1[m][j_prime]
           if (m, w_prime) in rotation_of_pair:
             # Rule 1 is satisfied.
-            pi = rot
+            pi = rotation
             rho = rotation_of_pair[(m, w_prime)]
             # Draw edge from pi to rho if not already drawn.
             if (rho not in P_prime[pi]):
@@ -585,7 +585,7 @@ class Irving:
           elif (m, w_prime) in eliminating_rotation_of_pair:
             # Rule 2 is satisfied.
             pi = eliminating_rotation_of_pair[(m, w_prime)]
-            rho = rot
+            rho = rotation
             # Draw edge from pi to rho if not already drawn.
             if (rho not in P_prime[pi]):
               P_prime[pi].append(rho)

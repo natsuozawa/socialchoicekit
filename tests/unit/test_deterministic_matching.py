@@ -185,7 +185,7 @@ class TestDeterministicMatching:
     ]
 
   @pytest.fixture
-  def sparsest_rotation_poset_graph_2(self):
+  def sparsest_rotation_poset_graph_2(self, all_rotations_2):
     return {
       0: [3, 4],
       1: [3, 4, 5],
@@ -279,7 +279,7 @@ class TestDeterministicMatching:
 
     assert len(rotations) == len(all_rotations_2)
 
-  def test_construct_sparse_rotation_poset_graph(self, initial_preference_lists_2, sparsest_rotation_poset_graph_2):
+  def test_construct_sparse_rotation_poset_graph(self, initial_preference_lists_2, all_rotations_2, sparsest_rotation_poset_graph_2):
     shortlist_1, shortlist_2 = initial_preference_lists_2
     irving = Irving()
     preference_lists_1 = {i: np.array(shortlist_1[i]) for i in range(len(shortlist_1))}
@@ -287,11 +287,17 @@ class TestDeterministicMatching:
     P_prime = irving.construct_sparse_rotation_poset_graph(rotations, preference_lists_1, eliminations)
 
     # Check that this is a supergraph of the sparsest rotation poset graph.
-    for i in sparsest_rotation_poset_graph_2:
-      for j in sparsest_rotation_poset_graph_2[i]:
-        assert j in P_prime[i]
+    expected_to_actual_mapping = {}
+    for i, rotation_expected in enumerate(all_rotations_2):
+      for j, rotation_actual in enumerate(rotations):
+        is_match = all([pair in rotation_actual for pair in rotation_expected])
+        if is_match:
+          expected_to_actual_mapping[i] = j
+          break
 
-    # TODO: Check that there are no cycles.
+    for i, destinations in sparsest_rotation_poset_graph_2.items():
+      for j in destinations:
+        assert expected_to_actual_mapping[j] in P_prime[expected_to_actual_mapping[i]]
 
   def test_irving_2(self, profiles_2):
     ordinal_profile_1, ordinal_profile_2, cardinal_profile_1, cardinal_profile_2 = profiles_2
