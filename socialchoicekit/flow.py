@@ -169,10 +169,10 @@ def flow_across_network(flow: Dict[Tuple[int, int], int], s: int) -> int:
   """
   ans = 0
   for (i, j), f in flow.items():
-    if i == 0:
+    if i == s:
       ans += f
     # The source vertex should not have any incoming flow.
-    if j == 0:
+    if j == s:
       raise ValueError("The source vertex should not have any incoming flow.")
   return ans
 

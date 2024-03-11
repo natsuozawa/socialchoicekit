@@ -2,8 +2,12 @@ import numpy as np
 
 import pytest
 
+from typing import Dict, Tuple, List
+import sys
+
 from socialchoicekit.deterministic_matching import GaleShapley, Irving
 from socialchoicekit.profile_utils import StrictIncompleteProfile, StrictCompleteProfile, CompleteValuationProfile, is_consistent_valuation_profile
+from socialchoicekit.flow import ford_fulkerson
 
 class TestDeterministicMatching:
   # Example from Handbook of Computational Social Choice, Chapter 14.
@@ -301,6 +305,67 @@ class TestDeterministicMatching:
     for i, destinations in sparsest_rotation_poset_graph_2.items():
       for j in destinations:
         assert expected_to_actual_mapping[j] in P_prime[expected_to_actual_mapping[i]]
+
+  def test_rotation_weight_2(self, profiles_2, all_rotations_2):
+    _, _, cardinal_profile_1, cardinal_profile_2 = profiles_2
+    irving = Irving()
+    rotation_weights = [irving.rotation_weight(all_rotations_2[i], cardinal_profile_1, cardinal_profile_2) for i in range(10)]
+    # The rotation weights are taken from Irving, et al. (1987)
+    # We believe there is a mistake in the original paper for the 7th rotation. We have corrected it here from -1 to -3.
+    # This changes the result of the maximum weight closed subset.
+    assert rotation_weights == [0, -1, -2, 2, 2, -1, -3, 0, 1, 0]
+
+  def test_maximum_weight_closed_subset_2(self, profiles_2, all_rotations_2, sparsest_rotation_poset_graph_2):
+    _, _, cardinal_profile_1, cardinal_profile_2 = profiles_2
+    irving = Irving()
+    # maximum_weight_closed_subset = irving.find_maximum_weight_closed_subset(sparsest_rotation_poset_graph_2, all_rotations_2, cardinal_profile_1, cardinal_profile_2)
+    # Due to the mistake mentioned above, we cannot compare the maximum weight to the one found in the paper.
+
+    def adjusted_rotation_weights(rotation_index):
+      if rotation_index == 6:
+        return -1
+      else:
+        return irving.rotation_weight(
+          all_rotations_2[rotation_index],
+          cardinal_profile_1,
+          cardinal_profile_2
+        )
+
+    # Here we use the original weight from the paper by copy pasting the code.
+    # === Begin Duplication ===
+    network: Dict[int, List[Tuple[int, int]]] = {-1: [], -2: []}
+    temp_maximum_weight_closed_subset = set()
+    for pi in sparsest_rotation_poset_graph_2:
+      network[pi] = [(rho, sys.maxsize) for rho in sparsest_rotation_poset_graph_2[pi]]
+      w = adjusted_rotation_weights(pi)
+      if w > 0:
+        network[pi].append((-2, int(w)))
+        temp_maximum_weight_closed_subset.add(pi)
+      elif w < 0:
+        network[-1].append((pi, int(-w)))
+
+    flow, min_cut = ford_fulkerson(network, -1, -2)
+    min_cut.remove(-1)
+
+    maximum_weight_closed_subset = set()
+    for positive_node in temp_maximum_weight_closed_subset:
+      if positive_node not in min_cut:
+        maximum_weight_closed_subset.add(positive_node)
+
+    while True:
+      continue_loop = False
+      for rho in sparsest_rotation_poset_graph_2.keys():
+        if rho in maximum_weight_closed_subset:
+          continue
+        if len(set(sparsest_rotation_poset_graph_2[rho]).intersection(maximum_weight_closed_subset)) > 0:
+          maximum_weight_closed_subset.add(rho)
+          continue_loop = True
+      if not continue_loop:
+        break
+    # === End Duplication ===
+
+    rotation_weights = [adjusted_rotation_weights(rotation_index) for rotation_index in maximum_weight_closed_subset]
+    assert sum(rotation_weights) == 1
 
   def test_irving_2(self, profiles_2):
     ordinal_profile_1, ordinal_profile_2, cardinal_profile_1, cardinal_profile_2 = profiles_2

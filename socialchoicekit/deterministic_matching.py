@@ -1,6 +1,6 @@
 import numpy as np
 
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional, Dict, Set
 import heapq
 import sys
 
@@ -265,19 +265,7 @@ class Irving:
     # Construct P'
     P_prime = self.construct_sparse_rotation_poset_graph(rotations, preference_lists_1, eliminating_rotation_of_pair)
 
-    # source s: -1, sink t: -2
-    # Elements represent (destination, capacity)
-    network: Dict[int, List[Tuple[int, int]]] = {-1: [], -2: []}
-    for pi in P_prime:
-      network[pi] = [(rho, sys.maxsize) for rho in P_prime[pi]]
-      w = self.rotation_weight(rotations[pi], valuation_profile_1, valuation_profile_2)
-      if w < 0:
-        network[pi].append((-2, int(-w)))
-      elif w > 0:
-        network[-1].append((pi, int(w)))
-
-    max_flow = ford_fulkerson(network, -1, -2)
-    # TODO: modify FF implementation to return min_cut
+    maximum_weight_closed_subset = self.find_maximum_weight_closed_subset(P_prime, rotations, valuation_profile_1, valuation_profile_2)
     return []
 
   def find_initial_preference_lists(
@@ -596,6 +584,76 @@ class Irving:
         j = j_prime
     return P_prime
 
+  def find_maximum_weight_closed_subset(
+    self,
+    P_prime: Dict[int, List[int]],
+    rotations: List[List[Tuple[int, int]]],
+    valuation_profile_1: CompleteIntegerValuationProfile,
+    valuation_profile_2: CompleteIntegerValuationProfile,
+  ) -> Set[int]:
+    """
+    This is an internal routine to obtain a maximum weight closed subset of the rotation poset graph P'.
+    This routine uses Ford-Fulkerson to find the maximum weight closed subset.
+
+    Parameters
+    ----------
+    P_prime: Dict[int, List[int]]
+      The rotation poset graph P', which can be constructed by construct_sparse_rotation_poset_graph
+
+    rotations: List[List[Tuple[int, int]]]
+      Set of all rotations in the rotation poset graph. The index of the rotation corresponds to its index in P'.
+
+    valuation_profile_1: CompleteIntegerValuationProfile
+
+    valuation_profile_2: CompleteIntegerValuationProfile
+
+    Returns
+    -------
+    Set[int]
+      The maximum weight closed subset of the rotation poset graph P'. Each element is the index of a rotation in the input rotations (and corresponds to a node in P').
+    """
+    # source s: -1, sink t: -2
+    # Elements represent (destination, capacity)
+    network: Dict[int, List[Tuple[int, int]]] = {-1: [], -2: []}
+    temp_maximum_weight_closed_subset = set()
+    for pi in P_prime:
+      network[pi] = [(rho, sys.maxsize) for rho in P_prime[pi]]
+      w = self.rotation_weight(rotations[pi], valuation_profile_1, valuation_profile_2)
+      # We want to get the maximum weight closed subset.
+      # A directed edge is added from every positive weighted node to t.
+      if w > 0:
+        network[pi].append((-2, int(w)))
+        # Positive node. Add to the maximum weight closed subset temporarily.
+        temp_maximum_weight_closed_subset.add(pi)
+      # A directed edge is added from s to every negative weighted node.
+      elif w < 0:
+        network[-1].append((pi, int(-w)))
+
+    _, min_cut = ford_fulkerson(network, -1, -2)
+
+    min_cut.remove(-1)
+
+    # The positive nodes in the maximum weight closed subset are the ones whose edge into t are not cut by the min cut.
+    # In other words, they should not be in the source side of the min cut.
+
+    maximum_weight_closed_subset = set()
+    for positive_node in temp_maximum_weight_closed_subset:
+      if positive_node not in min_cut:
+        maximum_weight_closed_subset.add(positive_node)
+
+    # Find the closure, i.e. all edges that are predecessors of the positive edges in P'.
+    while True:
+      continue_loop = False
+      for rho in P_prime.keys():
+        if rho in maximum_weight_closed_subset:
+          continue
+        if len(set(P_prime[rho]).intersection(maximum_weight_closed_subset)) > 0:
+          maximum_weight_closed_subset.add(rho)
+          continue_loop = True
+      if not continue_loop:
+        break
+    return maximum_weight_closed_subset
+
   def rotation_weight(
     self,
     rotation: List[Tuple[int, int]],
@@ -624,7 +682,23 @@ class Irving:
     """
     r = len(rotation)
     ans = 0
+    # In Irving et al. (1987), the weight is calculated as follows
+    # w(rho) = (mr(m_0, w_0) - mr(m_0, w_1)) + ... + (mr(m_{r-1}, w_{r-1}) - mr(m_{r-1}, w_0)) + (wr(w_0, m_0) - wr(w_0, m_{r-1})) + ... + wr(w_{r-1}, m_{r-1}) - wr(w_{r-1}, m_{r-2})
     for i in range(r):
+      # The above translates to
+      # ans += mr(m_i, w_i) - mr(m_i, w_{(i+1) % r})
+      # ans += wr(w_i, m_i) - wr(w_i, m_{(i-1) % r})
+      # Except
+      # mr(i, j) = k if j is the kth choice (1-indexed) of i.
+      # wr(i, j) = k if i is the kth choice (1-indexed) of j.
+      # In our implementation, we want values that are more preferred
+      # to have high utility value.
+      # In the case mr(m_i, w_i) - mr(m_i, w_{(i+1) % r}) = k,
+      # the pair (m_i, w_{(i + 1) % r}) is WORSE than (m_i, w_i) for m_i by k.
+      # When we substitute mr with valuation_profile_1, we have that
+      # the former is BETTER than the latter by k.
+      # Hence, the sign of the difference is flipped.
       ans += valuation_profile_1[rotation[i][0], rotation[i][1]] - valuation_profile_1[rotation[i][0], rotation[(i + 1) % r][1]]
       ans += valuation_profile_2[rotation[i][1], rotation[i][0]] - valuation_profile_2[rotation[i][1], rotation[(i - 1) % r][0]]
+    ans *= -1
     return ans
