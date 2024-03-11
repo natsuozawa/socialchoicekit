@@ -381,7 +381,7 @@ class TestDeterministicMatching:
 
   def test_irving_2(self, profiles_2):
     ordinal_profile_1, ordinal_profile_2, cardinal_profile_1, cardinal_profile_2 = profiles_2
-    irving = Irving()
+    irving = Irving(zero_indexed=True)
     stable_matching = irving.scf(
       cardinal_profile_1,
       cardinal_profile_2,

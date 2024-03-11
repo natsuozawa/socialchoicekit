@@ -183,11 +183,17 @@ class Irving:
   This algorithm works with a simplified version of the hospital resident problem (HR) where each hospital can only take one resident, and the number of hospitals and residents are equal. We call this the stable marriage problem (SM).
   We replace residents with men and hospitals with women.
   The algorithm also will only work with complete valuation profiles.
+
+  Parameters
+  ----------
+  zero_indexed : bool
+    If True, the output of the social choice function will be zero-indexed. If False, the output will be one-indexed. One-indexed by default.
   """
   def __init__(
     self,
+    zero_indexed: bool = False,
   ):
-    pass
+    self.index_fixer = 0 if zero_indexed else 1
 
   def scf(
     self,
@@ -268,7 +274,8 @@ class Irving:
     maximum_weight_closed_subset = self.find_maximum_weight_closed_subset(P_prime, rotations, valuation_profile_1, valuation_profile_2)
 
     rotations_to_eliminate = [rotations[i] for i in maximum_weight_closed_subset]
-    return self.eliminate_rotations(stable_matching, rotations_to_eliminate)
+    ans = self.eliminate_rotations(stable_matching, rotations_to_eliminate)
+    return [(i + self.index_fixer, j + self.index_fixer) for i, j in ans]
 
   def find_initial_preference_lists(
     self,
