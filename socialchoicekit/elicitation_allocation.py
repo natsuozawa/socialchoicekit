@@ -6,7 +6,8 @@ from socialchoicekit.profile_utils import IncompleteValuationProfile, Profile, S
 
 class LambdaTSF:
   """
-  Lambda-Threshold Step Function (Amanatidis et al. 2022) is a generalization of K-Acceptable Range Voting (Amanatidis et a. 2021) for allocation. (K-ARV is available in elicitation_voting) The algorithm partitions alternatives into lambda + 1 sets for evey agent to create a simulated value function using binary search.
+  Lambda-Threshold Step Function (Amanatidis et al. 2022) is a generalization of K-Acceptable Range Voting (Amanatidis et a. 2021) for allocation. (K-ARV is available in elicitation_voting)
+  The algorithm partitions alternatives into lambda + 1 sets for evey agent to create a simulated value function using binary search.
 
   Parameters
   ----------
@@ -32,7 +33,7 @@ class LambdaTSF:
     elicitor: Elicitor = SynchronousStdInElicitor(),
   ) -> np.ndarray:
     """
-    The (provisional) social choice function for this voting rule. Returns one item allocated for each agent.
+    The social choice function for this voting rule. Returns one item allocated for each agent.
 
     Parameters
     ----------
@@ -40,22 +41,23 @@ class LambdaTSF:
       A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
 
     elicitor: Elicitor
-      The elicitor that will be used to query the agents.
+      The elicitor that will be used to query the agents. By default, SynchronousStdInElicitor is used.
 
     Returns
     -------
     np.ndarray
       A numpy array containing the allocated item for each agent or np.nan if the agent is unallocated.
     """
-    if self.lambda_ > profile.shape[1]:
+    n = profile.shape[0]
+    m = profile.shape[1]
+
+    if self.lambda_ > m:
       raise ValueError("Invalid lambda")
 
     # TODO: Verify support for all Profiles
     if not isinstance(profile, StrictProfile):
       raise ValueError("Profile must be a StrictProfile for now")
 
-    n = profile.shape[0]
-    m = profile.shape[1]
 
     # Element at (i, j) is agent i's j+1th most preferred alternative (0-indexed alternative number)
     ranked_profile = np.argsort(profile, axis=1).view(np.ndarray)
