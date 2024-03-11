@@ -626,5 +626,5 @@ class Irving:
     ans = 0
     for i in range(r):
       ans += valuation_profile_1[rotation[i][0], rotation[i][1]] - valuation_profile_1[rotation[i][0], rotation[(i + 1) % r][1]]
-      ans -= valuation_profile_2[rotation[i][1], rotation[i][0]] - valuation_profile_2[rotation[i][1], rotation[(i - 1) % r][0]]
+      ans += valuation_profile_2[rotation[i][1], rotation[i][0]] - valuation_profile_2[rotation[i][1], rotation[(i - 1) % r][0]]
     return ans
