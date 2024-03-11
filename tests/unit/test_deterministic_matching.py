@@ -344,7 +344,7 @@ class TestDeterministicMatching:
       elif w < 0:
         network[-1].append((pi, int(-w)))
 
-    flow, min_cut = ford_fulkerson(network, -1, -2)
+    _, min_cut = ford_fulkerson(network, -1, -2)
     min_cut.remove(-1)
 
     maximum_weight_closed_subset = set()
@@ -365,6 +365,18 @@ class TestDeterministicMatching:
     # === End Duplication ===
 
     rotation_weights = [adjusted_rotation_weights(rotation_index) for rotation_index in maximum_weight_closed_subset]
+    assert sum(rotation_weights) == 1
+
+  def test_maximum_weight_closed_subset_2_with_mistake(self, profiles_2, all_rotations_2, sparsest_rotation_poset_graph_2):
+    # We realized that the mistake in the weights mentioned above should not change the max flow.
+    _, _, cardinal_profile_1, cardinal_profile_2 = profiles_2
+    irving = Irving()
+    maximum_weight_closed_subset = irving.find_maximum_weight_closed_subset(sparsest_rotation_poset_graph_2, all_rotations_2, cardinal_profile_1, cardinal_profile_2)
+    rotation_weights = [irving.rotation_weight(
+      all_rotations_2[rotation_index],
+      cardinal_profile_1,
+      cardinal_profile_2
+    ) for rotation_index in maximum_weight_closed_subset]
     assert sum(rotation_weights) == 1
 
   def test_irving_2(self, profiles_2):
