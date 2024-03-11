@@ -75,7 +75,7 @@ class TestFlow:
 
   def test_ford_fulkerson_integral_1(self, flow_network_integral_1):
     network, s, t = flow_network_integral_1
-    flow = ford_fulkerson(network, s, t)
+    flow, min_cut = ford_fulkerson(network, s, t)
     assert isinstance(flow, dict)
     for (u, v) in flow.keys():
       # Here, due to the nature of the basic flow network as only having binary capacities, the capacity can be assumed to be always 1.
@@ -85,11 +85,13 @@ class TestFlow:
     assert flow[(1, 2)] == 0
     assert flow[(1, 3)] == 1
     assert flow[(2, 3)] == 1
+    assert flow_across_network(flow, 0) == capacity_across_cut(network, min_cut)
 
   def test_ford_fulkerson_integral_2(self, flow_network_integral_2):
     network, s, t = flow_network_integral_2
-    flow = ford_fulkerson(network, s, t)
+    flow, min_cut = ford_fulkerson(network, s, t)
     assert flow[(0, 1)] + flow[(0, 2)] == 13
+    assert flow_across_network(flow, 0) == capacity_across_cut(network, min_cut)
 
   def test_maximum_cardinality_matching_bipartite(self, bipartite_graph_undirected):
     matchings = maximum_cardinality_matching_bipartite(bipartite_graph_undirected, list(range(0, 3)), list(range(3, 7)))
