@@ -6,7 +6,7 @@ from typing import Dict, Tuple, List
 import sys
 
 from socialchoicekit.deterministic_matching import GaleShapley, Irving
-from socialchoicekit.profile_utils import StrictIncompleteProfile, StrictCompleteProfile, IntegerValuationProfile
+from socialchoicekit.profile_utils import StrictIncompleteProfile, StrictCompleteProfile, IntegerValuationProfile, is_consistent_valuation_profile
 from socialchoicekit.flow import ford_fulkerson
 
 class TestDeterministicMatching:
