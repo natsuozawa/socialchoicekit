@@ -103,3 +103,14 @@ If in the above example the agents had the above cardinal profile, we can expres
       [0.9, 0.05, 0.03, 0.02], # agent 3
     ])
   )
+
+Preflib Integration
+^^^^^^^^^^^^^^^^^^^
+
+Instead of manually creating profiles, we support loading data directly from the `Preflib <https://preflib.github.io/>`_.
+
+- :func:`socialchoicekit.preflib_utils.preflib_soc_to_profile`: Load a Preflib dataset in SoC form to :class:`socialchoicekit.profile_utils.StrictCompleteProfile`.
+- :func:`socialchoicekit.preflib_utils.preflib_soi_to_profile`: Load a Preflib dataset in SoI form to :class:`socialchoicekit.profile_utils.StrictIncompleteProfile`.
+- :func:`socialchoicekit.preflib_utils.preflib_toc_to_profile`: Load a Preflib dataset in ToC form to :class:`socialchoicekit.profile_utils.CompleteProfileWithTies`.
+- :func:`socialchoicekit.preflib_utils.preflib_toi_to_profile`: Load a Preflib dataset in ToI form to :class:`socialchoicekit.profile_utils.IncompleteProfileWithTies`.
+- :func:`socialchoicekit.preflib_utils.preflib_categorical_to_profile`: Load a Preflib dataset in categorical form to :class:`socialchoicekit.profile_utils.IncompleteProfileWithTies`.
