@@ -209,14 +209,15 @@ def profile_with_ties_to_strict_profile(
   profile: Profile
 
   tie_breaker: {"random", "first"}
+    accept is not allowed.
     - "random": shuffle the tied items into a random order
     - "first": sort the tied items in ascending order
-    accept is not allowed.
 
   Returns
   -------
   StrictCompleteProfile
     if profile is CompleteProfile
+
   StrictIncompleteProfile
     otherwise
   """

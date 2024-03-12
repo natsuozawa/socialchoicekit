@@ -29,7 +29,7 @@ class BaseValuationProfileGenerator:
     Generates a cardinal profile based on the inputted ordinal profile.
 
     Parameters
-    -------
+    ----------
     profile: StrictProfile
       A (N, M) array, where N is the number of agents and M is the number of alternatives. The element at (i, j) indicates the agent's ordinal utility for alternative j, where 1 is the most preferred alternative and M is the least preferred alternative. If the agent finds an item or alternative unacceptable, the element would be np.nan.
 
