@@ -14,6 +14,7 @@ For a non-computer science introduction to social choice theory, the article by 
 
 The Handbook of Computational Social Choice is a detailed resource with a good introductory chapter [BCELP2016]_. Access to the PDF is provided for free `here <https://procaccia.info/wp-content/uploads/2020/03/comsoc.pdf>`_.
 
+.. _settings:
 Settings
 --------
 In this library, we use the following settings.
