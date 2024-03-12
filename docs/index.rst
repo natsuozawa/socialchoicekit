@@ -16,7 +16,7 @@ Links
 -----
 
 - **Github**: https://github.com/natsuozawa/socialchoicekit
-- **Preflib**, a data repository for social choice with integration in socialchoicekit: https://www.preflib.org/
+- **Preflib**, a data repository for social choice with integration in socialchoicekit: https://www.preflib.org/ [MW2013]_
 
 Main pages
 ----------
@@ -34,3 +34,8 @@ Main pages
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+References
+----------
+
+.. [MW2013] Nicholas Mattei and Toby Walsh. Preflib: A library of preference data http://preflib.org. In Proceedings of the 3rd International Conference on Algorithmic Decision Theory (ADT 2013), Lecture Notes in Artificial Intelligence. Springer, 2013.
