@@ -663,8 +663,8 @@ class Irving:
         break
     return maximum_weight_closed_subset
 
+  @staticmethod
   def rotation_weight(
-    self,
     rotation: List[Tuple[int, int]],
     valuation_profile_1: IntegerValuationProfile,
     valuation_profile_2: IntegerValuationProfile,
@@ -751,8 +751,8 @@ class Irving:
         current_stable_matching[pair_index] = (rotation[i][0], rotation[(i + 1) % r][1])
     return current_stable_matching
 
+  @staticmethod
   def stable_matching_value(
-    self,
     stable_matching: List[Tuple[int, int]],
     valuation_profile_1: IntegerValuationProfile,
     valuation_profile_2: IntegerValuationProfile,

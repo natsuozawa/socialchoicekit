@@ -3,6 +3,9 @@ import numpy as np
 import pytest
 
 from socialchoicekit.profile_utils import StrictCompleteProfile, IntegerValuationProfile
+from socialchoicekit.elicitation_utils import IntegerValuationProfileElicitor
+from socialchoicekit.elicitation_matching import DoubleLambdaTSF
+from socialchoicekit.deterministic_matching import Irving
 
 class TestElicitationMatching:
   # Copied from TestDeterministicMatching, but might change later.
@@ -85,4 +88,15 @@ class TestElicitationMatching:
 
     return StrictCompleteProfile.of(ordinal_profile_1 + 1), StrictCompleteProfile.of(ordinal_profile_2 + 1), IntegerValuationProfile.of(cardinal_profile_1), IntegerValuationProfile.of(cardinal_profile_2)
 
-
+  def test_double_lambda_tsf_1_trivial(self, profiles_1):
+    profile_1, profile_2, cardinal_profile_1, cardinal_profile_2 = profiles_1
+    ivpe_1 = IntegerValuationProfileElicitor(cardinal_profile_1)
+    ivpe_2 = IntegerValuationProfileElicitor(cardinal_profile_2)
+    for lambda_ in range(2, 8):
+      dlt = DoubleLambdaTSF(lambda_1=lambda_, lambda_2=lambda_, zero_indexed=True)
+      stable_matching = dlt.scf(profile_1, profile_2, ivpe_1, ivpe_2)
+      # Check cardinal value with respect to the original valuation profiles, not the simulated valuation profiles.
+      expected_value = Irving.stable_matching_value([(0, 0), (1, 3), (2, 2), (3, 4), (4, 1), (5, 5), (6, 7), (7, 6)], cardinal_profile_1, cardinal_profile_2)
+      actual_value = Irving.stable_matching_value(stable_matching, cardinal_profile_1, cardinal_profile_2)
+      # We can only check this upper bound because even when we let lambda = n, the generated bucket will not correspond to each integer between [1, n]
+      assert expected_value >= actual_value
