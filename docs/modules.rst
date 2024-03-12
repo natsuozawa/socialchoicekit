@@ -1,5 +1,7 @@
-socialchoicekit
-===============
+.. _modules:
+
+API Reference
+=============
 
 .. toctree::
    :maxdepth: 4

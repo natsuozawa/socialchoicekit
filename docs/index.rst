@@ -6,14 +6,30 @@
 Welcome to socialchoicekit's documentation!
 ============================================
 
+**socialchoicekit** aims to be a comprehensive implementation of important algorithms in computational social choice theory, with a focus on algorithms that deal with distortion. It is currently in development by Natsu Ozawa under the supervision of Dr. Aris Filos-Ratsikas at the University of Edinburgh.
+
+To get a grasp of the computational social choice theory concepts necessary to work with this library, take a look at the :ref:`concepts` page.
+
+We also have a :ref:`getting_started` guide to help you get started coding.
+
+Links
+-----
+
+- **Github**: https://github.com/natsuozawa/socialchoicekit
+- **Preflib**, a data repository for social choice with integration in socialchoicekit: https://www.preflib.org/
+
+Main pages
+----------
+- :ref:`concepts`
+- :ref:`getting_started`
+- :ref:`modules`
+
 .. toctree::
    modules
-   :maxdepth: 2
-   :caption: Contents:
-
-
-Indices and tables
-==================
+   concepts
+   getting_started
+   :maxdepth: 1
+   :hidden:
 
 * :ref:`genindex`
 * :ref:`modindex`
