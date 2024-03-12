@@ -54,7 +54,7 @@ Sphinx with autodoc is used to compile documentation.
 
 (Run this command when a new module is added)
 ```
-sphinx-apidoc -o docs/ socialchoicekit/
+sphinx-apidoc -e -o docs/ socialchoicekit/
 ```
 
 ```
