@@ -25,9 +25,10 @@ Main pages
 - :ref:`modules`
 
 .. toctree::
-   modules
    concepts
    getting_started
+   profiles
+   modules
    :maxdepth: 1
    :hidden:
 
