@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to socialchoicekit's documentation!
+socialchoicekit
 ============================================
 
 **socialchoicekit** aims to be a comprehensive implementation of important algorithms in computational social choice theory, with a focus on algorithms that deal with distortion. It is currently in development by Natsu Ozawa under the supervision of Dr. Aris Filos-Ratsikas at the University of Edinburgh.
