@@ -104,7 +104,10 @@ class SimultaneousEating:
       # Element at i is the current item that agent i is eating.
       # If there is nothing that the agent can eat, the agent would try to eat their most preferred item (without success).
       # This avoids corner cases.
-      current_item = np.where(np.isnan(current_position), np.nan, ranked_items[np.arange(n), current_position.astype(int)])
+      current_item = np.where(
+        np.isnan(current_position),
+        np.nan,
+        ranked_items[np.arange(n), np.where(np.isnan(current_position), 0, current_position).astype(int)])
       # Element at j is the total speed of agents that are currently eating item j
       total_speeds = np.array([np.sum(speeds[current_item == j]) for j in range(n)])
 
