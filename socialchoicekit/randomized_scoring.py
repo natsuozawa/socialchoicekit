@@ -4,7 +4,7 @@ from socialchoicekit.deterministic_scoring import *
 from socialchoicekit.profile_utils import Profile, CompleteProfile, StrictCompleteProfile
 
 """
-Randomized scoring rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016).
+Randomized scoring rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice [BCELP2016]_.
 """
 
 class BaseRandomizedScoring:

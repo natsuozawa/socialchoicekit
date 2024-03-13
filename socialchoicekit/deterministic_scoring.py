@@ -5,7 +5,7 @@ from socialchoicekit.utils import check_tie_breaker, break_tie
 from socialchoicekit.profile_utils import Profile, CompleteProfile, StrictCompleteProfile, ValuationProfile
 
 """
-Deterministic scoring rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016).
+Deterministic scoring rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice [BCELP2016]_.
 """
 
 class BaseScoring:

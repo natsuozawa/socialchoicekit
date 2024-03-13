@@ -5,7 +5,7 @@ from socialchoicekit.utils import check_tie_breaker, break_tie
 from socialchoicekit.profile_utils import CompleteProfile
 
 """
-Deterministic multiround rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice (Brandt, et al. 2016).
+Deterministic multiround rules for voting. Definition and explanation taken from the Handbook of Computational Social Choice [BCELP2016]_.
 """
 
 class SingleTransferableVote:

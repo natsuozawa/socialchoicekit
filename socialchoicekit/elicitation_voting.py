@@ -50,7 +50,7 @@ class BaseElicitationVoting:
 
 class LambdaPRV(BaseElicitationVoting):
   """
-  Lambda-Prefix Range Voting (Amanatidis et al. 2021) is the most basic elicitation voting rule that queries every agent at the first lambda >= 1 positions.
+  Lambda-Prefix Range Voting [ABFV2021]_ is the most basic elicitation voting rule that queries every agent at the first lambda >= 1 positions.
 
   Parameters
   ----------
@@ -136,7 +136,7 @@ class LambdaPRV(BaseElicitationVoting):
 
 class KARV(BaseElicitationVoting):
   """
-  k-Acceptable Range Voting (Amanatidis et al. 2021) is a generalization of Lambda-Prefix Range Voting that partitions alternatives into k + 1 sets for every agent to create a simulated value function using binary search.
+  k-Acceptable Range Voting [ABFV2021]_ is a generalization of Lambda-Prefix Range Voting that partitions alternatives into k + 1 sets for every agent to create a simulated value function using binary search.
 
   Parameters
   ----------
