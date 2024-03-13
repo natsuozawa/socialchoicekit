@@ -49,7 +49,7 @@ def root_n_serial_dictatorship(
   profile: Profile
 ) -> np.ndarray:
   """
-  Root n serial dictatorship is a subroutine used in the Match-TwoQueries routine (Amanatidis et al. 2022) for elicitation allocation. This does not compute an approriate allocation. Instead, it generates a 'sufficiently representative assignment'.
+  Root n serial dictatorship is a subroutine used in the Match-TwoQueries routine [ABFV2022a]_ for elicitation allocation. This does not compute an approriate allocation. Instead, it generates a 'sufficiently representative assignment'.
 
   The algorithm assigns at most root n agents to each item based on a serial dictatorship algorithm. The algorithm is deterministic - hence, the order of the agents matters.
 

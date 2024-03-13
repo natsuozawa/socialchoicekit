@@ -84,7 +84,7 @@ In the stable matching setting, we have the same setting as resource allocation,
 
 This problem was first introduced by Gale and Shapley [GS1962]_ as the hospital resident problem, where the aim was to match hospitals to multiple residents (trainee doctors). socialchoicekit has an implementation of the classical algorithm which takes as input two ordinal profiles (each corresponding) :class:`socialchoicekit.deterministic_matching.GaleShapley`.
 
-A cardinal algorithm to this problem was proposed by Irving [I1987]_ and implemented in :class:`socialchoicekit.deterministic_matching.Irving`.
+A cardinal algorithm to this problem was proposed by Irving [ILG1987]_ and implemented in :class:`socialchoicekit.deterministic_matching.Irving`.
 
 Distortion
 ----------
@@ -114,7 +114,7 @@ While obtaining a complete cardinal profile is hard, this may still be feasible.
 [ABFV2021]_ proposed an algorithm for voting that made :math:`O(k \log{m})` queries per agent to achieve :math:`O(m^{\frac{1}{k+1}})` distortion.
 Under this, with :math:`O(\log^2{m})` queries per agent :math:`O(1)` distortion is achieved. This is implemented in :class:`socialchoicekit.elicitation_voting.KARV`.
 [ABFV2022]_ proposed an algorithm with the same characteristics that works with resource allocation. This is implemented in :class:`socialchoicekit.elicitation_allocation.LambdaTSF`.
-We also propose an algorithm with the same characteristics that works with stable matching, using [I1987]_ under the hood. This is implemented in :class:`socialchoicekit.elicitation_matching.DoubleLambdaTSF`.
+We also propose an algorithm with the same characteristics that works with stable matching, using [ILG1987]_ under the hood. This is implemented in :class:`socialchoicekit.elicitation_matching.DoubleLambdaTSF`.
 
 [ABFV2022a]_ also showed an algorithm that achieves good distortion with just two queries for voting (under limited circumstances) and resource allocation.
 We implemented a version of this algorithm for resource allocation in :class:`socialchoicekit.elicitation_allocation.MatchTwoQueries`.
@@ -131,6 +131,6 @@ References
 .. [CP2011] Ioannis Caragiannis and Ariel D. Procaccia. Voting almost maximizes social welfare despite limited communication. Artificial Intelligence, 175(9-10):1655–1671, 2011.
 .. [EKPS2022] Soroush Ebadian, Anson Kahng, Dominik Peters, and Nisarg Shah. Optimized distortion and proportional fairness in voting. In Proceedings of the 23rd ACM Conference on Economics and Computation (EC ’22), page 38 pages, Boulder, CO, USA, 2022. ACM. July 11-15.
 .. [GS1962] David Gale and Lloyd Stowell Shapley. College admissions and the stability of marriage. American Mathematical Monthly, 69:9–15, 1962.
-.. [I1987] Robert W. Irving, Paul Leather, and Dan Gusfield. An efficient algorithm for the “optimal” stable marriage. Journal of the Association for Computing Machinery,, 34(3):532–543, 1987.
+.. [ILG1987] Robert W. Irving, Paul Leather, and Dan Gusfield. An efficient algorithm for the “optimal” stable marriage. Journal of the Association for Computing Machinery,, 34(3):532–543, 1987.
 .. [PR2006] Ariel D. Procaccia and Jeffrey S. Rosenschein. The distortion of cardinal preferences in voting. In International Workshop on Cooperative Information Agents (CIA), pages 317–331, 2006.
 .. [S1986] Amartya Sen. Social choice theory. In Handbook of mathematical economics, volume 3, pages 1073–1181. 1986.

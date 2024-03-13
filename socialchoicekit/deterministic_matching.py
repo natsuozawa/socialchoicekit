@@ -179,7 +179,7 @@ class GaleShapley:
 
 class Irving:
   """
-  Algorithm for computing an optimal stable matching introduced in Irving et al. (1987) and modified for cardinal utilities (called weighted preference lists in the paper).
+  Algorithm for computing an optimal stable matching introduced in [ILG1987]_ and modified for cardinal utilities (called weighted preference lists in the paper).
   This algorithm works with a simplified version of the hospital resident problem (HR) where each hospital can only take one resident, and the number of hospitals and residents are equal. We call this the stable marriage problem (SM).
   We replace residents with men and hospitals with women.
   The algorithm also will only work with complete valuation profiles.
@@ -206,7 +206,7 @@ class Irving:
     The social choice function for this voting rule. Returns a stable matching that optimizes social welfare based on the given valuation profile.
     The optional ordinal profile parameters will be useful if the valuation profile(s) provided are simulated (or estimated) and contains ties.
     The ordinal profile(s) will be used to maintain stability.
-    The Irving algorithm assumes a strict ordering of preferences to create rotations. If a strict complete ordinal profile is not given, the ordinal profile will be automatically computed from the valuation profile (ties will be randomly broken).
+    The Irving algorithm [ILG1987]_ assumes a strict ordering of preferences to create rotations. If a strict complete ordinal profile is not given, the ordinal profile will be automatically computed from the valuation profile (ties will be randomly broken).
     To break ties in some other way, use profile_utils.compute_ordinal_profile.
 
     Parameters
@@ -342,7 +342,7 @@ class Irving:
     preference_lists_2: Dict[int, np.ndarray],
   ) -> Tuple[List[List[Tuple[int, int]]], Dict[Tuple[int, int], int]]:
     """
-    This is an internal routine to find the set of al rotations that we can obtain by eliminating some rotations. This includes the rotations that are already exposed in a stable matching.
+    This is an internal routine to find the set of all rotations that we can obtain by eliminating some rotations, as described in [ILG1987]_. This includes the rotations that are already exposed in a stable matching.
     We also note for each pair if there is a rotation that eliminates it.
     The parameters indicate the reduced preference lists at the time of finding a stable matching.
 
@@ -453,7 +453,7 @@ class Irving:
   ) -> List[List[Tuple[int, int]]]:
     """
     This is an internal routine to find the set of all rotations that are exposed in a stable matching, given the preference lists.
-    We find the solution by constructing the graph G(S) as described in Irving et al. (1987) and finding all cycles in G(S).
+    We find the solution by constructing the graph G(S) as described in [ILG1987]_ and finding all cycles in G(S).
 
     Complexity
     ----------
@@ -526,7 +526,7 @@ class Irving:
     eliminating_rotation_of_pair: Dict[Tuple[int, int], int],
   ) -> Dict[int, List[int]]:
     """
-    Construct sparse rotation poset graph P'
+    This is an internal routine to construct sparse rotation poset graph P' as described in [ILG1987]_
     Nodes: rotation
     Edges: From rule 1 and 2
 
@@ -670,7 +670,7 @@ class Irving:
     valuation_profile_2: IntegerValuationProfile,
   ) -> float:
     """
-    The weight of a rotation as defined in Irving et al. (1987).
+    The weight of a rotation as defined in [ILG1987]_.
     The weight of the rotation must be smaller than sys.maxsize to work with Irving.
 
     Parameters
@@ -718,8 +718,9 @@ class Irving:
     rotations: List[List[Tuple[int, int]]],
   ) -> List[Tuple[int, int]]:
     """
-    Apply a series of eliminations to a stable matching in the order given in the rotations parameter.
+    This is an internal routine to apply a series of eliminations to a stable matching in the order given in the rotations parameter.
     Eliminating with valid rotations will ensure stability.
+    Algorithm as described in [ILG1987]_.
 
     Parameters
     ----------
@@ -758,7 +759,7 @@ class Irving:
     valuation_profile_2: IntegerValuationProfile,
   ) -> int:
     """
-    The cardinal utility (social welfare) of a stable matching. In Irving et al. (1987), this is defined as c(S).
+    The cardinal utility (social welfare) of a stable matching. In [ILG1987]_, this is defined as c(S).
 
     Parameters
     ----------
