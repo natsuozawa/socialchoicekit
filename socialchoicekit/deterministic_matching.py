@@ -94,6 +94,10 @@ class GaleShapley:
             continue
 
           last_applied_hospital_rank = resident_applications.get(resident, -1)
+          if last_applied_hospital_rank >= m - 1:
+            # Resident has applied to all hospitals.
+            next_current_applicants[resident] = 2
+            continue
           next_hospital = ranked_rprofile[resident, last_applied_hospital_rank + 1]
           if np.isnan(rprofile[resident, next_hospital]):
             # Candidate has applied to all hospitables they find acceptable. (Yet have not gotten accepted into any)
@@ -150,6 +154,10 @@ class GaleShapley:
             continue
 
           last_applied_resident_rank = hospital_offers.get(hospital, -1)
+          if last_applied_resident_rank >= n - 1:
+            # Hospital has offered to all residents.
+            current_offerers[hospital] = 2
+            continue
           next_resident = ranked_hprofile[hospital, last_applied_resident_rank + 1]
           if np.isnan(hprofile[hospital, next_resident]):
             # Hospital has offered to all residents they find acceptable. (Yet are undersubscribed)

@@ -439,4 +439,3 @@ class TestDeterministicMatching:
     actual_value = irving.stable_matching_value(stable_matching, cardinal_profile_1, cardinal_profile_2)
     # We expect higher optimal value when utilities are stronger on one sided.
     assert expected_value <= actual_value
-
