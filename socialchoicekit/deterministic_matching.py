@@ -277,8 +277,8 @@ class Irving:
     ans = self.eliminate_rotations(stable_matching, rotations_to_eliminate)
     return [(i + self.index_fixer, j + self.index_fixer) for i, j in ans]
 
+  @staticmethod
   def find_initial_preference_lists(
-    self,
     stable_marriage:  List[Tuple[int, int]],
     profile_1: np.ndarray,
     profile_2: np.ndarray,

@@ -264,7 +264,6 @@ class TestDeterministicMatching:
     ordinal_profile_1, ordinal_profile_2, _, _ = profiles_2
     shortlist_1, shortlist_2 = initial_preference_lists_2
 
-    irving = Irving()
 
     stable_marriage = GaleShapley(
       resident_oriented=True, zero_indexed=True
@@ -273,7 +272,7 @@ class TestDeterministicMatching:
       np.ones(ordinal_profile_1.shape[0], dtype=int),
     )
 
-    preference_list_1, preference_list_2 = irving.find_initial_preference_lists(
+    preference_list_1, preference_list_2 = Irving.find_initial_preference_lists(
       stable_marriage,
       ordinal_profile_1 - 1,
       ordinal_profile_2 - 1
