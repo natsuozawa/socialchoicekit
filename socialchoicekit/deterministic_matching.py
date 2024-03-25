@@ -576,13 +576,13 @@ class Irving:
           # So skip.
           j += 1
           continue
-        rotation = rotation_of_pair[(m, w)]
+        rot = rotation_of_pair[(m, w)]
         j_prime = j + 1
         while j_prime < len(preference_lists_1[m]):
           w_prime = preference_lists_1[m][j_prime]
           if (m, w_prime) in rotation_of_pair:
             # Rule 1 is satisfied.
-            pi = rotation
+            pi = rot
             rho = rotation_of_pair[(m, w_prime)]
             # Draw edge from pi to rho if not already drawn.
             if (rho not in P_prime[pi]):
@@ -591,10 +591,16 @@ class Irving:
           elif (m, w_prime) in eliminating_rotation_of_pair:
             # Rule 2 is satisfied.
             pi = eliminating_rotation_of_pair[(m, w_prime)]
-            rho = rotation
-            # Draw edge from pi to rho if not already drawn.
-            if (rho not in P_prime[pi]):
-              P_prime[pi].append(rho)
+            rho = rot
+            # Check that w_prime is more preferred than the woman m receives next in rho.
+            rotation = rotations[rho]
+            w_next = rotation[(rotation.index((m, w)) + 1) % len(rotation)][1]
+            w_rank = np.where(preference_lists_1[m] == w_prime)[0][0]
+            w_next_rank = np.where(preference_lists_1[m] == w_next)[0][0]
+            if w_rank < w_next_rank:
+              # Draw edge from pi to rho if not already drawn.
+              if rho not in P_prime[pi]:
+                P_prime[pi].append(rho)
           j_prime += 1
         # We have that Rule 1 was satisfied last unless we've reached the end of m's preference list. (Because if rule 2 was satisfied, j_prime would increment and the loop would continue).
         # Hence, w_prime is in some rotation. We set this to the next pi.

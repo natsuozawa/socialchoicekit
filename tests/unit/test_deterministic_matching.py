@@ -439,3 +439,64 @@ class TestDeterministicMatching:
     actual_value = irving.stable_matching_value(stable_matching, cardinal_profile_1, cardinal_profile_2)
     # We expect higher optimal value when utilities are stronger on one sided.
     assert expected_value <= actual_value
+
+  @pytest.fixture
+  def profile_4(self):
+    sigma_1 = StrictCompleteProfile.of(np.array([
+      [4, 3, 2, 1, 5, 6],
+      [5, 2, 1, 6, 3, 4],
+      [6, 1, 4, 5, 2, 3],
+      [4, 1, 3, 5, 6, 2],
+      [2, 5, 6, 3, 1, 4],
+      [1, 6, 5, 3, 4, 2],
+    ]))
+
+    sigma_2 = StrictCompleteProfile.of(np.array([
+      [4, 2, 1, 3, 5, 6],
+      [3, 4, 5, 6, 2, 1],
+      [5, 6, 3, 4, 1, 2],
+      [6, 5, 4, 3, 2, 1],
+      [2, 4, 5, 1, 6, 3],
+      [1, 2, 4, 5, 3, 6],
+    ]))
+
+    v_1 = IntegerValuationProfile.of(np.array([
+      [1, 1, 3, 5, 0, 0],
+      [1, 2, 2, 1, 2, 2],
+      [1, 3, 1, 1, 2, 2],
+      [1, 3, 2, 1, 1, 2],
+      [3, 1, 1, 1, 3, 1],
+      [4, 0, 0, 2, 1, 3],
+    ]))
+
+    v_2 = IntegerValuationProfile.of(np.array([
+      [0, 5, 5, 0, 0, 0],
+      [3, 0, 0, 0, 3, 4],
+      [0, 0, 0, 0, 10, 0],
+      [0, 0, 0, 0, 3, 7],
+      [2, 0, 0, 7, 0, 1],
+      [9, 1, 0, 0, 0, 0],
+    ]))
+
+    assert is_consistent_valuation_profile(v_1, sigma_1)
+    assert is_consistent_valuation_profile(v_2, sigma_2)
+    return sigma_1, sigma_2, v_1, v_2
+
+  def test_construct_sparse_rotation_poset_graph_4(self, profile_4):
+    sigma_1, sigma_2, _, _ = profile_4
+    n = 6
+    gs = GaleShapley(resident_oriented=True, zero_indexed=True)
+
+    M_x = gs.scf(sigma_1, sigma_2, np.ones(n))
+
+    x_shortlists, y_shortlists = Irving().find_initial_preference_lists(M_x, sigma_1 - 1, sigma_2 - 1)
+    initial_preference_lists_x = {i: np.array(x_shortlists[i]) for i in range(n)}
+
+    # Find rotations
+    irving = Irving(zero_indexed=True)
+    all_rotations, eliminating_rotation_of_pair = irving.find_all_rotations_and_eliminations(x_shortlists, y_shortlists)
+
+    # Construct graph
+    G = irving.construct_sparse_rotation_poset_graph(all_rotations, initial_preference_lists_x, eliminating_rotation_of_pair)
+    for i in range(len(all_rotations) - 1):
+      assert i + 1 in G[i]
