@@ -17,6 +17,7 @@ from socialchoicekit.data_generation import UniformValuationProfileGenerator
 from socialchoicekit.deterministic_scoring import Plurality, SocialWelfare
 from socialchoicekit.elicitation_voting import KARV
 from socialchoicekit.elicitation_utils import ValuationProfileElicitor, SynchronousStdInElicitor
+from socialchoicekit.distortion import distortion
 
 url = 'https://www.preflib.org/static/data/agh/00009-00000001.soc'
 
@@ -47,7 +48,7 @@ plurality = Plurality()
 plurality_winner = plurality.scf(profile)
 print(plurality.score(profile))
 print("Plurality winner: ", plurality_winner)
-print("Distortion: ", optimal_welfare / social_welfare[plurality_winner - 1])
+print("Distortion: ", distortion(plurality_winner, valuation_profile))
 
 # 3) Elicitation (query)-based voting
 print("----- 3) Elicitation-based voting -----")
@@ -57,5 +58,4 @@ stdin_elicitor = SynchronousStdInElicitor(memoize=True)
 karv_winner = karv.scf(profile, valuation_profile_elicitor)
 # karv_winner = karv.scf(profile, stdin_elicitor)
 print("KARV winner: ", karv_winner)
-print("Distortion: ", optimal_welfare / social_welfare[karv_winner - 1])
-
+print("Distortion: ", distortion(karv_winner, valuation_profile))
