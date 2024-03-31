@@ -1,7 +1,9 @@
 import numpy as np
 
 from socialchoicekit.profile_utils import StrictCompleteProfile, IntegerValuationProfile, is_consistent_valuation_profile
+from socialchoicekit.elicitation_utils import IntegerValuationProfileElicitor
 from socialchoicekit.deterministic_matching import GaleShapley, Irving
+from socialchoicekit.elicitation_matching import DoubleLambdaTSF
 
 sigma_1 = StrictCompleteProfile.of(np.array([
   [4, 3, 2, 1, 5, 6],
@@ -61,3 +63,10 @@ sw_x = Irving.stable_matching_value(M_x, v_1, v_2)
 sw_y = Irving.stable_matching_value(M_y, v_1, v_2)
 
 print(sw_i, sw_x, sw_y)
+
+ivpe_1 = IntegerValuationProfileElicitor(v_1)
+ivpe_2 = IntegerValuationProfileElicitor(v_2)
+M_d = DoubleLambdaTSF(2, 2, True).scf(sigma_1, sigma_2, ivpe_1, ivpe_2)
+sw_d = Irving.stable_matching_value(M_d, v_1, v_2)
+
+print(sw_d)
