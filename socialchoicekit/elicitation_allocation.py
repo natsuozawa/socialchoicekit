@@ -48,6 +48,30 @@ class LambdaTSF:
     np.ndarray
       A numpy array containing the allocated item for each agent or np.nan if the agent is unallocated.
     """
+    v_tilde = self.get_simulated_cardinal_profile(profile, elicitor)
+    return self.mwm.scf(IncompleteValuationProfile.of(v_tilde))
+
+  def get_simulated_cardinal_profile(
+    self,
+    profile: Profile,
+    elicitor: Elicitor = SynchronousStdInElicitor(),
+  ) -> np.ndarray:
+    """
+    Obtain the simulated cardinal profile.
+
+    Parameters
+    ----------
+    profile: Profile
+      A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
+
+    elicitor: Elicitor
+      The elicitor that will be used to query the agents. By default, SynchronousStdInElicitor is used.
+
+    Returns
+    -------
+    IncompleteValuationProfile
+      A (N, M) array where the element at (i, j) indicates the simulated welfare of alternative j for agent i.
+    """
     n = profile.shape[0]
     m = profile.shape[1]
 
@@ -91,8 +115,7 @@ class LambdaTSF:
       i_indices = np.concatenate([np.ones(int(p_star[i] - Q_prev[i]), dtype=int) * i for i in range(n)])
       v_tilde[(i_indices, j_indices)] = v_favorite[i_indices] / alpha_l
       Q_prev = p_star
-
-    return self.mwm.scf(IncompleteValuationProfile.of(v_tilde))
+    return IncompleteValuationProfile.of(v_tilde)
 
 class MatchTwoQueries:
   """
@@ -116,7 +139,7 @@ class MatchTwoQueries:
     elicitor: Elicitor = SynchronousStdInElicitor(),
   ) -> np.ndarray:
     """
-    The (provisional) social choice function for this voting rule. Returns one item allocated for each agent.
+    The social choice function for this voting rule. Returns one item allocated for each agent.
 
     Parameters
     ----------
@@ -130,6 +153,30 @@ class MatchTwoQueries:
     -------
     np.ndarray
       A numpy array containing the allocated item for each agent or np.nan if the agent is unallocated.
+    """
+    v_tilde = self.get_simulated_cardinal_profile(profile, elicitor)
+    return self.mwm.scf(IncompleteValuationProfile.of(v_tilde))
+
+  def get_simulated_cardinal_profile(
+    self,
+    profile: Profile,
+    elicitor: Elicitor = SynchronousStdInElicitor(),
+  ) -> IncompleteValuationProfile:
+    """
+    Obtain the simulated cardinal profile.
+
+    Parameters
+    ----------
+    profile: StrictProfile
+      A (N, M) array, where N is the number of agents and M is the number of items. The element at (i, j) indicates the voter's preference for item j, where 1 is the most preferred item. If the agent finds an item unacceptable, the element would be np.nan.
+
+    elicitor: Elicitor
+      The elicitor that will be used to query the agents.
+
+    Returns
+    -------
+    IncompleteValuationProfile
+      A (N, M) array where the element at (i, j) indicates the simulated welfare of item j for agent i.
     """
     # TODO: Verify support for all Profiles
     if not isinstance(profile, StrictProfile):
@@ -150,5 +197,4 @@ class MatchTwoQueries:
 
     # Elicit the agent's cardinal utility of the item they are assigned to in A.
     v_tilde[np.arange(n), A] = elicitor.elicit_multiple(np.arange(n), A)
-
-    return self.mwm.scf(IncompleteValuationProfile.of(v_tilde))
+    return IncompleteValuationProfile.of(v_tilde)

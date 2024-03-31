@@ -20,7 +20,7 @@ class RandomSerialDictatorship:
 
   def scf(self, profile: StrictProfile) -> np.ndarray:
     """
-    The (provisional) social choice function for this voting rule. Returns at most one item allocated for each agent.
+    The social choice function for this voting rule. Returns at most one item allocated for each agent.
 
     Parameters
     ----------
@@ -146,7 +146,7 @@ class SimultaneousEating:
     speeds: np.ndarray
   ) -> np.ndarray:
     """
-    The (provisional) social choice function for this voting rule. Returns at most one item allocated for each agent.
+    The social choice function for this voting rule. Returns at most one item allocated for each agent.
 
     Parameters
     ----------
@@ -200,7 +200,7 @@ class ProbabilisticSerial:
 
   def scf(self, profile: StrictProfile) -> np.ndarray:
     """
-    The (provisional) social choice function for this voting rule. Returns at most one item allocated for each agent.
+    The social choice function for this voting rule. Returns at most one item allocated for each agent.
 
     Parameters
     ----------

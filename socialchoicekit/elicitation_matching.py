@@ -67,6 +67,41 @@ class DoubleLambdaTSF:
       A list containing assignments (agent_1, agent_2) where agent_1 from the first group is matched to agent_2 from the second group.
       This list will contain N tuples, where N is the number of agents in each group.
     """
+    v_tildes = self.get_simulated_cardinal_profiles(profile_1, profile_2, elicitor_1, elicitor_2)
+    return self.irving.scf(v_tildes[0], v_tildes[1], profile_1, profile_2)
+
+  def get_simulated_cardinal_profiles(
+    self,
+    profile_1: StrictCompleteProfile,
+    profile_2: StrictCompleteProfile,
+    elicitor_1: IntegerElicitor = IntegerSynchronousStdInElicitor(),
+    elicitor_2: IntegerElicitor = IntegerSynchronousStdInElicitor(),
+  ) -> Tuple[IntegerValuationProfile, IntegerValuationProfile]:
+    """
+    Obtain the two simulated cardinal profiles.
+
+    Parameters
+    ----------
+    profile_1: StrictCompleteProfile
+      A (N, N) array, where N is the number of agents in the first group and also the number of agents in the second group. The element at (i, j) indicates the agent i's preference for agent j, where 1 is the most preferred agent. Here, agent i belongs to the first group and agent j belongs to the second group.
+
+    profile_2: StrictCompleteProfile
+      A (N, N) array, where N is the number of agents in the second group and also the number of agents in the first group. The element at (i, j) indicates the agent i's preference for agent j, where 1 is the most preferred agent. Here, agent i belongs to the second group and agent j belongs to the first group.
+
+    elicitor_1: IntegerElicitor
+      The elicitor that will be used to query the agents in the first group. By default, IntegerSynchronousStdInElicitor is used.
+      Memoization should be enabled for this elicitor.
+
+    elicitor_2: IntegerElicitor
+      The elicitor that will be used to query the agents in the first group. By default, IntegerSynchronousStdInElicitor is used.
+      Memoization should be enabled for this elicitor.
+
+    Returns
+    -------
+    Tuple[IntegerValuationProfile, IntegerValuationProfile]
+      The first IntegerValuationProfile is the simulated profile for the first group.
+      The second IntegerValuationProfile is the simulated profile for the second group.
+    """
     n = profile_1.shape[0]
     assert profile_1.shape == (n, n)
     assert profile_2.shape == (n, n)
@@ -116,9 +151,4 @@ class DoubleLambdaTSF:
         Q_prev = p_star
       v_tildes.append(v_tilde.astype(int))
 
-    return self.irving.scf(
-      IntegerValuationProfile.of(v_tildes[0]),
-      IntegerValuationProfile.of(v_tildes[1]),
-      profile_1,
-      profile_2,
-    )
+    return (IntegerValuationProfile.of(v_tildes[0]), IntegerValuationProfile.of(v_tildes[1]))

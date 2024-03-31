@@ -3,7 +3,7 @@ from typing import Union
 
 from socialchoicekit.utils import check_tie_breaker, break_tie
 from socialchoicekit.elicitation_utils import Elicitor, SynchronousStdInElicitor
-from socialchoicekit.profile_utils import StrictCompleteProfile
+from socialchoicekit.profile_utils import StrictCompleteProfile, CompleteValuationProfile
 
 class BaseElicitationVoting:
   """
@@ -184,6 +184,30 @@ class KARV(BaseElicitationVoting):
     np.ndarray
       A (1, M) array of scores where the element at (0, j) indicates the score for alternative j.
     """
+    v_tilde = self.get_simulated_cardinal_profile(profile, elicitor)
+    return np.sum(v_tilde, axis=0)
+
+  def get_simulated_cardinal_profile(
+    self,
+    profile: StrictCompleteProfile,
+    elicitor: Elicitor = SynchronousStdInElicitor(),
+  ) -> CompleteValuationProfile:
+    """
+    Obtain the simulated cardinal profile.
+
+    Parameters
+    ----------
+    profile: StrictCompeleteProfile
+      This is the ordinal profile. A (N, M) array, where N is the number of voters and M is the number of alternatives. The element at (i, j) indicates the voter's preference for alternative j, where 1 is the most preferred alternative.
+
+    elicitor: Elicitor
+      The elicitor that will be used to query the agents.
+
+    Returns
+    -------
+    CompleteValuationProfile
+      A (N, M) array where the element at (i, j) indicates the simulated welfare of alternative j for agent i.
+    """
     if self.k > profile.shape[1]:
       raise ValueError("Invalid k")
 
@@ -221,7 +245,7 @@ class KARV(BaseElicitationVoting):
       v_tilde[(i_indices, j_indices)] = v_favorite[i_indices] / lambda_l
       S_prev = p_star
 
-    return np.sum(v_tilde, axis=0)
+    return CompleteValuationProfile.of(v_tilde)
 
   def scf(
     self,

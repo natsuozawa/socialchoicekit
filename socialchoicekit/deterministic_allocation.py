@@ -27,7 +27,7 @@ class MaximumWeightMatching:
     valuation_profile: ValuationProfile,
   ) -> np.ndarray:
     """
-    The (provisional) social choice function, which takes in a valuation profile and returns an allocation.
+    The social choice function, which takes in a valuation profile and returns an allocation.
 
     Parameters
     ----------

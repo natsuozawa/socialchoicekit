@@ -35,7 +35,7 @@ class GaleShapley:
     c: np.ndarray,
   ) -> List[Tuple[int, int]]:
     """
-    The (provisional) social choice function for this voting rule. Returns one item allocated for each agent.
+    The social choice function for this voting rule. Returns one item allocated for each agent.
 
     Parameters
     ----------
