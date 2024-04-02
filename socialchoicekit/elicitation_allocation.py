@@ -196,5 +196,15 @@ class MatchTwoQueries:
     A = root_n_serial_dictatorship(profile)
 
     # Elicit the agent's cardinal utility of the item they are assigned to in A.
-    v_tilde[np.arange(n), A] = elicitor.elicit_multiple(np.arange(n), A)
+    for i in range(n):
+      j = A[i]
+      v_tilde[i, A[i]] = elicitor.elicit(i, j)
+      current_rank = profile[i, j]
+      current_rank -= 1
+      while current_rank > 1:
+        # Set the utility of all items up to but not including the favorite item.
+        j = ranked_profile[i, current_rank - 1]
+        v_tilde[i, j] = v_tilde[i, A[i]]
+        current_rank -= 1
+
     return IncompleteValuationProfile.of(v_tilde)
