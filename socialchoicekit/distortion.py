@@ -11,7 +11,7 @@ def distortion(
   valuation_profile: ValuationProfile,
 ) -> float:
   """
-  This is a utility function to calculate distortion as introduced by Procaccia and Rosenschein (2006)
+  This is a utility function to calculate distortion for voting as introduced by Procaccia and Rosenschein (2006)
 
   Distortion is the worst case ratio between the optimal utility obtainable from cardinal information and the optimal utility obtainable from an algorithm using limited preference information.
 

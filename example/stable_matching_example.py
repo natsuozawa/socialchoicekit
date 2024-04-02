@@ -66,7 +66,10 @@ print(sw_i, sw_x, sw_y)
 
 ivpe_1 = IntegerValuationProfileElicitor(v_1)
 ivpe_2 = IntegerValuationProfileElicitor(v_2)
-M_d = DoubleLambdaTSF(2, 2, True).scf(sigma_1, sigma_2, ivpe_1, ivpe_2)
+dltsf = DoubleLambdaTSF(1, 1, True)
+v_tildes = dltsf.get_simulated_cardinal_profiles(sigma_1, sigma_2, ivpe_1, ivpe_2)
+M_d = dltsf.scf(sigma_1, sigma_2, ivpe_1, ivpe_2)
 sw_d = Irving.stable_matching_value(M_d, v_1, v_2)
+weights = [Irving().rotation_weight(rot, v_tildes[0], v_tildes[1]) for rot in all_rotations]
 
 print(sw_d)
