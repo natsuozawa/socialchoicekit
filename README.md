@@ -26,10 +26,6 @@ In this library, we especially focus on algorithms that are used in the study of
 
 # Usage
 
-## Installation
-
-TODO
-
 ## Example Usage
 
 ```
