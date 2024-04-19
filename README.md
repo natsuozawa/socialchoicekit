@@ -24,6 +24,12 @@ In this library, we use the following settings.
 
 In this library, we especially focus on algorithms that are used in the study of distortion. Distortion is the worst case ratio between the optimal utility obtainable from cardinal information and the optimal utility obtainable from an algorithm using limited preference information.
 
+# Installation
+
+```
+pip install socialchoicekit
+```
+
 # Usage
 
 ## Example Usage
